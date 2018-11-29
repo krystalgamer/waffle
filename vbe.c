@@ -129,7 +129,7 @@ void* (vg_init)(uint16_t mode){
 }
 
 
-int (vg_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
+int (pj_draw_hline)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
 
     /* Check if out of bounds */
     if (x >= get_x_res() || y >= get_y_res()) {			
@@ -151,7 +151,7 @@ int (vg_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
             /* Color the pixel */
             uint32_t y_coord = y * get_x_res() * pixel_size;
             uint32_t x_coord = (x + i) * pixel_size;  
-            memcpy(mapped_mem + y_coord + x_coord, &color, pixel_size);
+            memcpy(bbuffer + y_coord + x_coord, &color, pixel_size);
         }
     }
     /* Indexed color */
@@ -167,7 +167,7 @@ int (vg_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
 }
 
 
-int (vg_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
+int (pj_draw_rectangle)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
 
     /* Check if out of bounds */
     if (x >= get_x_res() || y >= get_y_res()){
@@ -179,7 +179,7 @@ int (vg_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height,
     for (uint32_t i = 0; i < height; i++) {
         // Check if out of screen range
         if (y+i >= get_y_res()) break;
-            if (vg_draw_hline(x, y + i, width, color) != OK) {
+            if (pj_draw_hline(bbuffer, x, y + i, width, color) != OK) {
                 printf("(%s) There was a problem drawing a h line\n", __func__);
                 return VBE_DRAW_LINE_FAILED;
         }
@@ -211,12 +211,12 @@ void (draw_pixmap)(const char *pixmap, uint16_t x, uint16_t y, int width, int he
 }
 
 void (clear_buffer)(uint8_t *buffer, uint8_t color){
-    memset(buffer, color, get_x_res() * get_y_res());
+    memset(buffer, color, get_x_res() * get_y_res() * 2);
 }
 
 
 void swap_buffers(uint8_t *buffer){
-    memcpy(mapped_mem, buffer, get_x_res() * get_y_res());
+    memcpy(mapped_mem, buffer, get_x_res() * get_y_res() * 2);
 }
 
 uint32_t get_pattern_color(uint32_t first, uint8_t row, uint8_t col, uint8_t step, uint8_t no_rectangles){

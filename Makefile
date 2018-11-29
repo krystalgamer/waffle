@@ -1,9 +1,10 @@
-PROG=lab5
-SRCS = lab5.c vbe.c util.c timer.c mouse.c kbc.c
+PROG=proj
 
-CPPFLAGS += -pedantic
+SRCS = proj.c vbe.c mouse.c kbc.c util.c timer.c
 
-DPADD += ${LIBLCF} ${LIBLM}
-LDADD += -llcf -llm
+CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
+
+DPADD += ${LIBLCF}
+LDADD += -llcf
 
 .include <minix.lcom.mk>
