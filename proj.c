@@ -33,13 +33,6 @@ int main(int argc, char *argv[]) {
 int (pj_draw_rectangle)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color); 
 int (pj_draw_hline)(uint8_t *bbufer, uint16_t x, uint16_t y, uint16_t len, uint32_t color);
 
-/* Fancy rectangle */
-typedef struct _window{
-    int16_t x,y;
-    uint16_t width, height;
-    uint32_t color;
-
-}Window;
 
 int (proj_main_loop)(int argc, char *argv[]) {
 
@@ -99,10 +92,9 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
 
     int maxFrames = 2;
-    int curFrame = 0;
+    int curFrame = 1;
 
     while(!pressed_the_secret_button) {
-        //printf("PENIS\n");
         /* Get a request message.  */
         if( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) {
             printf("driver_receive failed with: %d", r);
@@ -137,12 +129,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
                                 wnd.x += pp.delta_x;
                             }
 
-                            if((pp.delta_y + wnd.y + wnd.height) > get_y_res()){
+                            if((wnd.y - pp.delta_y + wnd.height) > get_y_res()){
                                 mouse_y_dis = get_y_res() - (wnd.y + wnd.height);
                                 wnd.y = get_y_res()-wnd.height;
                             }
-                            else if((pp.delta_y + wnd.y) < 0){
-                                mouse_y_dis = 0 - wnd.y;
+                            else if((wnd.y - pp.delta_y) < 0){
+                                mouse_y_dis =  wnd.y;
                                 wnd.y = 0;
                             }
                             else{
@@ -180,8 +172,8 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     if((++curFrame)%maxFrames == 0){
                         clear_buffer(backbuffer, 0);
                         /* Respect z-order */
-                        pj_draw_rectangle(backbuffer, wnd.x, wnd.y, wnd.width, wnd.height, wnd.color);
-                        pj_draw_rectangle(backbuffer, x, y, width, height, color);
+                        pj_draw_rectangle(wnd.x, wnd.y, wnd.width, wnd.height, wnd.color);
+                        pj_draw_rectangle(x, y, width, height, color);
                         swap_buffers(backbuffer);
                     }
 

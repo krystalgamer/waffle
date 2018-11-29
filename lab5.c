@@ -13,7 +13,7 @@
 #include <math.h>
 #include "timer_user.h"
 
-
+extern vbe_mode_info_t vbe_mode_info;
 // Any header files included below this line should have been created by you
 
 int main(int argc, char *argv[]) {
@@ -480,7 +480,7 @@ int (video_test_controller)() {
 
     /* Call lm_init */
     void *init = NULL;
-    if((init = lm_init(true)) == NULL){
+    if((init = lm_init(false)) == NULL){
         printf("(%s) I couldnt init lm\n", __func__);
         return 1;
     }
@@ -526,8 +526,6 @@ int (video_test_controller)() {
     contr_info.OEMProductNamePtr = CONVERSOR(info_block->OemProductNamePtr);
     contr_info.OEMProductRevPtr = CONVERSOR(info_block->OemProductRevPtr);
 
-    /* Free allocated memory */
-    lm_free(&mmap);
 
     /* Display the information */
     if (vg_display_vbe_contr_info(&contr_info) != OK) {
@@ -535,6 +533,17 @@ int (video_test_controller)() {
         return 1;
     }
 
+
+    for(; *contr_info.VideoModeList != 0xFFFF; contr_info.VideoModeList++){
+	    vbe_get_mode_info(*contr_info.VideoModeList, &vbe_mode_info);
+	    printf("Mode:%02X X:%d Y:%d\nBpp:%d Direct:%d\n", *contr_info.VideoModeList, get_x_res(), get_y_res(), get_bits_per_pixel(), get_memory_model() == DIRECT_COLOR_MODE);
+	
+    }
+    printf("%02X XIXI\n", *contr_info.VideoModeList);
+
+
+    /* Free allocated memory */
+    lm_free(&mmap);
     return OK;
 }
 

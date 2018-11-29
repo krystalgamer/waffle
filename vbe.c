@@ -4,8 +4,12 @@
 #include <stdlib.h>
 #include "util.h"
 
-static vbe_mode_info_t vbe_mode_info;
+vbe_mode_info_t vbe_mode_info;
 static uint8_t* mapped_mem;
+static uint8_t *backbuffer = NULL;
+static uint32_t buffer_size = 0;
+static uint32_t bytes_per_pixel = 0;
+
 
 void *retry_lm_alloc(size_t size, mmap_t *mmap){
     void *result = NULL;
@@ -97,6 +101,10 @@ void* (vg_init)(uint16_t mode){
         printf("(%s) Couldnt get mode info\n", __func__);
         return NULL;
     }
+    
+    bytes_per_pixel = calculate_size_in_bytes(get_bits_per_pixel());
+    buffer_size = get_x_res() * get_y_res() * bytes_per_pixel;
+
 
     struct minix_mem_range mr; /* physical memory range */
     unsigned int vram_base = vbe_mode_info.PhysBasePtr; /* VRAM’s physical addresss */
@@ -129,7 +137,7 @@ void* (vg_init)(uint16_t mode){
 }
 
 
-int (pj_draw_hline)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
+int (pj_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
 
     /* Check if out of bounds */
     if (x >= get_x_res() || y >= get_y_res()) {			
@@ -141,8 +149,6 @@ int (pj_draw_hline)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t len, uint
     if (get_memory_model() == DIRECT_COLOR_MODE) {
 
         /* Calculate size in bytes each pixel occupies */
-        uint8_t pixel_size = calculate_size_in_bytes(get_bits_per_pixel());
-
         for (uint32_t i = 0; i < len; i++){
             /* Check if x is outside of range */
             if (x+i >= get_x_res())
@@ -151,12 +157,12 @@ int (pj_draw_hline)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t len, uint
             /* Color the pixel */
             uint32_t y_coord = y * get_x_res() * pixel_size;
             uint32_t x_coord = (x + i) * pixel_size;  
-            memcpy(bbuffer + y_coord + x_coord, &color, pixel_size);
+            memcpy(backbuffer + y_coord + x_coord, &color, bytes_per_pixel);
         }
     }
     /* Indexed color */
     else if (get_memory_model() == INDEXED_COLOR_MODE) {
-        memset(mapped_mem + y * get_x_res() + x, (uint8_t)color, (len > (get_x_res() - x) ? get_x_res() - x : len));
+		memset(bbuffer + y * get_x_res() + x, (uint8_t)color, (len > (get_x_res() - x) ? get_x_res() - x : len));
     }
     else {
         printf("(%s) Unsuported color mode, __func__\n");
@@ -167,7 +173,7 @@ int (pj_draw_hline)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t len, uint
 }
 
 
-int (pj_draw_rectangle)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
+int (pj_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
 
     /* Check if out of bounds */
     if (x >= get_x_res() || y >= get_y_res()){
@@ -179,7 +185,7 @@ int (pj_draw_rectangle)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t width
     for (uint32_t i = 0; i < height; i++) {
         // Check if out of screen range
         if (y+i >= get_y_res()) break;
-            if (pj_draw_hline(bbuffer, x, y + i, width, color) != OK) {
+            if (pj_draw_hline(x, y + i, width, color) != OK) {
                 printf("(%s) There was a problem drawing a h line\n", __func__);
                 return VBE_DRAW_LINE_FAILED;
         }
@@ -210,61 +216,15 @@ void (draw_pixmap)(const char *pixmap, uint16_t x, uint16_t y, int width, int he
     draw_pixmap_on(pixmap, x, y, width, height, mapped_mem);
 }
 
-void (clear_buffer)(uint8_t *buffer, uint8_t color){
-    memset(buffer, color, get_x_res() * get_y_res() * 2);
+void (clear_buffer)(uint8_t color){
+    memset(backbuffer, color, bytes_per_pixel);
 }
 
 
-void swap_buffers(uint8_t *buffer){
-    memcpy(mapped_mem, buffer, get_x_res() * get_y_res() * 2);
+void swap_buffers(){
+    memcpy(mapped_mem, backbuffer, bytes_per_pixel);
 }
 
-uint32_t get_pattern_color(uint32_t first, uint8_t row, uint8_t col, uint8_t step, uint8_t no_rectangles){
-
-    uint32_t color = 0;
-    /* Direct color mode */
-    if (get_memory_model() == DIRECT_COLOR_MODE) {
-
-    	/* Separate the original color components */
-        uint32_t orig_red = (first >> get_red_field_position()) & set_bits_mask(get_red_mask_size());
-        uint32_t orig_green = (first >> get_green_field_position()) & set_bits_mask(get_green_mask_size());
-        uint32_t orig_blue = (first >> get_blue_field_position()) & set_bits_mask(get_blue_mask_size());
-
-        /* Calculate new color components */
-        uint32_t red = (orig_red + col * step) % (1 << get_red_mask_size());
-        uint32_t green = (orig_green + row * step) % (1 << get_green_mask_size());
-        uint32_t blue = (orig_blue + (col + row) * step) % (1 << get_blue_mask_size());
-
-        /* Build the new color */
-        color = (red << get_red_field_position()) | (green << get_green_field_position()) | (blue << get_blue_field_position());
-
-    }
-    /* Indexed color mode */
-    else if (get_memory_model() == INDEXED_COLOR_MODE) {
-        /* Calculate index color */
-        color = (first + (row * no_rectangles + col) * step) % (1 << get_bits_per_pixel());
-    }
-
-    return color;
-
-}
-
-int draw_pattern(uint16_t width, uint16_t height, uint8_t no_rectangles, uint32_t first, uint8_t step){
-
-	/* Iterate lines */
-	for (uint8_t row = 0; row < no_rectangles; row++) {
-		/* Iterate columns */
-		for (uint8_t col = 0; col < no_rectangles; col++) {
-			/* Draw rectangle */
-			if (vg_draw_rectangle(col * width, row * height, width, height, get_pattern_color(first, row, col, step, no_rectangles)) != OK) {
-				printf("(%s) There was a problem drawing the rectangle\n", __func__);
-				return VBE_NOT_OK;
-			}
-		}
-	}
-
-    return OK;
-}
 
 uint8_t get_bits_per_pixel() { return vbe_mode_info.BitsPerPixel; }
 uint16_t get_x_res() { return vbe_mode_info.XResolution; }
