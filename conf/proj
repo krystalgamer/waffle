@@ -1,0 +1,40 @@
+service proj
+{
+        system
+                DEVIO
+                INT86
+                IOPENABLE
+                IRQCTL
+                PRIVCTL
+                READBIOS
+                UMAP
+                ;
+        ipc
+                SYSTEM
+                rs
+                vm
+                pm
+                vfs
+                bios_alloc;
+                ;
+        io
+                40:4      # Timer
+                60        # KBC
+                64        # KBC
+                70:2      # RTC
+                2e8:8     # COM4
+                2f8:8     # COM2
+                3e8:8     # COM3
+                3f8:8     # COM1
+                ;               
+        irq
+                0         # TIMER 0 IRQ
+                1         # KBD IRQ
+                3         # COM2 IRQ
+                4         # COM1 IRQ 
+                8         # RTC
+                12        # AUX/MOUSE IRQ
+                ;       
+        uid     0               
+                ;
+};

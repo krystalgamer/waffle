@@ -1,5 +1,2 @@
-1 0xeffffb0c 2 adeus warnings(pj_draw_rectangle) Invalid coordinates: x=519, y=1029
-(pj_draw_rectangle) Invalid coordinates: x=617, y=1054
-(pj_draw_rectangle) Invalid coordinates: x=621, y=1034
-(pj_draw_rectangle) Invalid coordinates: x=111, y=1027
-(pj_draw_rectangle) Invalid coordinates: x=768, y=1063
+1 0xeffffb0c 2 adeus warnings(pj_draw_rectangle) Invalid coordinates: x=368, y=1038
+(pj_draw_rectangle) Invalid coordinates: x=283, y=1039
