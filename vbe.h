@@ -102,7 +102,7 @@ void draw_pixmap(const char * pixmap, uint16_t x, uint16_t y, int width, int hei
  * @param buffer Buffer to clear
  * @param color Color to clear with
  */
-void (clear_buffer)(uint8_t *buffer, uint8_t color);
+void (clear_buffer)(uint8_t color);
 
 /**
  * @brief Draws a pixmap on the specified buffer at given coordinates
@@ -121,7 +121,7 @@ void draw_pixmap_on(const char *pixmap, uint16_t x, uint16_t y, int width, int h
  * 
  * @param buffer Buffer to swap with
  */
-void swap_buffers(uint8_t *buffer);
+void swap_buffers();
 
 /**
  * @brief Returns the color of specified position following a pre-determined pattern
@@ -154,6 +154,8 @@ int draw_pattern(uint16_t width, uint16_t height, uint8_t no_rectangles, uint32_
  * @return the result of lm_alloc wether it failed or not
  */
 void *retry_lm_alloc(size_t size, mmap_t *mmap);
+
+int pj_draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color);
 
 /* Methods to return information from the vbe_mode_info_t struct */
 uint8_t get_bits_per_pixel();

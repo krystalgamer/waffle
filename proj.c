@@ -1,8 +1,9 @@
 // IMPORTANT: you must include the following line in all your C files
 #include <lcom/lcf.h>
 #include "vbe.h"
-#include "mouse.h"
-#include "timer_user.h"
+#include "interrupts/mouse.h"
+#include "window.h"
+#include "interrupts/timer_user.h"
 
 // Any header files included below this line should have been created by you
 
@@ -30,7 +31,6 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int (pj_draw_rectangle)(uint8_t *bbuffer, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color); 
 int (pj_draw_hline)(uint8_t *bbufer, uint16_t x, uint16_t y, uint16_t len, uint32_t color);
 
 
@@ -40,7 +40,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     printf("%d %p %d adeus warnings", argc, argv, mode);
 
     uint16_t width, height;
-    int16_t x = 0,y = 0;
+    //int16_t x = 0,y = 0;
     uint32_t color;
     sscanf(argv[0], "%hu-%hu-%d", &width, &height, &color);
     /* Initialize graphics mode */
@@ -68,12 +68,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
     uint32_t timer_irq_set = BIT(bitNum);
 
-    Window wnd = {
-        50, 50,
-        300, 300,
-        0x12131415
-    };
-
     /* Variables to hold results */
     int ipc_status;
     message msg;
@@ -85,14 +79,13 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /* Keep receiving and handling interrupts until the ESC key is released. */
 	bool pressed_the_secret_button = false;
 
-    uint8_t *backbuffer = malloc(get_y_res() * get_x_res() * 2);
-    if(backbuffer == NULL){
-        printf("(%s) Couldnt allocate backbuffer\n", __func__);
-        return 1;
-    }
-
     int maxFrames = 2;
     int curFrame = 1;
+
+    init_internal_status();
+    create_window(200, 100, 0x12131415);
+    create_window(100, 200, 0x51321258);
+    create_window(400, 300, 0x22222222);
 
     while(!pressed_the_secret_button) {
         /* Get a request message.  */
@@ -111,70 +104,15 @@ int (proj_main_loop)(int argc, char *argv[]) {
                         parse_mouse_packet(mouse_packet, &pp);
 						if(pp.mb)
 							pressed_the_secret_button = true;
-
-                        if(pp.lb && wnd.x < x && x < (wnd.x + wnd.width) && wnd.y < y && y < (wnd.y + wnd.height)){
-
-                            int16_t mouse_x_dis, mouse_y_dis;
-
-                            if((pp.delta_x + wnd.x + wnd.width) > get_x_res()){
-                                mouse_x_dis = get_x_res() - (wnd.x + wnd.width);
-                                wnd.x = get_x_res()-wnd.width;
-                            }
-                            else if((pp.delta_x + wnd.x) < 0){
-                                mouse_x_dis = 0 - wnd.x;
-                                wnd.x = 0;
-                            }
-                            else{
-                                mouse_x_dis = pp.delta_x;
-                                wnd.x += pp.delta_x;
-                            }
-
-                            if((wnd.y - pp.delta_y + wnd.height) > get_y_res()){
-                                mouse_y_dis = get_y_res() - (wnd.y + wnd.height);
-                                wnd.y = get_y_res()-wnd.height;
-                            }
-                            else if((wnd.y - pp.delta_y) < 0){
-                                mouse_y_dis =  wnd.y;
-                                wnd.y = 0;
-                            }
-                            else{
-                                mouse_y_dis = pp.delta_y;
-                                wnd.y -= pp.delta_y;
-                            }
-
-                            x += mouse_x_dis;
-                            y -= mouse_y_dis;
-                            
-
-                        }
-                        else{
-
-                            x += pp.delta_x;
-                            y -= pp.delta_y;
-
-                            /*Clamp x and y */
-                            if(x < 0)
-                                x = 0;
-                            else if(x > (get_x_res() - width))
-                                x = (get_x_res() - width);
-
-                            if(y < 0)
-                                y = 0;
-                            else if(y > (get_y_res() - height))
-                                y = (get_y_res() - height);
-                        }
-
+                        window_mouse_handle(&pp);
                     }	
 
                 }
 
                 if( msg.m_notify.interrupts & timer_irq_set){
                     if((++curFrame)%maxFrames == 0){
-                        clear_buffer(backbuffer, 0);
-                        /* Respect z-order */
-                        pj_draw_rectangle(wnd.x, wnd.y, wnd.width, wnd.height, wnd.color);
-                        pj_draw_rectangle(x, y, width, height, color);
-                        swap_buffers(backbuffer);
+                        window_draw();
+                        swap_buffers();
                     }
 
 

@@ -105,6 +105,9 @@ void* (vg_init)(uint16_t mode){
     bytes_per_pixel = calculate_size_in_bytes(get_bits_per_pixel());
     buffer_size = get_x_res() * get_y_res() * bytes_per_pixel;
 
+    backbuffer = malloc(buffer_size);
+    memset(backbuffer, 0, buffer_size);
+
 
     struct minix_mem_range mr; /* physical memory range */
     unsigned int vram_base = vbe_mode_info.PhysBasePtr; /* VRAM’s physical addresss */
@@ -155,14 +158,14 @@ int (pj_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
             return VBE_OK;
 
             /* Color the pixel */
-            uint32_t y_coord = y * get_x_res() * pixel_size;
-            uint32_t x_coord = (x + i) * pixel_size;  
+            uint32_t y_coord = y * get_x_res() * bytes_per_pixel;
+            uint32_t x_coord = (x + i) * bytes_per_pixel;  
             memcpy(backbuffer + y_coord + x_coord, &color, bytes_per_pixel);
         }
     }
     /* Indexed color */
     else if (get_memory_model() == INDEXED_COLOR_MODE) {
-		memset(bbuffer + y * get_x_res() + x, (uint8_t)color, (len > (get_x_res() - x) ? get_x_res() - x : len));
+		memset(backbuffer + y * get_x_res() + x, (uint8_t)color, (len > (get_x_res() - x) ? get_x_res() - x : len));
     }
     else {
         printf("(%s) Unsuported color mode, __func__\n");
@@ -217,12 +220,12 @@ void (draw_pixmap)(const char *pixmap, uint16_t x, uint16_t y, int width, int he
 }
 
 void (clear_buffer)(uint8_t color){
-    memset(backbuffer, color, bytes_per_pixel);
+    memset(backbuffer, color, buffer_size);
 }
 
 
 void swap_buffers(){
-    memcpy(mapped_mem, backbuffer, bytes_per_pixel);
+    memcpy(mapped_mem, backbuffer, buffer_size);
 }
 
 
