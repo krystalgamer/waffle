@@ -112,7 +112,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 if( msg.m_notify.interrupts & timer_irq_set){
                     if((++curFrame)%maxFrames == 0){
                         window_draw();
-                        printSymbol('A', 300, 300);
+                        printSymbol('/', 300, 300);
                         swap_buffers();
                     }
 

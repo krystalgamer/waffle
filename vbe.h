@@ -119,7 +119,7 @@ void (clear_buffer)(uint8_t color);
 void draw_pixmap_on(const char *pixmap, uint16_t x, uint16_t y, int width, int height, uint8_t * buffer);
 
 
-void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int height);
+void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int height, int symbol_offset);
 
 int printSymbol(char symbol, uint16_t x, uint16_t y);
 

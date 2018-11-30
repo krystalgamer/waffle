@@ -243,42 +243,50 @@ uint8_t get_rsvd_mask_size() { return vbe_mode_info.RsvdMaskSize; }
 uint8_t get_rsvd_field_position() { return vbe_mode_info.RsvdFieldPosition; }
 
 
-void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int height) {
+void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int UNUSED(height), int symbol_offset) {
+    
+    int letterWidth = 10; /* 30 px for letter width */
+    int letterHeight = 22; /* 54 px for letter height */
 
     /* Iterate lines */
-    for(int i = 0; i < height; i++){
+    for(int i = 0; i < letterHeight; i++){
         /* Y is out of bounds */
         if((i+y) >= get_y_res())
             break;
 
         /* Iterate columns */
-        for(int j = 0; j<width; j++){         
+        for(int j = 0; j<letterWidth; j++){         
             /* X is out of bounds */
             if((j+x) >= get_x_res())
                 break;
             
-            memcpy(backbuffer + ((y+i)*get_x_res() + x + j) * bytes_per_pixel, letter + (i*width + j) * bytes_per_pixel, bytes_per_pixel);
+            uint32_t temp;
+            memcpy(&temp, letter + (i*width + j + symbol_offset*letterWidth) * bytes_per_pixel, bytes_per_pixel);
+
+            if (temp == TRANSPARENCY_COLOR_8_8_8_8)
+                continue; 
+
+            memcpy(backbuffer + ((y+i)*get_x_res() + x + j) * bytes_per_pixel, &temp, bytes_per_pixel);
         }
     }
 }
 
 
 int printSymbol(char symbol, uint16_t x, uint16_t y) {
-  xpm_image_t img;
-  uint8_t * sprite;
+    xpm_image_t img;
+    uint8_t * sprite;
+    int symbol_offset;
 
-  switch (symbol) {
-    case 'A':
-      sprite = xpm_load(A_xpm, XPM_8_8_8_8, &img);
-      break;
-    default:
-      sprite = NULL;
-  }
+    symbol_offset = symbol - 33;
+    if (symbol_offset < 0 || symbol_offset > 84)
+        return 1;
+    
+    sprite = xpm_load(font_xpm, XPM_8_8_8_8, &img);
 
-  if (sprite == NULL)
-    return 1;
+    if (sprite == NULL)
+        return 1;
 
-  draw_letter(sprite, x, y, img.width, img.height);
+    draw_letter(sprite, x, y, img.width, img.height, symbol_offset);
 
-  return 0;
+    return 0;
 }
