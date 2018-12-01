@@ -2,10 +2,10 @@ PROG=proj
 
 #DIRS += interrupts
 
-.PATH: ${.CURDIR}/interrupts
+.PATH: ${.CURDIR}/interrupts ${.CURDIR}/font
 
 SRCS += proj.c vbe.c util.c window.c
-SRCS += mouse.c kbc.c timer.c 
+SRCS += mouse.c kbc.c timer.c letters.c
 
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 

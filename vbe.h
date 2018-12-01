@@ -1,8 +1,6 @@
 #ifndef VBE_H
 #define VBE_H
 
-#include "font/font.h"
-
 #define BIT(n) (0x01<<(n))
 
 /* BIOS Services */
@@ -118,11 +116,6 @@ void (clear_buffer)(uint8_t color);
  */
 void draw_pixmap_on(const char *pixmap, uint16_t x, uint16_t y, int width, int height, uint8_t * buffer);
 
-
-void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int height, int symbol_offset);
-
-int printSymbol(char symbol, uint16_t x, uint16_t y);
-
 /**
  * @brief Swaps the mapped memory to the specified buffer
  * 
@@ -198,5 +191,25 @@ typedef enum _vbe_status {
 
 
 } vbe_status;
+
+/**
+ * @brief Draws a font symbol on the backbuffer
+ *
+ * @param symbol Array of pixels to draw
+ * @param x X position of upper left corner
+ * @param y Y position of upper left corner
+ * @param width Horizontal size of the symbol
+ * @param height Vertical size of the symbol
+ */
+void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height);
+
+
+/**
+ * @brief Returns the number of bytes per pixel of the current vbe mode
+ *
+ * @return Number of bytes per pixel
+ */
+uint8_t get_bytes_per_pixel();
+
 
 #endif

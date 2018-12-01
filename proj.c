@@ -4,6 +4,7 @@
 #include "interrupts/mouse.h"
 #include "window.h"
 #include "interrupts/timer_user.h"
+#include "font/letters.h"
 
 // Any header files included below this line should have been created by you
 
@@ -49,6 +50,11 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     if(vg_init(R1152x864_DIRECT) == NULL){
         printf("(%s) vg_init failed..quitting", __func__);
+        return 1;
+    }
+
+    if (initLetters() != OK) {
+        printf("(%s) Error initializing the font", __func__);
         return 1;
     }
 
@@ -112,7 +118,9 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 if( msg.m_notify.interrupts & timer_irq_set){
                     if((++curFrame)%maxFrames == 0){
                         window_draw();
-                        printSymbol('/', 300, 300);
+                        char * word = "Teste";
+                        printHorizontalWord(word, 5, 300, 300);                        
+                        printVerticalWord(word, 5, 300, 300);
                         swap_buffers();
                     }
 

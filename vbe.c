@@ -1,6 +1,5 @@
 #include <lcom/lcf.h>
 #include <vbe.h>
-#include <math.h>
 #include <stdlib.h>
 #include "util.h"
 
@@ -8,7 +7,7 @@ vbe_mode_info_t vbe_mode_info;
 static uint8_t* mapped_mem;
 static uint8_t *backbuffer = NULL;
 static uint32_t buffer_size = 0;
-static uint32_t bytes_per_pixel = 0;
+static uint8_t bytes_per_pixel = 0;
 
 
 void *retry_lm_alloc(size_t size, mmap_t *mmap){
@@ -243,25 +242,22 @@ uint8_t get_rsvd_mask_size() { return vbe_mode_info.RsvdMaskSize; }
 uint8_t get_rsvd_field_position() { return vbe_mode_info.RsvdFieldPosition; }
 
 
-void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int UNUSED(height), int symbol_offset) {
+void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height) {
     
-    int letterWidth = 10; /* 30 px for letter width */
-    int letterHeight = 22; /* 54 px for letter height */
-
     /* Iterate lines */
-    for(int i = 0; i < letterHeight; i++){
+    for(int i = 0; i < height; i++){
         /* Y is out of bounds */
         if((i+y) >= get_y_res())
             break;
 
         /* Iterate columns */
-        for(int j = 0; j<letterWidth; j++){         
+        for(int j = 0; j<width; j++){         
             /* X is out of bounds */
             if((j+x) >= get_x_res())
                 break;
             
             uint32_t temp;
-            memcpy(&temp, letter + (i*width + j + symbol_offset*letterWidth) * bytes_per_pixel, bytes_per_pixel);
+            memcpy(&temp, symbol + (i*width + j) * bytes_per_pixel, bytes_per_pixel);
 
             if (temp == TRANSPARENCY_COLOR_8_8_8_8)
                 continue; 
@@ -271,22 +267,4 @@ void draw_letter(uint8_t * letter, uint16_t x, uint16_t y, int width, int UNUSED
     }
 }
 
-
-int printSymbol(char symbol, uint16_t x, uint16_t y) {
-    xpm_image_t img;
-    uint8_t * sprite;
-    int symbol_offset;
-
-    symbol_offset = symbol - 33;
-    if (symbol_offset < 0 || symbol_offset > 84)
-        return 1;
-    
-    sprite = xpm_load(font_xpm, XPM_8_8_8_8, &img);
-
-    if (sprite == NULL)
-        return 1;
-
-    draw_letter(sprite, x, y, img.width, img.height, symbol_offset);
-
-    return 0;
-}
+uint8_t get_bytes_per_pixel() { return bytes_per_pixel; }
