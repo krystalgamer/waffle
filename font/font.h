@@ -6,7 +6,6 @@
 #define FONT_WIDTH 10
 #define FONT_HEIGHT 22
 
-// CHANGE XPM TYPE SEE EMAIL
 static const char * font_xpm[] = {
 "940 22 2 1",
 " 	c None",
