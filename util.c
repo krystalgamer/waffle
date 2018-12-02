@@ -15,3 +15,13 @@ uint32_t set_bits_mask(uint8_t n) {
 uint8_t calculate_size_in_bytes(uint8_t bits) {
 	return (uint8_t)(bits / BYTE_SIZE) +  (bits % BYTE_SIZE ? 1 : 0);
 }
+
+void *alloc_struct(uint32_t size){
+
+    void *tmp = malloc(size);
+    if(tmp == NULL)
+        return NULL;
+
+    memset(tmp, 0, size);
+    return tmp;
+}

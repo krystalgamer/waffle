@@ -22,4 +22,8 @@ uint32_t set_bits_mask(uint8_t n);
  */
 uint8_t calculate_size_in_bytes(uint8_t bits);
 
+
+void *alloc_struct(uint32_t size);
+
+
 #endif

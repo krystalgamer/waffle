@@ -147,48 +147,49 @@ int (pj_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
         return VBE_INVALID_COORDS;		
     }
 
-    /* Direct color */
-    if (get_memory_model() == DIRECT_COLOR_MODE) {
+    /* Calculate size in bytes each pixel occupies */
+    for (uint32_t i = 0; i < len; i++){
+        /* Check if x is outside of range */
+        if (x+i >= get_x_res())
+        return VBE_OK;
 
-        /* Calculate size in bytes each pixel occupies */
-        for (uint32_t i = 0; i < len; i++){
-            /* Check if x is outside of range */
-            if (x+i >= get_x_res())
-            return VBE_OK;
-
-            /* Color the pixel */
-            uint32_t y_coord = y * get_x_res() * bytes_per_pixel;
-            uint32_t x_coord = (x + i) * bytes_per_pixel;  
-            memcpy(backbuffer + y_coord + x_coord, &color, bytes_per_pixel);
-        }
-    }
-    /* Indexed color */
-    else if (get_memory_model() == INDEXED_COLOR_MODE) {
-		memset(backbuffer + y * get_x_res() + x, (uint8_t)color, (len > (get_x_res() - x) ? get_x_res() - x : len));
-    }
-    else {
-        printf("(%s) Unsuported color mode, __func__\n");
-        return VBE_INVALID_COLOR_MODE;
+        /* Color the pixel */
+        uint32_t y_coord = y * get_x_res() * bytes_per_pixel;
+        uint32_t x_coord = (x + i) * bytes_per_pixel;  
+        memcpy(backbuffer + y_coord + x_coord, &color, bytes_per_pixel);
     }
 
     return VBE_OK;
 }
 
 
-int (pj_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
+int (pj_draw_rectangle)(int16_t x, int16_t y, uint16_t width, uint16_t height, uint32_t color) {
 
-    /* Check if out of bounds */
-    if (x >= get_x_res() || y >= get_y_res()){
-        printf("(%s) Invalid coordinates: x=%d, y=%d\n", __func__, x, y);
-        return VBE_INVALID_COORDS; 
+    /* Check if completly out of bounds */
+    /* TODO: this is unsafe af, but since resolutions dont go over nor near 32,767 we're cool */
+    if(x > (int16_t)get_x_res() || y > (int16_t)get_y_res())
+        return 1;
+    if ((x < 0 && (x+(int16_t)width) < 0) || (y < 0 && (y + (int16_t)height) < 0 )){
+        //printf("(%s) Invalid coordinates: x=%d, y=%d\n", __func__, x, y);
+        return 2; 
+    }
+
+    if(x<0){
+        width += x;
+        x = 0;
+    }
+
+    if(y<0){
+        height += y;
+        y = 0;
     }
 
     /* Write a line for the whole height */
     for (uint32_t i = 0; i < height; i++) {
         // Check if out of screen range
         if (y+i >= get_y_res()) break;
-            if (pj_draw_hline(x, y + i, width, color) != OK) {
-                printf("(%s) There was a problem drawing a h line\n", __func__);
+            if (pj_draw_hline((uint16_t)x, (uint16_t)y + i, width, color) != OK) {
+                //printf("(%s) There was a problem drawing a h line\n", __func__);
                 return VBE_DRAW_LINE_FAILED;
         }
     }

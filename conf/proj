@@ -1,4 +1,4 @@
-service proj
+service lab5
 {
         system
                 DEVIO
@@ -15,7 +15,7 @@ service proj
                 vm
                 pm
                 vfs
-                bios_alloc;
+                bios_alloc
                 ;
         io
                 40:4      # Timer

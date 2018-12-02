@@ -155,7 +155,7 @@ int draw_pattern(uint16_t width, uint16_t height, uint8_t no_rectangles, uint32_
  */
 void *retry_lm_alloc(size_t size, mmap_t *mmap);
 
-int pj_draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color);
+int pj_draw_rectangle(int16_t x, int16_t y, uint16_t width, uint16_t height, uint32_t color);
 
 /* Methods to return information from the vbe_mode_info_t struct */
 uint8_t get_bits_per_pixel();
