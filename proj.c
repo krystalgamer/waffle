@@ -4,6 +4,7 @@
 #include "interrupts/mouse.h"
 #include "window.h"
 #include "interrupts/timer_user.h"
+#include "font/letters.h"
 
 // Any header files included below this line should have been created by you
 
@@ -47,8 +48,15 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /*Codigo do souto contem um mode cuidado meninas! */
 
-    if(vg_init(0x11A) == NULL){
+    /* Init mode 0x14C */
+    if(vg_init(R1152x864_DIRECT) == NULL){
         printf("(%s) vg_init failed..quitting", __func__);
+        return 1;
+    }
+
+    /* Initialize the font */
+    if (initLetters() != OK) {
+        printf("(%s) Error initializing the font", __func__);
         return 1;
     }
 
@@ -61,6 +69,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     uint32_t irq_set = BIT(bitNum);
 
 
+    /* Subscribe Timer 0 Interrupts */
     if(timer_subscribe_int(&bitNum) != OK) {
         printf("(%s) There was a problem enabling timer interrupts", __func__);
         vg_exit();

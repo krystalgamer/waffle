@@ -192,4 +192,25 @@ typedef enum _vbe_status {
 
 } vbe_status;
 
+/**
+ * @brief Draws a font symbol on the backbuffer
+ *
+ * @param symbol Array of pixels to draw
+ * @param x X position of upper left corner
+ * @param y Y position of upper left corner
+ * @param width Horizontal size of the symbol
+ * @param height Vertical size of the symbol
+ * @param color to draw symbol
+ */
+void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color);
+
+
+/**
+ * @brief Returns the number of bytes per pixel of the current vbe mode
+ *
+ * @return Number of bytes per pixel
+ */
+uint8_t get_bytes_per_pixel();
+
+
 #endif
