@@ -1,10 +1,10 @@
 #ifndef FONT_H
 #define FONT_H
 
-#define STARTING_SYMBOL_OFFSET 33
-#define FONT_SYMBOLS_NUMBER 94
-#define FONT_WIDTH 10
-#define FONT_HEIGHT 22
+#define STARTING_SYMBOL_OFFSET 33 /* Offset in Ascii table of first symbol of this font */
+#define FONT_SYMBOLS_NUMBER 94 /* Total number of symbols in this font */
+#define FONT_WIDTH 10 /* Width in pixels of each symbol */
+#define FONT_HEIGHT 22 /* Height in pixels of each symbol */
 
 static const char * font_xpm[] = {
 "940 22 2 1",

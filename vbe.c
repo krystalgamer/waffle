@@ -242,7 +242,7 @@ uint8_t get_rsvd_mask_size() { return vbe_mode_info.RsvdMaskSize; }
 uint8_t get_rsvd_field_position() { return vbe_mode_info.RsvdFieldPosition; }
 
 
-void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height) {
+void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color) {
     
     /* Iterate lines */
     for(int i = 0; i < height; i++){
@@ -256,12 +256,16 @@ void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int h
             if((j+x) >= get_x_res())
                 break;
             
+            /* Get symbol color */
             uint32_t temp;
             memcpy(&temp, symbol + (i*width + j) * bytes_per_pixel, bytes_per_pixel);
 
+            /* If transparent position, do not draw anything */
             if (temp == TRANSPARENCY_COLOR_8_8_8_8)
-                continue; 
+                continue;
 
+            /* Draw with specified color */
+            temp = color;
             memcpy(backbuffer + ((y+i)*get_x_res() + x + j) * bytes_per_pixel, &temp, bytes_per_pixel);
         }
     }

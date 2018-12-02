@@ -200,8 +200,9 @@ typedef enum _vbe_status {
  * @param y Y position of upper left corner
  * @param width Horizontal size of the symbol
  * @param height Vertical size of the symbol
+ * @param color to draw symbol
  */
-void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height);
+void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color);
 
 
 /**
