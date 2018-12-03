@@ -39,6 +39,8 @@ typedef struct _window{
     struct{
         bool border;
         uint32_t border_width;
+        bool frame;
+        char *frame_text;
     }attr;/* To be filled */
     struct _window *prev, *next;
 }Window;

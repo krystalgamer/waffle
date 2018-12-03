@@ -15,6 +15,7 @@ int initLetters() {
     bytes_per_pixel = get_bytes_per_pixel();
 
     /* Allocate memory for the font sprites */
+    /* TODO try to put them closer*/
     for (int i = 0; i < FONT_SYMBOLS_NUMBER; i++)
         font_sprites[i] = malloc(FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel);
 
@@ -59,10 +60,12 @@ int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
     return OK;
 }
 
-int printHorizontalWord(char * word, uint32_t size, uint16_t x, uint16_t y, uint32_t color) {
+int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
     
     /* Print each symbol of the word in the correct position */
-    for (uint32_t i = 0; i < size; i++) {
+    for(int i = 0; word[i]; i++){
+        if(word[i] == 32)//skip spaces
+            continue;
         if (printSymbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
             printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
             return 1;
@@ -71,10 +74,12 @@ int printHorizontalWord(char * word, uint32_t size, uint16_t x, uint16_t y, uint
     return OK;
 }
 
-int printVerticalWord(char * word, uint32_t size, uint16_t x, uint16_t y, uint32_t color) {
+int printVerticalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
     
     /* Print each symbol of the word in the correct position */
-    for (uint32_t i = 0; i < size; i++) {
+    for(int i = 0; word[i]; i++){
+        if(word[i] == 32)//skip spaces
+            continue;
         if (printSymbol(word[i], x, y + i*FONT_HEIGHT, color) != OK){
             printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
             return 1;
