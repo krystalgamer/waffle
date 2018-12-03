@@ -7,6 +7,8 @@ void draw_taskbar(){
 
     /* Draw the bar itself */
     pj_draw_rectangle(0, 0, wnd_list.taskbar.width, wnd_list.taskbar.height, wnd_list.taskbar.color); 
+    pj_draw_hline(0, wnd_list.taskbar.height, wnd_list.taskbar.width, 0xFFFFFFFF);
+
 
     /* Draw the buttons */
     pj_draw_rectangle(0, 0, wnd_list.taskbar.menu.width, wnd_list.taskbar.height, 

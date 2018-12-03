@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "font/letters.h"
+#include "messages.h"
 
 typedef void (*tmr_func_t)(int arg);
 typedef struct minix_timer
@@ -239,8 +240,14 @@ int (proj_main_loop)(int argc, char *argv[]) {
             }
         }
         else { /* received a standard message, not a notification */
-        /* no standard messages expected: do nothing */
-            create_window(200, 100, 0x12131415);
+
+            MsgDefaultFormat *dformat = (MsgDefaultFormat*)&msg.m_u32;
+            if(msg.m_type == 46){
+                    MsgWaffleHi *hi_msg = (void*)dformat;
+                    printf("A process %d says hi!\n", hi_msg->pid);
+                    ipc_send(msg.m_source, &msg);
+
+            }
         }
     }
 

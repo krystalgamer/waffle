@@ -20,7 +20,7 @@ void init_internal_status(){
 
     wnd_list.taskbar.width = get_x_res();
     wnd_list.taskbar.height = get_y_res()/30;
-    wnd_list.taskbar.color = 0xFFFF000;
+    wnd_list.taskbar.color = 0x00C0C0C0;
 
     wnd_list.taskbar.menu.width = get_x_res()/20;
     wnd_list.taskbar.menu.color = 0xFF;
@@ -133,7 +133,7 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 
 void window_draw(){
     
-    clear_buffer(0);
+    clear_buffer_four(0x00008081);
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 

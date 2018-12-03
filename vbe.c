@@ -223,6 +223,14 @@ void (clear_buffer)(uint8_t color){
     memset(backbuffer, color, buffer_size);
 }
 
+void clear_buffer_four(uint32_t color){
+    
+    uint32_t *fixed_buffer = (uint32_t*)backbuffer;
+    for(uint32_t i = 0; i<get_x_res()*get_y_res(); i++)
+        fixed_buffer[i] = color;
+
+}
+
 
 void swap_buffers(){
     memcpy(mapped_mem, backbuffer, buffer_size);
