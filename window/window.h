@@ -64,6 +64,13 @@ typedef struct _wnd_lst{
             struct _menu *submenu;
         }menu;
 
+        struct _clock{
+            uint8_t n_symbols;
+            uint8_t padding_left, padding_top, padding_right;
+            uint8_t symbol_width;
+            uint32_t symbol_color, background_color;
+        }clock;
+
     }taskbar;
 
 }WindowList;
@@ -108,3 +115,4 @@ uint32_t update_state(const struct packet *pp);
 
 void draw_taskbar();
 bool has_taskbar_button_been_pressed();
+int draw_taskbar_clock();
