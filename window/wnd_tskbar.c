@@ -15,21 +15,21 @@ int draw_taskbar_clock() {
     }
 
     /* Format the string to print */
-    char clock[sizeof(char) * N_CLOCK_SYMBOLS];
+    char clock[sizeof(char) * wnd_list.taskbar.clock.n_symbols];
     sprintf(clock, "%02x:%02x:%02x", hour, minute, second);
 
 	/* Calculate clock position */
-    uint16_t clock_pos = get_x_res() - N_CLOCK_SYMBOLS * CLOCK_SYMBOL_WIDTH - CLOCK_PADDING_RIGHT;
+    uint16_t clock_pos = get_x_res() - wnd_list.taskbar.clock.n_symbols * wnd_list.taskbar.clock.symbol_width - wnd_list.taskbar.clock.padding_right;
 
     /* Calculate background position and width */
-    uint16_t background_pos = clock_pos - CLOCK_PADDING_LEFT;
+    uint16_t background_pos = clock_pos - wnd_list.taskbar.clock.padding_left;
     uint16_t background_width = get_x_res() - background_pos;
 
     /* Draw the clock background */
-    pj_draw_rectangle(background_pos, 0, background_width, wnd_list.taskbar.height, CLOCK_BACKGROUND_COLOR);
+    pj_draw_rectangle(background_pos, 0, background_width, wnd_list.taskbar.height, wnd_list.taskbar.clock.background_color);
 
     /* Print the string */
-    return printHorizontalWord(clock, N_CLOCK_SYMBOLS, clock_pos, CLOCK_PADDING_TOP, CLOCK_SYMBOL_COLOR);
+    return printHorizontalWord(clock, wnd_list.taskbar.clock.n_symbols, clock_pos, wnd_list.taskbar.clock.padding_top, wnd_list.taskbar.clock.symbol_color);
 }
 
 void draw_taskbar(){

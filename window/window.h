@@ -64,6 +64,13 @@ typedef struct _wnd_lst{
             struct _menu *submenu;
         }menu;
 
+        struct _clock{
+            uint8_t n_symbols;
+            uint8_t padding_left, padding_top, padding_right;
+            uint8_t symbol_width;
+            uint32_t symbol_color, background_color;
+        }clock;
+
     }taskbar;
 
 }WindowList;
@@ -109,11 +116,3 @@ uint32_t update_state(const struct packet *pp);
 void draw_taskbar();
 bool has_taskbar_button_been_pressed();
 int draw_taskbar_clock();
-
-#define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
-#define CLOCK_PADDING_RIGHT 20 /* Right padding of the clock in pixels */
-#define CLOCK_PADDING_LEFT 20 /* Left padding of the clock in pixels */
-#define CLOCK_PADDING_TOP 2 /* Top padding of the clock in pixels */
-#define CLOCK_SYMBOL_WIDTH 10 /* Width in pixels of each clock symbol */
-#define CLOCK_SYMBOL_COLOR 0xFF0000 /* Color of the clock symbols */
-#define CLOCK_BACKGROUND_COLOR 0x00FF00 /* Color of the clock background */

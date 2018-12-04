@@ -3,7 +3,7 @@
 #include "util.h"
 #include "window.h"
 
-WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, NULL} } };
+WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, NULL}, {0, 0, 0, 0, 0, 0, 0} } };
 extern bool pressed_the_secret_button;
 
 void init_internal_status(){
@@ -21,6 +21,14 @@ void init_internal_status(){
     wnd_list.taskbar.menu.width = get_x_res()/20;
     wnd_list.taskbar.menu.color = 0xFF;
     wnd_list.taskbar.menu.overlay_color = 0x1252567;
+
+    wnd_list.taskbar.clock.n_symbols = 8;
+    wnd_list.taskbar.clock.padding_left = 20;
+    wnd_list.taskbar.clock.padding_top = 2;
+    wnd_list.taskbar.clock.padding_right = 20;
+    wnd_list.taskbar.clock.symbol_width = 10;
+    wnd_list.taskbar.clock.symbol_color = 0xFF0000;
+    wnd_list.taskbar.clock.background_color = 0x00FF00;
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
