@@ -1,10 +1,14 @@
 #include <lcom/lcf.h>
 #include "vbe.h"
+#include "../font/letters.h"
 #include "util.h"
 #include "window.h"
 
-WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, NULL}, {0, 0, 0, 0, 0, 0, 0} } };
+WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, false, NULL}, {0, 0,0,0,0,0,0} } };
 extern bool pressed_the_secret_button;
+
+/* TODO find a better alternative */
+static uint16_t window_frame_height = 0;
 
 void init_internal_status(){
 
@@ -16,11 +20,12 @@ void init_internal_status(){
 
     wnd_list.taskbar.width = get_x_res();
     wnd_list.taskbar.height = get_y_res()/30;
-    wnd_list.taskbar.color = 0xFFFF000;
+    wnd_list.taskbar.color = 0x00C0C0C0;
 
-    wnd_list.taskbar.menu.width = get_x_res()/20;
-    wnd_list.taskbar.menu.color = 0xFF;
-    wnd_list.taskbar.menu.overlay_color = 0x1252567;
+    window_frame_height = get_y_res()/30;
+    
+
+    init_taskbar_menu();
 
     wnd_list.taskbar.clock.n_symbols = 8;
     wnd_list.taskbar.clock.padding_left = 20;
@@ -32,7 +37,7 @@ void init_internal_status(){
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
-    return ( (x <= wnd_list.cursor.x && wnd_list.cursor.x <= xf) && (y <= wnd_list.cursor.y && wnd_list.cursor.y <= yf));
+    return ( (x <= wnd_list.cursor.x && wnd_list.cursor.x < xf) && (y <= wnd_list.cursor.y && wnd_list.cursor.y < yf));
 }
 
 bool is_window_focused(const Window *wnd){
@@ -72,6 +77,8 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color){
     new_window->color = color;
     new_window->attr.border = true; /* TODO allow the option in the future */
     new_window->attr.border_width = 5; /* TODO allow the option in the future */
+    new_window->attr.frame = true;
+    new_window->attr.frame_text = "Cona com penis";
 
     add_window_to_list(new_window);
 
@@ -133,14 +140,26 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 
 void window_draw(){
     
-    clear_buffer(0);
+    clear_buffer_four(0x00008081);
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
+
+
         if(cur_wnd->attr.border){
             //TODO Optimize border rendering
             uint32_t border_width = cur_wnd->attr.border_width;
-            pj_draw_rectangle(cur_wnd->x-border_width, cur_wnd->y-border_width, cur_wnd->width+border_width*2, cur_wnd->height+border_width*2, 0x59C0);
+            uint32_t y = cur_wnd->y - border_width - (cur_wnd->attr.border ? window_frame_height : 0);
+            uint32_t height = cur_wnd->height+border_width*2 + (cur_wnd->attr.border ? window_frame_height : 0);
+            pj_draw_rectangle(cur_wnd->x-border_width, y, cur_wnd->width+border_width*2, height, 0x59C0);
         }
+
+        if(cur_wnd->attr.frame){
+            
+            char *text = cur_wnd->attr.frame_text;
+            pj_draw_rectangle(cur_wnd->x, cur_wnd->y - window_frame_height, cur_wnd->width, window_frame_height, 0x234512);
+            printHorizontalWord(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0x00FF0000);
+        }
+
         pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color);
         draw_elements(cur_wnd);
         cur_wnd = cur_wnd->prev;
@@ -170,13 +189,15 @@ void move_window(Window *wnd, const struct packet *pp){
         wnd->x += pp->delta_x;
     }
 
+    /* Adds the impact of having a window frame */
+    uint16_t frame_impact = (wnd->attr.frame ? window_frame_height : 0);
     if((wnd->y - pp->delta_y + wnd->height) > get_y_res()){
         mouse_y_dis = -1 * (get_y_res() - (wnd->y + wnd->height));
         wnd->y = get_y_res()-wnd->height;
     }
-    else if((wnd->y - pp->delta_y) < wnd_list.taskbar.height){
-        mouse_y_dis =  (wnd->y - wnd_list.taskbar.height);
-        wnd->y = wnd_list.taskbar.height;
+    else if((wnd->y - pp->delta_y) < (wnd_list.taskbar.height + frame_impact)){
+        mouse_y_dis =  (wnd->y - wnd_list.taskbar.height - frame_impact);
+        wnd->y = wnd_list.taskbar.height + frame_impact;
     }
     else{
         mouse_y_dis = pp->delta_y;
@@ -244,13 +265,27 @@ void window_mouse_handle(const struct packet *pp){
 
     if( state & L_PRESSED ){
 
+        if(wnd_list.taskbar.menu.b_pressed){
+           call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height); 
+        }
+
+
+        /* Check for button presses on the taskbar */
+        if(has_taskbar_button_been_pressed())
+            return;
+
         if( !(state & L_KEPT) ){
             /* No window is being moved, search where the click landed */
             Window *cur_wnd = wnd_list.first;
             while(cur_wnd){
 
+                /*Ignore frameless windows*/ 
+                if(cur_wnd->attr.frame == false)
+                    continue;
+
+                uint16_t frame_impact = (cur_wnd->attr.frame ? window_frame_height : 0);
                 if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
-                    (cur_wnd->y < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y + cur_wnd->height))
+                    ((cur_wnd->y-frame_impact) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y))
                     ){
                         //printf("ANTES\n");
                         //printf("Window List %p %p\n", wnd_list.first, wnd_list.last);
@@ -266,10 +301,9 @@ void window_mouse_handle(const struct packet *pp){
                     cur_wnd = cur_wnd->next;
             }
 
-            /* Check for button presses on the taskbar */
-            pressed_the_secret_button = has_taskbar_button_been_pressed();
         }
         else{
+            /* Left button is being helf, thus continue to move a window */
             if(is_moving_window){
                 move_window(moving_window, pp);
                 return;

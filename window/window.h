@@ -1,5 +1,4 @@
 typedef enum {
-    
     BUTTON,
     TEXT_BOX,
     RADIO_BUTTON,
@@ -39,9 +38,27 @@ typedef struct _window{
     struct{
         bool border;
         uint32_t border_width;
+        bool frame;
+        char *frame_text;
     }attr;/* To be filled */
     struct _window *prev, *next;
 }Window;
+
+
+struct _context_menu;
+typedef struct{
+    char *text;
+    void (*callback)();
+    struct _context_menu *menu;
+}ContextEntries;
+
+typedef struct _context_menu{
+    uint32_t longer_entry;/*length of the longest entry */
+    ContextEntries **entries;
+    uint32_t size, capacity;
+    uint32_t sub_menu_index;
+    struct _context_menu *active_sub;
+}ContextMenu;
 
 typedef struct _wnd_lst{
     Window *first;
@@ -58,10 +75,13 @@ typedef struct _wnd_lst{
         uint32_t color;
         
         struct _menu{
-            uint16_t width;
-            char *text;
-            uint32_t color, overlay_color;
-            struct _menu *submenu;
+            /* b_* prefix means it's the button */
+            uint16_t b_width;
+            char *b_text;
+            uint32_t b_color, b_overlay_color;
+            bool b_pressed;
+
+            ContextMenu *context;
         }menu;
 
         struct _clock{
@@ -115,4 +135,16 @@ uint32_t update_state(const struct packet *pp);
 
 void draw_taskbar();
 bool has_taskbar_button_been_pressed();
+void init_taskbar_menu();
+void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
+ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
+bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
+
 int draw_taskbar_clock();
+#define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
+#define CLOCK_PADDING_RIGHT 20 /* Right padding of the clock in pixels */
+#define CLOCK_PADDING_LEFT 20 /* Left padding of the clock in pixels */
+#define CLOCK_PADDING_TOP 2 /* Top padding of the clock in pixels */
+#define CLOCK_SYMBOL_WIDTH 10 /* Width in pixels of each clock symbol */
+#define CLOCK_SYMBOL_COLOR 0 /* Color of the clock symbols */
+#define CLOCK_BACKGROUND_COLOR 0x008A8A8A /* Color of the clock background */

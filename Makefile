@@ -9,7 +9,7 @@ SRCS += mouse.c kbc.c timer.c rtc.c
 SRCS += letters.c
 
 .PATH: ${.CURDIR}/window
-SRCS += window.c wnd_elements.c wnd_state_machine.c wnd_tskbar.c
+SRCS += window.c wnd_elements.c wnd_state_machine.c wnd_tskbar.c context_menu.c
 
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
