@@ -1,5 +1,4 @@
 typedef enum {
-    
     BUTTON,
     TEXT_BOX,
     RADIO_BUTTON,
@@ -85,6 +84,13 @@ typedef struct _wnd_lst{
             ContextMenu *context;
         }menu;
 
+        struct _clock{
+            uint8_t n_symbols;
+            uint8_t padding_left, padding_top, padding_right;
+            uint8_t symbol_width;
+            uint32_t symbol_color, background_color;
+        }clock;
+
     }taskbar;
 
 }WindowList;
@@ -133,3 +139,12 @@ void init_taskbar_menu();
 void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
 ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
+
+int draw_taskbar_clock();
+#define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
+#define CLOCK_PADDING_RIGHT 20 /* Right padding of the clock in pixels */
+#define CLOCK_PADDING_LEFT 20 /* Left padding of the clock in pixels */
+#define CLOCK_PADDING_TOP 2 /* Top padding of the clock in pixels */
+#define CLOCK_SYMBOL_WIDTH 10 /* Width in pixels of each clock symbol */
+#define CLOCK_SYMBOL_COLOR 0 /* Color of the clock symbols */
+#define CLOCK_BACKGROUND_COLOR 0x008A8A8A /* Color of the clock background */
