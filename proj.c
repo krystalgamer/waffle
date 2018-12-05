@@ -193,12 +193,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int curFrame = 1;
 
     init_internal_status();
-    //create_window(200, 100, 0x12131415);
-    //create_window(100, 200, 0x51321258);
-    //uint32_t id_fixe = create_window(400, 300, 0x22222222);
+    create_window(200, 100, 0x0AAAAAA, "Jaquim");
+    create_window(100, 200, 0x0AAAAAA, "Gustafo");
+    uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Maria");
 
-    //window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
-    //window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
+    window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
+    window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
 
 
     while(!pressed_the_secret_button) {
@@ -238,7 +238,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
             }
         }
         else { /* received a standard message, not a notification */
-    create_window(100, 200, 0x51321258);
 
             MsgDefaultFormat *dformat = (MsgDefaultFormat*)&msg.m_u32;
             if(msg.m_type == 46){

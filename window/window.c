@@ -4,7 +4,17 @@
 #include "util.h"
 #include "window.h"
 
-WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, false, NULL}, {0, 0,0,0,0,0,0} } };
+WindowList wnd_list = { NULL, NULL,
+    /* cursor */ 
+    { 0, 0, 0, 0 },
+    /*taskbar*/
+    { 0, 0, 0,
+        /*menu */
+        {0, NULL, 0, 0, false, NULL},
+        /*clock*/
+        {0, 0, 0},
+        NULL, 0, 0 }
+};
 extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
@@ -21,19 +31,22 @@ void init_internal_status(){
     wnd_list.taskbar.width = get_x_res();
     wnd_list.taskbar.height = get_y_res()/30;
     wnd_list.taskbar.color = 0x00C0C0C0;
+    wnd_list.taskbar.size_windows = 20;
+    wnd_list.taskbar.num_created_windows = 0;
+    wnd_list.taskbar.window_creation_list = malloc(sizeof(Window*) * wnd_list.taskbar.size_windows);
+
+    if(wnd_list.taskbar.window_creation_list == NULL)
+        wnd_list.taskbar.size_windows = 0; 
+    
 
     window_frame_height = get_y_res()/30;
     
 
     init_taskbar_menu();
 
-    wnd_list.taskbar.clock.n_symbols = 8;
-    wnd_list.taskbar.clock.padding_left = 20;
-    wnd_list.taskbar.clock.padding_top = 2;
-    wnd_list.taskbar.clock.padding_right = 20;
-    wnd_list.taskbar.clock.symbol_width = 10;
-    wnd_list.taskbar.clock.symbol_color = 0xFF0000;
-    wnd_list.taskbar.clock.background_color = 0x00FF00;
+    wnd_list.taskbar.clock.width = FONT_WIDTH*N_CLOCK_SYMBOLS + 20;
+    wnd_list.taskbar.clock.symbol_color = 0;
+    wnd_list.taskbar.clock.background_color = 0x008A8A8A;
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
@@ -57,7 +70,7 @@ void add_window_to_list(Window *wnd){
     wnd_list.last = wnd;
 }
 
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color){
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name){
     
     /* Garantir no futuro o suporte de 4 milhoes */
     static uint32_t cur_id = 1;
@@ -76,11 +89,21 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color){
     new_window->height = height;
     new_window->color = color;
     new_window->attr.border = true; /* TODO allow the option in the future */
-    new_window->attr.border_width = 5; /* TODO allow the option in the future */
+    new_window->attr.border_width = 2; /* TODO allow the option in the future */
     new_window->attr.frame = true;
-    new_window->attr.frame_text = "Cona com penis";
+
+
+    new_window->attr.frame_text = malloc(strlen(name) + 1);
+    strcpy(new_window->attr.frame_text, name);
 
     add_window_to_list(new_window);
+
+    if(wnd_list.taskbar.num_created_windows == wnd_list.taskbar.size_windows){
+        printf("Need to allocate more windows!\n");
+    }
+    else{
+        wnd_list.taskbar.window_creation_list[wnd_list.taskbar.num_created_windows++] = new_window;
+    }
 
     return new_window->id;
 }
@@ -156,8 +179,8 @@ void window_draw(){
         if(cur_wnd->attr.frame){
             
             char *text = cur_wnd->attr.frame_text;
-            pj_draw_rectangle(cur_wnd->x, cur_wnd->y - window_frame_height, cur_wnd->width, window_frame_height, 0x234512);
-            printHorizontalWord(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0x00FF0000);
+            pj_draw_rectangle(cur_wnd->x, cur_wnd->y - window_frame_height, cur_wnd->width, window_frame_height, 0x005A5A5A);
+            printHorizontalWord(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0);
         }
 
         pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color);
