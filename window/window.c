@@ -4,7 +4,7 @@
 #include "util.h"
 #include "window.h"
 
-WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, NULL} } };
+WindowList wnd_list = { NULL, NULL, { 0, 0, 0, 0 }, { 0, 0, 0, {0, NULL, 0, 0, false, NULL} } };
 extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
@@ -22,15 +22,14 @@ void init_internal_status(){
     wnd_list.taskbar.height = get_y_res()/30;
     wnd_list.taskbar.color = 0x00C0C0C0;
 
-    wnd_list.taskbar.menu.width = get_x_res()/20;
-    wnd_list.taskbar.menu.color = 0xFF;
-    wnd_list.taskbar.menu.overlay_color = 0x1252567;
-
     window_frame_height = get_y_res()/30;
+    
+
+    init_taskbar_menu();
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
-    return ( (x <= wnd_list.cursor.x && wnd_list.cursor.x <= xf) && (y <= wnd_list.cursor.y && wnd_list.cursor.y <= yf));
+    return ( (x <= wnd_list.cursor.x && wnd_list.cursor.x < xf) && (y <= wnd_list.cursor.y && wnd_list.cursor.y < yf));
 }
 
 bool is_window_focused(const Window *wnd){
@@ -258,6 +257,15 @@ void window_mouse_handle(const struct packet *pp){
 
     if( state & L_PRESSED ){
 
+        if(wnd_list.taskbar.menu.b_pressed){
+           call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height); 
+        }
+
+
+        /* Check for button presses on the taskbar */
+        if(has_taskbar_button_been_pressed())
+            return;
+
         if( !(state & L_KEPT) ){
             /* No window is being moved, search where the click landed */
             Window *cur_wnd = wnd_list.first;
@@ -285,10 +293,9 @@ void window_mouse_handle(const struct packet *pp){
                     cur_wnd = cur_wnd->next;
             }
 
-            /* Check for button presses on the taskbar */
-            pressed_the_secret_button = has_taskbar_button_been_pressed();
         }
         else{
+            /* Left button is being helf, thus continue to move a window */
             if(is_moving_window){
                 move_window(moving_window, pp);
                 return;

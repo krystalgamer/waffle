@@ -45,6 +45,22 @@ typedef struct _window{
     struct _window *prev, *next;
 }Window;
 
+
+struct _context_menu;
+typedef struct{
+    char *text;
+    void (*callback)();
+    struct _context_menu *menu;
+}ContextEntries;
+
+typedef struct _context_menu{
+    uint32_t longer_entry;/*length of the longest entry */
+    ContextEntries **entries;
+    uint32_t size, capacity;
+    uint32_t sub_menu_index;
+    struct _context_menu *active_sub;
+}ContextMenu;
+
 typedef struct _wnd_lst{
     Window *first;
     Window *last;
@@ -60,10 +76,13 @@ typedef struct _wnd_lst{
         uint32_t color;
         
         struct _menu{
-            uint16_t width;
-            char *text;
-            uint32_t color, overlay_color;
-            struct _menu *submenu;
+            /* b_* prefix means it's the button */
+            uint16_t b_width;
+            char *b_text;
+            uint32_t b_color, b_overlay_color;
+            bool b_pressed;
+
+            ContextMenu *context;
         }menu;
 
     }taskbar;
@@ -110,3 +129,7 @@ uint32_t update_state(const struct packet *pp);
 
 void draw_taskbar();
 bool has_taskbar_button_been_pressed();
+void init_taskbar_menu();
+void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
+ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
+bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);

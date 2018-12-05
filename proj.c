@@ -108,8 +108,6 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int (pj_draw_hline)(uint8_t *bbufer, uint16_t x, uint16_t y, uint16_t len, uint32_t color);
-
 
 int (proj_main_loop)(int argc, char *argv[]) {
 
@@ -240,6 +238,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
             }
         }
         else { /* received a standard message, not a notification */
+    create_window(100, 200, 0x51321258);
 
             MsgDefaultFormat *dformat = (MsgDefaultFormat*)&msg.m_u32;
             if(msg.m_type == 46){
