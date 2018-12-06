@@ -57,7 +57,7 @@ void draw_taskbar(){
 
         bool mouse_over = mouse_over_coords(x, 0, x+default_window_tskbar_width, wnd_list.taskbar.height);
         if(cur_wnd == wnd_list.first)
-            pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, 0x005A5A5A);
+            pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x003A3A3A : 0x005A5A5A));
         else
             pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x00AAAAAA : 0x008A8A8A));
         printHorizontalWord(cur_wnd->attr.frame_text, x+default_window_tskbar_width/2-strlen(cur_wnd->attr.frame_text)*FONT_WIDTH/2, 0, 0);
