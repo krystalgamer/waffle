@@ -43,7 +43,7 @@ void draw_taskbar(){
     printHorizontalWord(wnd_list.taskbar.menu.b_text, wnd_list.taskbar.menu.b_width/2 - strlen(wnd_list.taskbar.menu.b_text)*FONT_WIDTH/2, 0, 0);
 
     /* Draw the windows */
-    #define MAX_NUM_WINDOWS 6
+    /* TODO remove manual pad */
     uint32_t window_tskbar_pad = 20;
     uint32_t default_window_tskbar_width = (get_x_res() - (wnd_list.taskbar.menu.b_width - wnd_list.taskbar.clock.width) - window_tskbar_pad*MAX_NUM_WINDOWS)/MAX_NUM_WINDOWS;
 
@@ -56,11 +56,13 @@ void draw_taskbar(){
         uint32_t x = wnd_list.taskbar.menu.b_width + window_tskbar_pad/2 + i*(default_window_tskbar_width+window_tskbar_pad);
 
         bool mouse_over = mouse_over_coords(x, 0, x+default_window_tskbar_width, wnd_list.taskbar.height);
-        pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x00AAAAAA : 0x008A8A8A));
+        if(cur_wnd == wnd_list.first)
+            pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, 0x005A5A5A);
+        else
+            pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x00AAAAAA : 0x008A8A8A));
         printHorizontalWord(cur_wnd->attr.frame_text, x+default_window_tskbar_width/2-strlen(cur_wnd->attr.frame_text)*FONT_WIDTH/2, 0, 0);
 
     }
-
 
 
     if(wnd_list.taskbar.menu.b_pressed){
@@ -69,6 +71,21 @@ void draw_taskbar(){
 
 	draw_taskbar_clock();
 
+}
+
+Window *pressed_window_taskbar(){
+
+    uint32_t window_tskbar_pad = 20;
+    uint32_t default_window_tskbar_width = (get_x_res() - (wnd_list.taskbar.menu.b_width - wnd_list.taskbar.clock.width) - window_tskbar_pad*MAX_NUM_WINDOWS)/MAX_NUM_WINDOWS;
+    for(uint32_t i = 0; i< wnd_list.taskbar.num_created_windows; i++){
+
+        Window *cur_wnd = wnd_list.taskbar.window_creation_list[i];
+        uint32_t x = wnd_list.taskbar.menu.b_width + window_tskbar_pad/2 + i*(default_window_tskbar_width+window_tskbar_pad);
+       if(mouse_over_coords(x, 0, x+default_window_tskbar_width, wnd_list.taskbar.height))
+           return cur_wnd;
+    }
+
+    return NULL;
 }
 
 bool has_taskbar_button_been_pressed(){

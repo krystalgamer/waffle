@@ -297,7 +297,11 @@ void window_mouse_handle(const struct packet *pp){
         if(has_taskbar_button_been_pressed())
             return;
 
-        if( !(state & L_KEPT) ){
+        Window *pressed = pressed_window_taskbar();
+        if(pressed != NULL){
+            move_to_front(pressed);
+        } 
+        else if( !(state & L_KEPT) ){
             /* No window is being moved, search where the click landed */
             Window *cur_wnd = wnd_list.first;
             while(cur_wnd){
@@ -321,6 +325,15 @@ void window_mouse_handle(const struct packet *pp){
                         is_moving_window = true;
                         return;
                     }
+                else if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
+                    ((cur_wnd->y) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y + cur_wnd->height))
+                    )
+                       {
+
+                        /*Pressed on the window just move it to the fron */
+                        move_to_front(cur_wnd);
+                        break;
+                        }
                     cur_wnd = cur_wnd->next;
             }
 

@@ -143,3 +143,5 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
 
 int draw_taskbar_clock();
 #define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
+#define MAX_NUM_WINDOWS 6
+Window *pressed_window_taskbar();
