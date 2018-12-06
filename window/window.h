@@ -85,11 +85,12 @@ typedef struct _wnd_lst{
         }menu;
 
         struct _clock{
-            uint8_t n_symbols;
-            uint8_t padding_left, padding_top, padding_right;
-            uint8_t symbol_width;
-            uint32_t symbol_color, background_color;
+            uint16_t width;
+            uint32_t symbol_color,background_color;
         }clock;
+
+        Window **window_creation_list;
+        uint32_t num_created_windows, size_windows;
 
     }taskbar;
 
@@ -98,7 +99,7 @@ typedef struct _wnd_lst{
 
 void window_draw();
 void window_mouse_handle();
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color);
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name);
 void init_internal_status();
 bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
 
@@ -142,9 +143,5 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
 
 int draw_taskbar_clock();
 #define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
-#define CLOCK_PADDING_RIGHT 20 /* Right padding of the clock in pixels */
-#define CLOCK_PADDING_LEFT 20 /* Left padding of the clock in pixels */
-#define CLOCK_PADDING_TOP 2 /* Top padding of the clock in pixels */
-#define CLOCK_SYMBOL_WIDTH 10 /* Width in pixels of each clock symbol */
-#define CLOCK_SYMBOL_COLOR 0 /* Color of the clock symbols */
-#define CLOCK_BACKGROUND_COLOR 0x008A8A8A /* Color of the clock background */
+#define MAX_NUM_WINDOWS 6
+Window *pressed_window_taskbar();
