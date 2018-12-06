@@ -154,20 +154,26 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /*Codigo do souto contem um mode cuidado meninas! */
 
     if(vg_init(R1152x864_DIRECT) == NULL){
-        printf("(%s) vg_init failed..quitting", __func__);
+        printf("(%s) vg_init failed..quitting\n", __func__);
         return 1;
     }
 
     /* Initialize the font */
     if(initLetters() != OK) {
-        printf("(%s) Error initializing the font", __func__);
+        printf("(%s) Error initializing the font\n", __func__);
+        return 1;
+    }
+
+    /* Initialize the font */
+    if(initialize_screensaver() != OK) {
+        printf("(%s) Error initializing the screensaver\n", __func__);
         return 1;
     }
 
     /* Subscribe mouse Interrupts */
     uint8_t bitNum;
     if(mouse_subscribe_int(&bitNum) != OK) {
-        printf("(%s) There was a problem enabling mouse interrupts", __func__);
+        printf("(%s) There was a problem enabling mouse interrupts\n", __func__);
         vg_exit();
         return 1; 
     } 
@@ -175,7 +181,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /* Subscribe Keyboard Interrupts */
     if(keyboard_subscribe_int(&bitNum) != OK) {
-        printf("(%s) There was a problem enabling timer interrupts", __func__);
+        printf("(%s) There was a problem enabling timer interrupts\n", __func__);
         vg_exit();
         return 1;
     }
@@ -184,7 +190,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /* Subscribe Timer 0 Interrupts */
     if(timer_subscribe_int(&bitNum) != OK) {
-        printf("(%s) There was a problem enabling timer interrupts", __func__);
+        printf("(%s) There was a problem enabling timer interrupts\n", __func__);
         vg_exit();
         return 1;
     }

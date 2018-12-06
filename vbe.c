@@ -251,7 +251,7 @@ uint8_t get_rsvd_mask_size() { return vbe_mode_info.RsvdMaskSize; }
 uint8_t get_rsvd_field_position() { return vbe_mode_info.RsvdFieldPosition; }
 
 
-void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color) {
+void draw_pixmap_direct_mode(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color, bool fixedColor) {
     
     /* Iterate lines */
     for(int i = 0; i < height; i++){
@@ -274,7 +274,9 @@ void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int h
                 continue;
 
             /* Draw with specified color */
-            temp = color;
+            if (fixedColor)
+                temp = color;
+            
             memcpy(backbuffer + ((y+i)*get_x_res() + x + j) * bytes_per_pixel, &temp, bytes_per_pixel);
         }
     }

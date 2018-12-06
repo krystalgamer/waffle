@@ -55,7 +55,7 @@ int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
     }
 
     /* Draw the font symbol */
-    draw_font_symbol(font_sprites[symbol_offset], x, y, FONT_WIDTH, FONT_HEIGHT, color);
+    draw_pixmap_direct_mode(font_sprites[symbol_offset], x, y, FONT_WIDTH, FONT_HEIGHT, color, true);
 
     return OK;
 }
