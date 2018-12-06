@@ -28,7 +28,6 @@ int (mouse_unsubscribe_int)();
  *  @brief The mouse interrupt handler
  *
  *  Handles every mouse interrupt
- *
  */
 void (mouse_ih)();
 

@@ -20,6 +20,13 @@ int keyboard_subscribe_int(uint8_t *bit_no);
 int keyboard_unsubscribe_int();
 
 /**
+ *  @brief The keyboard interrupt handler
+ *
+ *  Handles every keyboard interrupt
+ */
+void (keyboard_ih)();
+
+/**
  * @brief Verifies if there is an available scancode
  * 
  * @param scancodes address of memory to hold the value of the
@@ -59,28 +66,28 @@ void update_OBF_status();
  * for the function to ease development and debugging
  */
 typedef enum _keyboard_status {
-	KBC_OK = OK,
+	KB_OK = OK,
 
 	/*invalid arguments on a function*/
-	KBC_INVALID_ARGS,
+	KB_INVALID_ARGS,
 
 	/*kernel call functions failed*/
-	KBC_INT_SUB_FAILED,
-	KBC_INT_UNSUB_FAILED,
+	KB_INT_SUB_FAILED,
+	KB_INT_UNSUB_FAILED,
 
 	/*sys_* failed*/
-	KBC_INB_FAILED,
-	KBC_OUTB_FAILED,
+	KB_INB_FAILED,
+	KB_OUTB_FAILED,
 
 	/*failed sending command*/
-	KBC_SEND_CMD_FAILED,
+	KB_SEND_CMD_FAILED,
 	/*failed reading command*/
-	KBC_READ_CMD_FAILED,
+	KB_READ_CMD_FAILED,
 	/*failed reading status register*/
-	KBC_READ_STATUS_FAILED,
+	KB_READ_STATUS_FAILED,
 
 	/*maximum number of defined tries for operation exceeded*/
-	KBC_TRIES_EXCEEDED
+	KB_TRIES_EXCEEDED
 } keyboard_status;
 
 /* Size of the array used to store the current scancodes */

@@ -1,13 +1,15 @@
 // IMPORTANT: you must include the following line in all your C files
 #include <lcom/lcf.h>
 #include <lib.h>
-#include "vbe.h"
-#include "interrupts/mouse.h"
-#include <minix/sysinfo.h>
-#include "window/window.h"
-#include "interrupts/timer_user.h"
 #include <sys/types.h>
 #include <unistd.h>
+#include <minix/sysinfo.h>
+#include "interrupts/mouse.h"
+#include "interrupts/keyboard.h"
+#include "screensaver/screensaver.h"
+#include "window/window.h"
+#include "screensaver/screensaver.h"
+#include "vbe.h"
 #include "font/letters.h"
 #include "messages.h"
 
@@ -115,10 +117,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     if(argc == 0 && argv != NULL)
         printf("PENIS\n");
 
-	printf("%d pid\n", getpid());
+	  printf("%d pid\n", getpid());
 
     struct mproc processes[256];
-	printf("%d vou hcorar\n", getsysinfo(PM_PROC_NR, SI_PROC_TAB, &processes, sizeof(processes)));
+	  printf("%d vou hcorar\n", getsysinfo(PM_PROC_NR, SI_PROC_TAB, &processes, sizeof(processes)));
 
     struct mproc *meu = NULL;
     for(int i = 0; i < 256; i++){
@@ -151,24 +153,33 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /*Codigo do souto contem um mode cuidado meninas! */
 
-    if(vg_init(0x14C) == NULL){
+    if(vg_init(R1152x864_DIRECT) == NULL){
         printf("(%s) vg_init failed..quitting", __func__);
         return 1;
     }
 
     /* Initialize the font */
-    if (initLetters() != OK) {
+    if(initLetters() != OK) {
         printf("(%s) Error initializing the font", __func__);
         return 1;
     }
 
-    /* Subscribe KBC Interrupts */
+    /* Subscribe mouse Interrupts */
     uint8_t bitNum;
     if(mouse_subscribe_int(&bitNum) != OK) {
+        printf("(%s) There was a problem enabling mouse interrupts", __func__);
         vg_exit();
         return 1; 
     } 
-    uint32_t irq_set = BIT(bitNum);
+    uint32_t mouse_irq_set = BIT(bitNum);
+
+    /* Subscribe Keyboard Interrupts */
+    if(keyboard_subscribe_int(&bitNum) != OK) {
+        printf("(%s) There was a problem enabling timer interrupts", __func__);
+        vg_exit();
+        return 1;
+    }
+    uint32_t keyboard_irq_set = BIT(bitNum);
 
 
     /* Subscribe Timer 0 Interrupts */
@@ -184,10 +195,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     message msg;
     uint32_t r = 0;
     
-    /* Mask used to verify if a caught interrupt should be handled */
     uint8_t mouse_packet[MOUSE_PACKET_SIZE];
-	struct packet pp;
-    /* Keep receiving and handling interrupts until the ESC key is released. */
+	  struct packet pp;
+
+    uint8_t scancodes[SCANCODES_BYTES_LEN];
 
     int maxFrames = 2;
     int curFrame = 1;
@@ -200,7 +211,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
     window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
 
-
+    uint32_t idle_time = 0; // time in interrupts
     while(!pressed_the_secret_button) {
         /* Get a request message.  */
         if( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) {
@@ -211,25 +222,33 @@ int (proj_main_loop)(int argc, char *argv[]) {
         if (is_ipc_notify(ipc_status)) { /* received notification */
             switch (_ENDPOINT_P(msg.m_source)) {
                 case HARDWARE: /* hardware interrupt notification */
-                if ( msg.m_notify.interrupts & irq_set) { /* subscribed interrupt */
+                if ( msg.m_notify.interrupts & mouse_irq_set) { /* subscribed interrupt */
 
                     mouse_ih();
-	                if (assemble_mouse_packet(mouse_packet)) {
+	                  if (assemble_mouse_packet(mouse_packet)) {
                         parse_mouse_packet(mouse_packet, &pp);
-						if(pp.mb)
-							pressed_the_secret_button = true;
+						            if(pp.mb)
+							              pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
-                    }	
-
+                    }
+                    idle_time = 0;
                 }
 
                 if( msg.m_notify.interrupts & timer_irq_set){
                     if((++curFrame)%maxFrames == 0){
-                        window_draw();
+                        if (idle_time > SCREENSAVER_IDLE_TIME)
+                            screensaver_draw();
+                        else
+                            window_draw();
                         swap_buffers();
                     }
+                    idle_time += 1;
+                }
 
-
+                if (msg.m_notify.interrupts & keyboard_irq_set) {
+                    keyboard_ih();
+                    r = opcode_available(scancodes);
+                    idle_time = 0;
                 }
                 break;
             default:
@@ -249,10 +268,20 @@ int (proj_main_loop)(int argc, char *argv[]) {
         }
     }
 
+    /* Unsubscribe timer interrupts */
+    if(timer_unsubscribe_int() != OK){
+      vg_exit();
+      return 1;
+    }
 
-    timer_unsubscribe_int();
-    /* Unsubscribe KBC Interrupts */
+    /* Unsubscribe mouse interrupts */
     if(mouse_unsubscribe_int() != OK) {
+      vg_exit();
+      return 1;
+    }
+    
+    /* Unsubscribe keyboard interrupts */
+    if(keyboard_unsubscribe_int() != OK) {
       vg_exit();
       return 1;
     }
