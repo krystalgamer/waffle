@@ -282,4 +282,9 @@ void draw_pixmap_direct_mode(uint8_t * symbol, uint16_t x, uint16_t y, int width
     }
 }
 
+bool element_present_at(uint16_t x, uint16_t y) {
+    printf("%d %d", x, y);
+    return false;
+}
+
 uint8_t get_bytes_per_pixel() { return bytes_per_pixel; }

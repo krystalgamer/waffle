@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
 #include <minix/sysinfo.h>
 #include "interrupts/mouse.h"
 #include "interrupts/keyboard.h"
@@ -117,7 +118,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     if(argc == 0 && argv != NULL)
         printf("PENIS\n");
 
-	  printf("%d pid\n", getpid());
+	printf("%d pid\n", getpid());
 
     struct mproc processes[256];
 	  printf("%d vou hcorar\n", getsysinfo(PM_PROC_NR, SI_PROC_TAB, &processes, sizeof(processes)));
@@ -148,7 +149,8 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
     fclose(fp);
 
-	
+	srand(time(NULL));
+
     /* Initialize graphics mode */
 
     /*Codigo do souto contem um mode cuidado meninas! */
