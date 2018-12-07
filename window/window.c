@@ -89,6 +89,7 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     new_window->height = height;
     new_window->color = color;
     new_window->minimized = false;
+    new_window->minimized = false;
     new_window->attr.border = true; /* TODO allow the option in the future */
     new_window->attr.border_width = 2; /* TODO allow the option in the future */
     new_window->attr.frame = true;
@@ -100,6 +101,7 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     add_window_to_list(new_window);
 
     if(wnd_list.taskbar.num_created_windows == wnd_list.taskbar.size_windows){
+        /* TODO :) */
         printf("Need to allocate more windows!\n");
     }
     else{
@@ -173,6 +175,12 @@ void window_draw(){
             continue;
         }
 
+        if(cur_wnd->maximized){
+
+            cur_wnd->x = 0;
+            cur_wnd->y = wnd_list.taskbar.height + window_frame_height;
+        }
+
         if(cur_wnd->attr.border){
             //TODO Optimize border rendering
             uint32_t border_width = cur_wnd->attr.border_width;
@@ -199,7 +207,7 @@ void window_draw(){
 
             uint32_t maximize_x = cur_wnd->x + cur_wnd->width - (button_l+pad_between)*2 + pad_between/2;
             uint32_t maximize_y =  cur_wnd->y - window_frame_height + button_pad/2;
-            uint32_t maximize_color = (mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l) ? 0xFF : 0x88);
+            uint32_t maximize_color = (mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l) ? 0x88FF : 0xDD);
 
 
             uint32_t close_x = cur_wnd->x + cur_wnd->width - (button_l+pad_between) + pad_between/2;
@@ -225,6 +233,77 @@ void window_draw(){
     pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF); 
 }
 
+void delete_window(Window *wnd){
+    
+    if(wnd == NULL)
+        return;
+
+    /* Remove from window list */
+    if(wnd_list.first == wnd){
+
+        if(wnd_list.first->next == NULL){
+
+            /* Assertion to guarantee good development */
+            if(wnd_list.last != wnd){
+                printf("Real shit homie, you fucked up\n");
+                return;
+            }
+            /* No elements */
+            wnd_list.first = wnd_list.last = NULL;
+            goto removal;
+        }
+        else if(wnd_list.last == wnd){
+            printf("Rip in pieces, your code is broken homie\n");
+            return;
+        }
+
+        wnd_list.first = wnd_list.first->next;
+        wnd_list.first->prev = NULL;
+
+        goto removal;
+    }
+    /* Our window is the last */
+    else if(wnd_list.last == wnd){
+
+        wnd_list.last = wnd_list.last->prev;
+        wnd_list.last->next = NULL;
+        goto removal;
+    }
+
+    if(wnd->prev == NULL || wnd->next == NULL){
+        printf("Homie you just sent me an orphan window, kys faggot\n"); 
+        return;
+    }
+
+    wnd->prev->next = wnd->next;
+    wnd->next->prev = wnd->prev;
+
+removal:
+
+    for(uint32_t i = 0; i < wnd_list.taskbar.num_created_windows; i++){
+        
+        if(wnd_list.taskbar.window_creation_list[i] != wnd)
+            continue;
+        
+        /* Nothing to do*/
+        if(i == wnd_list.taskbar.num_created_windows-1){
+            wnd_list.taskbar.num_created_windows--;
+            break;
+        }
+
+        /* Replace old with new ones */
+        memcpy(&wnd_list.taskbar.window_creation_list[i], &wnd_list.taskbar.window_creation_list[i+1], (wnd_list.taskbar.num_created_windows - i - 1)*sizeof(void*));
+
+        wnd_list.taskbar.num_created_windows--;
+    }
+
+    if(wnd->attr.frame_text != NULL)
+        free(wnd->attr.frame_text);
+    free(wnd);
+    return;
+
+}
+
 bool pressed_three_buttons(Window *wnd){
 
         if(wnd->attr.frame){
@@ -240,7 +319,7 @@ bool pressed_three_buttons(Window *wnd){
 
             uint32_t minimize_x = wnd->x + wnd->width - (button_l+pad_between)*3 +pad_between/2;
             uint32_t minimize_y = wnd->y - window_frame_height + button_pad/2;
-            if((mouse_over_coords(minimize_x, minimize_y, minimize_x + button_l, minimize_y + button_l) ? 0x0000FF00 : 0x0000BB00)){
+            if(mouse_over_coords(minimize_x, minimize_y, minimize_x + button_l, minimize_y + button_l)){
                 wnd->minimized = true;
                 return true;
             }
@@ -248,15 +327,18 @@ bool pressed_three_buttons(Window *wnd){
 
             uint32_t maximize_x = wnd->x + wnd->width - (button_l+pad_between)*2 + pad_between/2;
             uint32_t maximize_y =  wnd->y - window_frame_height + button_pad/2;
-            if(mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l) ? 0xFF : 0x88)
+            if(mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l)){
+                wnd->maximized = true;
                 return true;
+            }
 
 
             uint32_t close_x = wnd->x + wnd->width - (button_l+pad_between) + pad_between/2;
             uint32_t close_y = wnd->y - window_frame_height + button_pad/2;
-            if((mouse_over_coords(close_x, close_y, close_x+button_l, close_y+button_l) ? 0x00FF0000 : 0x00BB0000)){
-                return true;
-                    }
+            if(mouse_over_coords(close_x, close_y, close_x+button_l, close_y+button_l)){
+                delete_window(wnd);
+                return true; 
+            }
 
         }
 

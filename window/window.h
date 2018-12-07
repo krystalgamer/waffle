@@ -34,6 +34,7 @@ typedef struct _window{
     uint16_t width, height;
     uint32_t color;
     bool minimized;
+    bool maximized;
     Element *elements;
 
     struct{
