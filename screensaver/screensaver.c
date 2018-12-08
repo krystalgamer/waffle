@@ -49,8 +49,9 @@ void screensaver_draw() {
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
 
-        // TODO HANDLE EDGES AND NEGATIVE VALS
+        // TODO There is a bug where the waffles get stuck on collision
 
+        /* Check borders at current position */
         if (scr_ele->x < 0) scr_ele->x = 0;
         if (scr_ele->y < 0) scr_ele->y = 0;
         if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
@@ -60,45 +61,44 @@ void screensaver_draw() {
         int16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
         int16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
 
-        // if (new_x <= 0 || new_x + (scr_ele->width) >= get_x_res()) scr_ele->x_move *= -1;
-        // if (new_y <= 0 || new_y + (scr_ele->height) >= get_y_res()) scr_ele->y_move *= -1;
-
+        /* Check borders at new position */
         if (new_x <= 0) {
         	scr_ele->x_move *= -1;
         	new_x = 0;
         }
-
         if (new_x + (scr_ele->width) >= get_x_res()) {
         	scr_ele->x_move *= -1;
         	new_x = get_x_res() - scr_ele->width;        	
         }
-
         if (new_y <= 0) {
         	scr_ele->y_move *= -1;
         	new_y = 0;
         }
-
         if (new_y + (scr_ele->height) >= get_y_res()) {
         	scr_ele->y_move *= -1;
         	new_y = get_y_res() - scr_ele->height;        	
         }
 
         /* Check if collides at new position */
-        if (element_at_position(scr_ele, new_x, new_y)) {
-            /* Handle collision */
+        ScreensaverEle * collidingEle = NULL;
+        if ((collidingEle = element_at_position(scr_ele, new_x, new_y)) != NULL) {
 
-            /* Update orientation*/
-
-		    scr_ele->x_move *= -1;
-   			scr_ele->y_move *= -1;
-
+            /* Switch orientations between colliding elements */
+            int temp_x_move = collidingEle->x_move;
+            int temp_y_move = collidingEle->y_move;
+            collidingEle->x_move = scr_ele->x_move;
+            collidingEle->y_move = scr_ele->y_move;
+            scr_ele->x_move = temp_x_move;
+            scr_ele->y_move = temp_y_move;
         }
         else {
+        	/* Update position */
             scr_ele->next_x = new_x;
             scr_ele->next_y = new_y;
         }
     }
 
+    /* Draw all screensaver elements */
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
         draw_pixmap_direct_mode(scr_ele->sprite, scr_ele->next_x, scr_ele->next_y, scr_ele->width, scr_ele->height, 0, false);
@@ -146,7 +146,7 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     return 0;
 }
 
-bool element_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y) {
+ScreensaverEle * element_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y) {
 
 	/* Check all elements in the screensaver */
     for (int count = 0; count < SCREENSAVER_NUMBER_OF_ELEMENTS; count++) {
@@ -169,11 +169,11 @@ bool element_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y) {
 
         		/* Pixel is not transparent, must check if it is colliding */
         		if (pixel_collides(ele, new_x, new_y, curr_ele->next_x+j, curr_ele->next_y+i))
-        			return true;
+        			return curr_ele;
         	}
         }
     }
-    return false;
+    return NULL;
 }
 
 bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y) {

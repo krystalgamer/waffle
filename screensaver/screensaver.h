@@ -20,7 +20,7 @@ typedef struct _screensaver_ele {
 int initialize_screensaver();
 void screensaver_draw();
 int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t * sprite);
-bool element_at_position(ScreensaverEle * ele, int16_t x, int16_t y);
+ScreensaverEle * element_at_position(ScreensaverEle * ele, int16_t x, int16_t y);
 bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y);
 
 #endif
