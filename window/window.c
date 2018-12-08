@@ -163,7 +163,7 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 
 void window_draw(){
     
-    clear_buffer_four(0x00008081);
+    clear_buffer_four(BACKGROUND_COLOR);
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 
