@@ -4,7 +4,6 @@
 #define WAFFLE_XPM_WIDTH 197
 #define WAFFLE_XPM_HEIGHT 202
 
-
 static const char * waffle_xpm[] = {
 "197 202 256 2",
 "  	c None",

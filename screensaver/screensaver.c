@@ -49,8 +49,11 @@ void screensaver_draw() {
         // TODO HANDLE EDGES AND NEGATIVE VALS
 
         /* Calculate new position */
-        uint16_t new_x = scr_ele->x + scr_ele->x_ori * SCREENSAVER_ELE_SPEED;
-        uint16_t new_y = scr_ele->y + scr_ele->y_ori * SCREENSAVER_ELE_SPEED;
+        uint16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
+        uint16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
+
+        if (new_x <= 0 || new_x + (scr_ele->width) >= get_x_res()) scr_ele->x_move *= -1;
+        if (new_y <= 0 || new_y + (scr_ele->height) >= get_y_res()) scr_ele->y_move *= -1;
 
         /* Check if collides at new position */
         if (element_present_at(new_x, new_y)) {
@@ -88,18 +91,19 @@ int add_element_to_screensaver(uint16_t x, uint16_t y, uint16_t width, uint16_t 
     new_element->width = width;
     new_element->height = height;
 
-    /* Calculate random orientation between -100 and 100 */
-    int temp_x_ori = (rand() % 201) - 100;
-    int temp_y_ori = (rand() % 201) - 100;
+    int vert_dir = rand() % 3 - 1;
+    int hori_dir = rand() % 3 - 1;
 
-    /* Normalize the vector */
-    float x_ori = (float) temp_x_ori / sqrt(pow(temp_x_ori, 2) + pow(temp_y_ori, 2));
-    float y_ori = (float) temp_y_ori / sqrt(pow(temp_x_ori, 2) + pow(temp_y_ori, 2));
+    while (vert_dir == 0 ) {
+	    vert_dir = rand() % 3 - 1;  	
+    }
 
-    //printf("%.6f %.6f\n", x_ori, y_ori);
+    while (hori_dir == 0) {
+	    hori_dir = rand() % 3 - 1;  
+    }
 
-    new_element->x_ori = x_ori;
-    new_element->y_ori = y_ori;
+    new_element->x_move = hori_dir;
+    new_element->y_move = vert_dir;
 
     new_element->sprite = sprite;
 
