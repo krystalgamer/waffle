@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "screensaver.h"
-#include "waffle.h"
+#include "waffle_xpm.h"
 #include "vbe.h"
 
 static uint8_t * waffle;
@@ -34,6 +34,9 @@ int initialize_screensaver() {
 
     add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
     add_element_to_screensaver(500, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
+    add_element_to_screensaver(500, 700, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
+    add_element_to_screensaver(800, 500, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
+    add_element_to_screensaver(0, 500, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
 
     hasInit = true;
 
@@ -48,12 +51,37 @@ void screensaver_draw() {
 
         // TODO HANDLE EDGES AND NEGATIVE VALS
 
-        /* Calculate new position */
-        uint16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
-        uint16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
+        if (scr_ele->x < 0) scr_ele->x = 0;
+        if (scr_ele->y < 0) scr_ele->y = 0;
+        if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
+        if (scr_ele->y + scr_ele->height > get_y_res()) scr_ele->y = get_y_res() - scr_ele->height;
 
-        if (new_x <= 0 || new_x + (scr_ele->width) >= get_x_res()) scr_ele->x_move *= -1;
-        if (new_y <= 0 || new_y + (scr_ele->height) >= get_y_res()) scr_ele->y_move *= -1;
+        /* Calculate new position */
+        int16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
+        int16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
+
+        // if (new_x <= 0 || new_x + (scr_ele->width) >= get_x_res()) scr_ele->x_move *= -1;
+        // if (new_y <= 0 || new_y + (scr_ele->height) >= get_y_res()) scr_ele->y_move *= -1;
+
+        if (new_x <= 0) {
+        	scr_ele->x_move *= -1;
+        	new_x = 0;
+        }
+
+        if (new_x + (scr_ele->width) >= get_x_res()) {
+        	scr_ele->x_move *= -1;
+        	new_x = get_x_res() - scr_ele->width;        	
+        }
+
+        if (new_y <= 0) {
+        	scr_ele->y_move *= -1;
+        	new_y = 0;
+        }
+
+        if (new_y + (scr_ele->height) >= get_y_res()) {
+        	scr_ele->y_move *= -1;
+        	new_y = get_y_res() - scr_ele->height;        	
+        }
 
         /* Check if collides at new position */
         if (element_at_position(scr_ele, new_x, new_y)) {
@@ -61,19 +89,8 @@ void screensaver_draw() {
 
             /* Update orientation*/
 
-        	int vert_dir = rand() % 3 - 1;
-		    int hori_dir = rand() % 3 - 1;
-
-		    while (vert_dir == 0 ) {
-			    vert_dir = rand() % 3 - 1;  	
-		    }
-
-		    while (hori_dir == 0) {
-			    hori_dir = rand() % 3 - 1;  
-		    }
-
-		    scr_ele->x_move = hori_dir;
-   			scr_ele->y_move = vert_dir;
+		    scr_ele->x_move *= -1;
+   			scr_ele->y_move *= -1;
 
         }
         else {
@@ -90,7 +107,7 @@ void screensaver_draw() {
     }
 }
 
-int add_element_to_screensaver(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t * sprite) {
+int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t * sprite) {
 
 	static uint8_t nextID = 0;
 
@@ -129,7 +146,7 @@ int add_element_to_screensaver(uint16_t x, uint16_t y, uint16_t width, uint16_t 
     return 0;
 }
 
-bool element_at_position(ScreensaverEle * ele, uint16_t new_x, uint16_t new_y) {
+bool element_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y) {
 
 	/* Check all elements in the screensaver */
     for (int count = 0; count < SCREENSAVER_NUMBER_OF_ELEMENTS; count++) {
@@ -146,12 +163,12 @@ bool element_at_position(ScreensaverEle * ele, uint16_t new_x, uint16_t new_y) {
         for(int i = 0; i < curr_ele->height; i++){
         	for(int j = 0; j < curr_ele->width; j++){
         		uint32_t pixel_color;
-        		memcpy(&pixel_color, curr_ele->sprite + i * curr_ele->width + j, bytes_per_pixel);
+        		memcpy(&pixel_color, curr_ele->sprite + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
         		if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
         			continue;
 
         		/* Pixel is not transparent, must check if it is colliding */
-        		if (pixel_collides(ele, new_x, new_y, curr_ele->x+j, curr_ele->y+i))
+        		if (pixel_collides(ele, new_x, new_y, curr_ele->next_x+j, curr_ele->next_y+i))
         			return true;
         	}
         }
@@ -159,16 +176,16 @@ bool element_at_position(ScreensaverEle * ele, uint16_t new_x, uint16_t new_y) {
     return false;
 }
 
-bool pixel_collides(ScreensaverEle * element, uint16_t new_x, uint16_t new_y, uint16_t pixel_x, uint16_t pixel_y) {
+bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y) {
 
-	uint16_t relative_x = pixel_x - new_x;
-	uint16_t relative_y = pixel_y - new_y;
+	int16_t relative_x = pixel_x - new_x;
+	int16_t relative_y = pixel_y - new_y;
 
-	if (relative_x >= element->width || relative_y >= element->height)
+	if (relative_x >= element->width || relative_y >= element->height || relative_x < 0 || relative_y < 0)
 		return false;
 
 	uint32_t pixel_color;
-	memcpy(&pixel_color, element->sprite + relative_y * element->width + relative_x, bytes_per_pixel);
+	memcpy(&pixel_color, element->sprite + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
 
 	return pixel_color != TRANSPARENCY_COLOR_8_8_8_8;
 }
