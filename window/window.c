@@ -88,6 +88,8 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     new_window->width = width;
     new_window->height = height;
     new_window->color = color;
+    new_window->minimized = false;
+    new_window->minimized = false;
     new_window->attr.border = true; /* TODO allow the option in the future */
     new_window->attr.border_width = 2; /* TODO allow the option in the future */
     new_window->attr.frame = true;
@@ -99,6 +101,7 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     add_window_to_list(new_window);
 
     if(wnd_list.taskbar.num_created_windows == wnd_list.taskbar.size_windows){
+        /* TODO :) */
         printf("Need to allocate more windows!\n");
     }
     else{
@@ -167,6 +170,16 @@ void window_draw(){
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 
+        if(cur_wnd->minimized){
+            cur_wnd = cur_wnd->prev;
+            continue;
+        }
+
+        if(cur_wnd->maximized){
+
+            cur_wnd->x = 0;
+            cur_wnd->y = wnd_list.taskbar.height + window_frame_height;
+        }
 
         if(cur_wnd->attr.border){
             //TODO Optimize border rendering
@@ -181,6 +194,34 @@ void window_draw(){
             char *text = cur_wnd->attr.frame_text;
             pj_draw_rectangle(cur_wnd->x, cur_wnd->y - window_frame_height, cur_wnd->width, window_frame_height, 0x005A5A5A);
             printHorizontalWord(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0);
+
+            /* TODO arranjar mehlor qu e7 */
+            uint32_t button_pad = window_frame_height/3;
+            uint32_t button_l = window_frame_height - button_pad;
+            const uint32_t pad_between = 10;
+
+            uint32_t minimize_x = cur_wnd->x + cur_wnd->width - (button_l+pad_between)*3 +pad_between/2;
+            uint32_t minimize_y = cur_wnd->y - window_frame_height + button_pad/2;
+            uint32_t minimize_color = (mouse_over_coords(minimize_x, minimize_y, minimize_x + button_l, minimize_y + button_l) ? 0x0000FF00 : 0x0000BB00);
+
+
+            uint32_t maximize_x = cur_wnd->x + cur_wnd->width - (button_l+pad_between)*2 + pad_between/2;
+            uint32_t maximize_y =  cur_wnd->y - window_frame_height + button_pad/2;
+            uint32_t maximize_color = (mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l) ? 0x88FF : 0xDD);
+
+
+            uint32_t close_x = cur_wnd->x + cur_wnd->width - (button_l+pad_between) + pad_between/2;
+            uint32_t close_y = cur_wnd->y - window_frame_height + button_pad/2;
+            uint32_t close_color = (mouse_over_coords(close_x, close_y, close_x+button_l, close_y+button_l) ? 0x00FF0000 : 0x00BB0000);
+
+            if(! (cur_wnd->x + cur_wnd->width - (button_l+pad_between)*3 +pad_between/2 <= cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2 + strlen(text)*FONT_WIDTH)){
+                pj_draw_rectangle(minimize_x, minimize_y, button_l, button_l, minimize_color);
+                pj_draw_rectangle(maximize_x, maximize_y, button_l, button_l, maximize_color);
+                pj_draw_rectangle(close_x, close_y, button_l, button_l, close_color);
+            }
+
+
+
         }
 
         pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color);
@@ -190,6 +231,119 @@ void window_draw(){
 
     draw_taskbar();
     pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF); 
+}
+
+void delete_window(Window *wnd){
+    
+    if(wnd == NULL)
+        return;
+
+    /* Remove from window list */
+    if(wnd_list.first == wnd){
+
+        if(wnd_list.first->next == NULL){
+
+            /* Assertion to guarantee good development */
+            if(wnd_list.last != wnd){
+                printf("Real shit homie, you fucked up\n");
+                return;
+            }
+            /* No elements */
+            wnd_list.first = wnd_list.last = NULL;
+            goto removal;
+        }
+        else if(wnd_list.last == wnd){
+            printf("Rip in pieces, your code is broken homie\n");
+            return;
+        }
+
+        wnd_list.first = wnd_list.first->next;
+        wnd_list.first->prev = NULL;
+
+        goto removal;
+    }
+    /* Our window is the last */
+    else if(wnd_list.last == wnd){
+
+        wnd_list.last = wnd_list.last->prev;
+        wnd_list.last->next = NULL;
+        goto removal;
+    }
+
+    if(wnd->prev == NULL || wnd->next == NULL){
+        printf("Homie you just sent me an orphan window, kys faggot\n"); 
+        return;
+    }
+
+    wnd->prev->next = wnd->next;
+    wnd->next->prev = wnd->prev;
+
+removal:
+
+    for(uint32_t i = 0; i < wnd_list.taskbar.num_created_windows; i++){
+        
+        if(wnd_list.taskbar.window_creation_list[i] != wnd)
+            continue;
+        
+        /* Nothing to do*/
+        if(i == wnd_list.taskbar.num_created_windows-1){
+            wnd_list.taskbar.num_created_windows--;
+            break;
+        }
+
+        /* Replace old with new ones */
+        memcpy(&wnd_list.taskbar.window_creation_list[i], &wnd_list.taskbar.window_creation_list[i+1], (wnd_list.taskbar.num_created_windows - i - 1)*sizeof(void*));
+
+        wnd_list.taskbar.num_created_windows--;
+    }
+
+    if(wnd->attr.frame_text != NULL)
+        free(wnd->attr.frame_text);
+    free(wnd);
+    return;
+
+}
+
+bool pressed_three_buttons(Window *wnd){
+
+        if(wnd->attr.frame){
+            
+            /* TODO arranjar mehlor qu e7 */
+            uint32_t button_pad = window_frame_height/3;
+            uint32_t button_l = window_frame_height - button_pad;
+            const uint32_t pad_between = 10;
+            char *text = wnd->attr.frame_text;
+            if((wnd->x + wnd->width - (button_l+pad_between)*3 +pad_between/2 <= wnd->x + (wnd->width/2) - strlen(text)*FONT_WIDTH/2 + strlen(text)*FONT_WIDTH))
+                return false;
+
+
+            uint32_t minimize_x = wnd->x + wnd->width - (button_l+pad_between)*3 +pad_between/2;
+            uint32_t minimize_y = wnd->y - window_frame_height + button_pad/2;
+            if(mouse_over_coords(minimize_x, minimize_y, minimize_x + button_l, minimize_y + button_l)){
+                wnd->minimized = true;
+                return true;
+            }
+
+
+            uint32_t maximize_x = wnd->x + wnd->width - (button_l+pad_between)*2 + pad_between/2;
+            uint32_t maximize_y =  wnd->y - window_frame_height + button_pad/2;
+            if(mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l)){
+                wnd->maximized = true;
+                return true;
+            }
+
+
+            uint32_t close_x = wnd->x + wnd->width - (button_l+pad_between) + pad_between/2;
+            uint32_t close_y = wnd->y - window_frame_height + button_pad/2;
+            if(mouse_over_coords(close_x, close_y, close_x+button_l, close_y+button_l)){
+                delete_window(wnd);
+                return true; 
+            }
+
+        }
+
+        return false;
+
 }
 
 void move_window(Window *wnd, const struct packet *pp){
@@ -299,7 +453,17 @@ void window_mouse_handle(const struct packet *pp){
 
         Window *pressed = pressed_window_taskbar();
         if(pressed != NULL){
-            move_to_front(pressed);
+            if(pressed->minimized == false){
+                if(pressed == wnd_list.first)
+                    pressed->minimized = true;
+                else
+                    move_to_front(pressed);
+            }
+            else{
+                pressed->minimized = false;
+                move_to_front(pressed);
+            }
+
         } 
         else if( !(state & L_KEPT) ){
             /* No window is being moved, search where the click landed */
@@ -307,13 +471,21 @@ void window_mouse_handle(const struct packet *pp){
             while(cur_wnd){
 
                 /*Ignore frameless windows*/ 
-                if(cur_wnd->attr.frame == false)
+                if(cur_wnd->attr.frame == false || cur_wnd->minimized == true){
+                    cur_wnd = cur_wnd->next;
                     continue;
+                }
+
+
 
                 uint16_t frame_impact = (cur_wnd->attr.frame ? window_frame_height : 0);
                 if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
                     ((cur_wnd->y-frame_impact) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y))
                     ){
+                        
+                        
+                        if(pressed_three_buttons(cur_wnd))
+                            return;
                         //printf("ANTES\n");
                         //printf("Window List %p %p\n", wnd_list.first, wnd_list.last);
                         //print_list();
@@ -329,7 +501,6 @@ void window_mouse_handle(const struct packet *pp){
                     ((cur_wnd->y) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y + cur_wnd->height))
                     )
                        {
-
                         /*Pressed on the window just move it to the fron */
                         move_to_front(cur_wnd);
                         break;
