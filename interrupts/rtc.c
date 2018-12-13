@@ -1,8 +1,9 @@
 #include <lcom/lcf.h>
 #include "rtc.h"
 
-int rtcHookID = 6;
+int rtcHookID = 29;
 
+uint8_t s = 0, h = 0, m = 0;
 int rtc_subscribe_int(uint8_t *bit_no) {
 
 	// Check null pointer
@@ -106,31 +107,10 @@ int rtc_read_hour(uint8_t * hour) {
 }
 
 int rtc_read_time(uint8_t * second, uint8_t * minute, uint8_t * hour) {
-	/* Starting values for second, minute and hour */
-	uint8_t s = 0, m = 0, h = 0;
-
-	/* Variables for previous second, minute and hour */
-	uint8_t ps, pm, ph;
-
-	do {
-		/* Make previous vars equal to the last ones */
-		ps = s;
-		pm = m;
-		ph = h;
-
-		/* Update time vars */
-		if (rtc_read_second(&s) != OK) return 1;
-		if (rtc_read_minute(&m) != OK) return 1;
-		if (rtc_read_hour(&h) != OK) return 1;		
-	}
-	/* Loop until current values and previous ones are equal */ 
-	while (s != ps || m != pm || h != ph);
-
 	/* Assign read values */
 	*second = s;
 	*minute = m;
-	*hour = h;
-
+	*hour = h; 
 	return 0;
 }
 
@@ -298,14 +278,16 @@ int rtc_set_alarm_hour(uint8_t hour) {
 
 
 void rtc_int_handler() {
-	uint8_t data;
+    uint8_t data;
 
     /* Read register C */
     if(rtc_read_register(RTC_REG_C, &data) != OK)
         return;
 
     /* Check source of interrupt */
-    if (data & REG_C_ALARM_INT_PENDING) {
-    	printf("Alarm ringed!!!\n");
+    if (data & REG_B_UPDATE_INT) {
+		if (rtc_read_second(&s) != OK) return;
+		if (rtc_read_minute(&m) != OK) return;
+		if (rtc_read_hour(&h) != OK) return;		
     }
 }
