@@ -20,10 +20,10 @@
 #define MONTH_DAY 0x07
 #define MONTH 0x08
 #define YEAR 0x09
-#define RTC_REG_A 0x10
-#define RTC_REG_B 0x11
-#define RTC_REG_C 0x12
-#define RTC_REG_D 0x13
+#define RTC_REG_A 0x0A
+#define RTC_REG_B 0x0B
+#define RTC_REG_C 0x0C
+#define RTC_REG_D 0x0D
 
 /* Register A */
 #define RTC_UIP BIT(7)
