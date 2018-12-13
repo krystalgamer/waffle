@@ -3,7 +3,7 @@
 
 #define SCREENSAVER_NUMBER_OF_ELEMENTS 5
 #define SCREENSAVER_IDLE_TIME 120 /* Time to start screensaver in interrupts */
-#define SCREENSAVER_ELE_SPEED 5 /* Speed of the screensaver elements */
+#define SCREENSAVER_ELE_SPEED 1 /* Speed of the screensaver elements */
 
 typedef struct _screensaver_ele {
 	uint8_t id;
