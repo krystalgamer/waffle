@@ -6,80 +6,11 @@
 #include <minix/sysinfo.h>
 #include "window/window.h"
 #include "interrupts/timer_user.h"
+#include "interrupts/rtc.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include "font/letters.h"
 #include "messages.h"
-
-typedef void (*tmr_func_t)(int arg);
-typedef struct minix_timer
-{
-  struct minix_timer	*tmr_next;	/* next in a timer chain */
-  clock_t 		tmr_exp_time;	/* expiration time (absolute) */
-  tmr_func_t		tmr_func;	/* function to call when expired */
-  int			tmr_arg;	/* integer argument */
-} minix_timer_t;
-
-struct mproc {
-  char mp_exitstatus;		/* storage for status when process exits */
-  char mp_sigstatus;		/* storage for signal # for killed procs */
-  char mp_eventsub;		/* process event subscriber, or NO_EVENTSUB */
-  pid_t mp_pid;			/* process id */
-  endpoint_t mp_endpoint;	/* kernel endpoint id */
-  pid_t mp_procgrp;		/* pid of process group (used for signals) */
-  pid_t mp_wpid;		/* pid this process is waiting for */
-  vir_bytes mp_waddr;		/* struct rusage address while waiting */
-  int mp_parent;		/* index of parent process */
-  int mp_tracer;		/* index of tracer process, or NO_TRACER */
-
-  /* Child user and system times. Accounting done on child exit. */
-  clock_t mp_child_utime;	/* cumulative user time of children */
-  clock_t mp_child_stime;	/* cumulative sys time of children */
-
-  /* Real, effective, and saved user and group IDs. */
-  uid_t mp_realuid;		/* process' real uid */
-  uid_t mp_effuid;		/* process' effective uid */
-  uid_t mp_svuid;		/* process' saved uid */
-  gid_t mp_realgid;		/* process' real gid */
-  gid_t mp_effgid;		/* process' effective gid */
-  gid_t mp_svgid;		/* process' saved gid */
-
-  /* Supplemental groups. */
-  int mp_ngroups;		/* number of supplemental groups */
-  gid_t mp_sgroups[NGROUPS_MAX];/* process' supplemental groups */
-
-  /* Signal handling information. */
-  sigset_t mp_ignore;		/* 1 means ignore the signal, 0 means don't */
-  sigset_t mp_catch;		/* 1 means catch the signal, 0 means don't */
-  sigset_t mp_sigmask;		/* signals to be blocked */
-  sigset_t mp_sigmask2;		/* saved copy of mp_sigmask */
-  sigset_t mp_sigpending;	/* pending signals to be handled */
-  sigset_t mp_ksigpending;	/* bitmap for pending signals from the kernel */
-  sigset_t mp_sigtrace;		/* signals to hand to tracer first */
-  void *mp_sigact;	/* as in sigaction(2), pointer into mpsigact */
-  vir_bytes mp_sigreturn; 	/* address of C library __sigreturn function */
-  minix_timer_t mp_timer;	/* watchdog timer for alarm(2), setitimer(2) */
-  clock_t mp_interval[3];	/* setitimer(2) repetition intervals */
-  clock_t mp_started;		/* when the process was started, for ps(1) */
-
-  unsigned mp_flags;		/* flag bits */
-  unsigned mp_trace_flags;	/* trace options */
-  message mp_reply;		/* reply message to be sent to one */
-
-  /* Process execution frame. Both fields are used by procfs. */
-  vir_bytes mp_frame_addr;	/* ptr to proc's initial stack arguments */
-  size_t mp_frame_len;		/* size of proc's initial stack arguments */
-
-  /* Scheduling priority. */
-  signed int mp_nice;		/* nice is PRIO_MIN..PRIO_MAX, standard 0. */
-
-  /* User space scheduling */
-  endpoint_t mp_scheduler;	/* scheduler endpoint id */
-
-  char mp_name[PROC_NAME_LEN];	/* process name */
-
-  int mp_magic;			/* sanity check, MP_MAGIC */
-};
 
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
@@ -113,40 +44,8 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /* Suprimir warnings */
     if(argc == 0 && argv != NULL)
-        printf("PENIS\n");
+        printf("yee\n");
 
-	printf("%d pid\n", getpid());
-
-    struct mproc processes[256];
-	printf("%d vou hcorar\n", getsysinfo(PM_PROC_NR, SI_PROC_TAB, &processes, sizeof(processes)));
-
-    struct mproc *meu = NULL;
-    for(int i = 0; i < 256; i++){
-        if ((processes[i].mp_flags & 1) && processes[i].mp_pid == getpid()){
-            meu = &processes[i];
-            break;
-        }
-    }
-
-    if(meu == NULL){
-        printf("Couldn't find my endpoint, I'm killing myself\n");
-        return 1;
-    }
-
-    FILE *fp = fopen("/home/lcom/waffle_endpoint", "wb+");
-    if(fp == NULL){
-        printf("Cant open my endpoint file\n");
-        return 1;
-    }
-
-    if(fwrite(&(meu->mp_endpoint), sizeof(endpoint_t), 1, fp) != 1){
-        printf("Im a loser that can write his own endpoint to a file\n");
-        fclose(fp);
-        return 1;
-    }
-    fclose(fp);
-
-	
     /* Initialize graphics mode */
 
     /*Codigo do souto contem um mode cuidado meninas! */
@@ -201,6 +100,37 @@ int (proj_main_loop)(int argc, char *argv[]) {
     window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
 
 
+    if(rtc_subscribe_int(&bitNum) != OK){
+        printf("Goddamit i could not enable interrupts for the rtc\n");
+        return 1;
+    }
+    uint32_t rtc_irq_set = BIT(bitNum);
+
+
+    rtc_enable_update_int();
+    /* Test rtc code */
+
+   // uint8_t regb = 0;
+   // if(rtc_read_register(RTC_REG_B, &regb) != OK){
+   //     printf("Oof ouchie\n");
+   // }
+
+   // printf("aqui %01X\n", regb);
+   // regb |= (BIT(4));
+   // rtc_int_handler();
+
+   // if(rtc_write_register(RTC_REG_B, regb) != OK){
+   //     printf("Oof ouchie\n");
+   // }
+
+   // uint8_t rega = 0;
+   // if(rtc_read_register(RTC_REG_A, &rega) != OK){
+   //     printf("Oof ouchie\n");
+   // }
+
+   // printf("registo %01X\n", rega);
+    /* End of test code */
+
     while(!pressed_the_secret_button) {
         /* Get a request message.  */
         if( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) {
@@ -231,6 +161,9 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
 
                 }
+                if( msg.m_notify.interrupts & rtc_irq_set){
+                    rtc_int_handler();
+                }
                 break;
             default:
                 return 1;
@@ -249,7 +182,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
         }
     }
 
+    rtc_disable_update_int();
+    //if(rtc_write_register(RTC_REG_B, regb) != OK){
+    //    printf("Oof ouchie\n");
+    //}
 
+    rtc_unsubscribe_int();
     timer_unsubscribe_int();
     /* Unsubscribe KBC Interrupts */
     if(mouse_unsubscribe_int() != OK) {
