@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include "screensaver.h"
+#include "vbe.h"
+#include "window/window.h" // TODO IS THIS REALLY NECESSARY??? Used to access background color
+
 #include "waffle_xpm.h"
 #include "orange_juice_xpm.h"
 #include "bacon_xpm.h"
-#include "vbe.h"
-#include "window/window.h" // TODO IS THIS REALLY NECESSARY??? Used to access background color
 
 static uint8_t *waffle, *bacon, *orange_juice;
 static uint8_t bytes_per_pixel;
@@ -27,7 +28,6 @@ int initialize_screensaver() {
     uint8_t * sprite = xpm_load(waffle_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-
     waffle = malloc(img.width * img.height * bytes_per_pixel);
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
@@ -38,7 +38,6 @@ int initialize_screensaver() {
     sprite = xpm_load(bacon_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-
     bacon = malloc(img.width * img.height * bytes_per_pixel);
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
@@ -49,13 +48,13 @@ int initialize_screensaver() {
     sprite = xpm_load(orange_juice_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-
     orange_juice = malloc(img.width * img.height * bytes_per_pixel);
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
             memcpy(orange_juice + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
 
 
+    /* Add elements to screensaver */
     add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
     add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon);
     add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice);
@@ -83,8 +82,6 @@ void screensaver_draw() {
 
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
-
-        // TODO There is a bug where the waffles get stuck on collision
 
         /* Check borders at current position */
         if (scr_ele->x < 0) scr_ele->x = 0;
@@ -146,13 +143,16 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
 
 	static uint8_t nextID = 0;
 
+    /* Check if maximum amount of elements has been reached */
     if (currentElements >= SCREENSAVER_NUMBER_OF_ELEMENTS)
         return 0;
 
+    /* Allocate memory for new element */
     ScreensaverEle * new_element = malloc(sizeof(struct _screensaver_ele));
     if(new_element == NULL)
         return 1;
 
+    /* Initialize element fields */
     new_element->id = (++nextID);
     new_element->x = x;
     new_element->y = y;
@@ -161,16 +161,11 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     new_element->width = width;
     new_element->height = height;
 
+    /* Assure direction is not 0 */
     int vert_dir = rand() % 3 - 1;
     int hori_dir = rand() % 3 - 1;
-
-    while (vert_dir == 0 ) {
-	    vert_dir = rand() % 3 - 1;  	
-    }
-
-    while (hori_dir == 0) {
-	    hori_dir = rand() % 3 - 1;  
-    }
+    while (vert_dir == 0 ) vert_dir = rand() % 3 - 1;
+    while (hori_dir == 0) hori_dir = rand() % 3 - 1;
 
     new_element->x_move = hori_dir;
     new_element->y_move = vert_dir;
@@ -213,12 +208,15 @@ ScreensaverEle * element_at_position(ScreensaverEle * ele, int16_t new_x, int16_
 
 bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y) {
 
+    /* Calculate relative positions */
 	int16_t relative_x = pixel_x - new_x;
 	int16_t relative_y = pixel_y - new_y;
 
+    /* Check if out of bounds */
 	if (relative_x >= element->width || relative_y >= element->height || relative_x < 0 || relative_y < 0)
 		return false;
 
+    /* Read pixel color */
 	uint32_t pixel_color;
 	memcpy(&pixel_color, element->sprite + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
 
