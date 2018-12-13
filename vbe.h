@@ -201,8 +201,9 @@ typedef enum _vbe_status {
  * @param width Horizontal size of the symbol
  * @param height Vertical size of the symbol
  * @param color to draw symbol
+ * @param fixedColor Bool indicating if should draw with specified color
  */
-void draw_font_symbol(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color);
+void draw_pixmap_direct_mode(uint8_t * symbol, uint16_t x, uint16_t y, int width, int height, uint32_t color, bool fixedColor);
 
 
 /**

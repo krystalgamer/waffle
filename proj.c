@@ -1,14 +1,19 @@
 // IMPORTANT: you must include the following line in all your C files
 #include <lcom/lcf.h>
 #include <lib.h>
-#include "vbe.h"
-#include "interrupts/mouse.h"
-#include <minix/sysinfo.h>
-#include "window/window.h"
-#include "interrupts/timer_user.h"
-#include "interrupts/rtc.h"
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
+#include <minix/sysinfo.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include "interrupts/mouse.h"
+#include "interrupts/keyboard.h"
+#include "interrupts/timer_user.h"
+#include "interrupts/rtc.h"
+#include "screensaver/screensaver.h"
+#include "window/window.h"
+#include "vbe.h"
 #include "font/letters.h"
 #include "messages.h"
 
@@ -48,31 +53,46 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /* Initialize graphics mode */
 
-    /*Codigo do souto contem um mode cuidado meninas! */
+    srand(time(NULL));
 
-    if(vg_init(0x14C) == NULL){
-        printf("(%s) vg_init failed..quitting", __func__);
+    if(vg_init(R1152x864_DIRECT) == NULL){
+        printf("(%s) vg_init failed..quitting\n", __func__);
         return 1;
     }
 
     /* Initialize the font */
-    if (initLetters() != OK) {
-        printf("(%s) Error initializing the font", __func__);
+    if(initLetters() != OK) {
+        printf("(%s) Error initializing the font\n", __func__);
         return 1;
     }
 
-    /* Subscribe KBC Interrupts */
+    /* Initialize the screensaver elements */
+    if(initialize_screensaver() != OK) {
+        printf("(%s) Error initializing the screensaver\n", __func__);
+        return 1;
+    }
+
+    /* Subscribe mouse Interrupts */
     uint8_t bitNum;
     if(mouse_subscribe_int(&bitNum) != OK) {
+        printf("(%s) There was a problem enabling mouse interrupts\n", __func__);
         vg_exit();
         return 1; 
     } 
-    uint32_t irq_set = BIT(bitNum);
+    uint32_t mouse_irq_set = BIT(bitNum);
+
+    /* Subscribe Keyboard Interrupts */
+    if(keyboard_subscribe_int(&bitNum) != OK) {
+        printf("(%s) There was a problem enabling timer interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+    uint32_t keyboard_irq_set = BIT(bitNum);
 
 
     /* Subscribe Timer 0 Interrupts */
     if(timer_subscribe_int(&bitNum) != OK) {
-        printf("(%s) There was a problem enabling timer interrupts", __func__);
+        printf("(%s) There was a problem enabling timer interrupts\n", __func__);
         vg_exit();
         return 1;
     }
@@ -83,10 +103,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     message msg;
     uint32_t r = 0;
     
-    /* Mask used to verify if a caught interrupt should be handled */
     uint8_t mouse_packet[MOUSE_PACKET_SIZE];
 	struct packet pp;
-    /* Keep receiving and handling interrupts until the ESC key is released. */
+
+    uint8_t scancodes[SCANCODES_BYTES_LEN];
 
     int maxFrames = 2;
     int curFrame = 1;
@@ -99,7 +119,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
     window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
 
-
+    uint32_t idle_time = 0; // time in interrupts
     if(rtc_subscribe_int(&bitNum) != OK){
         printf("Goddamit i could not enable interrupts for the rtc\n");
         return 1;
@@ -108,28 +128,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
 
     rtc_enable_update_int();
-    /* Test rtc code */
-
-   // uint8_t regb = 0;
-   // if(rtc_read_register(RTC_REG_B, &regb) != OK){
-   //     printf("Oof ouchie\n");
-   // }
-
-   // printf("aqui %01X\n", regb);
-   // regb |= (BIT(4));
-   // rtc_int_handler();
-
-   // if(rtc_write_register(RTC_REG_B, regb) != OK){
-   //     printf("Oof ouchie\n");
-   // }
-
-   // uint8_t rega = 0;
-   // if(rtc_read_register(RTC_REG_A, &rega) != OK){
-   //     printf("Oof ouchie\n");
-   // }
-
-   // printf("registo %01X\n", rega);
-    /* End of test code */
 
     while(!pressed_the_secret_button) {
         /* Get a request message.  */
@@ -141,26 +139,35 @@ int (proj_main_loop)(int argc, char *argv[]) {
         if (is_ipc_notify(ipc_status)) { /* received notification */
             switch (_ENDPOINT_P(msg.m_source)) {
                 case HARDWARE: /* hardware interrupt notification */
-                if ( msg.m_notify.interrupts & irq_set) { /* subscribed interrupt */
+                if ( msg.m_notify.interrupts & mouse_irq_set) { /* subscribed interrupt */
 
                     mouse_ih();
 	                if (assemble_mouse_packet(mouse_packet)) {
                         parse_mouse_packet(mouse_packet, &pp);
-						if(pp.mb)
-							pressed_the_secret_button = true;
+			            if(pp.mb)
+				              pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
-                    }	
-
+                    }
+                    idle_time = 0;
                 }
 
                 if( msg.m_notify.interrupts & timer_irq_set){
                     if((++curFrame)%maxFrames == 0){
-                        window_draw();
+                        if (idle_time > SCREENSAVER_IDLE_TIME)
+                            screensaver_draw();
+                        else
+                            window_draw();
                         swap_buffers();
                     }
-
-
+                    idle_time += 1;
                 }
+
+                if (msg.m_notify.interrupts & keyboard_irq_set) {
+                    keyboard_ih();
+                    r = opcode_available(scancodes);
+                    idle_time = 0;
+                }
+
                 if( msg.m_notify.interrupts & rtc_irq_set){
                     rtc_int_handler();
                 }
@@ -182,22 +189,46 @@ int (proj_main_loop)(int argc, char *argv[]) {
         }
     }
 
-    rtc_disable_update_int();
-    //if(rtc_write_register(RTC_REG_B, regb) != OK){
-    //    printf("Oof ouchie\n");
-    //}
+    /* Free the memory allocated for the screensaver */
+    free_screensaver();
 
-    rtc_unsubscribe_int();
-    timer_unsubscribe_int();
+    /* Disable rtc update Interrupts */
+    if (rtc_disable_update_int() != OK) {
+        printf("(%s) error disabling rtc update interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+
+    /* Unsubscribe rtc Interrupts */
+    if (rtc_unsubscribe_int() != OK) {
+        printf("(%s) error unsubscribing rtc interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+
+    /* Unsubscribe timer Interrupts */
+    if (timer_unsubscribe_int() != OK) {
+        printf("(%s) error unsubscribing timer interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+
     /* Unsubscribe KBC Interrupts */
     if(mouse_unsubscribe_int() != OK) {
-      vg_exit();
-      return 1;
+        printf("(%s) error unsubscribing mouse interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+    
+    /* Unsubscribe keyboard interrupts */
+    if(keyboard_unsubscribe_int() != OK) {
+        printf("(%s) error unsubscribing keyboard interrupts\n", __func__);
+        vg_exit();
+        return 1;
     }
 
     /* Returns to default Minix text mode */
     vg_exit();
     
     return 0;
-  return 1;
 }

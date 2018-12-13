@@ -1,3 +1,6 @@
+#ifndef WINDOW_H
+#define WINDOW_H
+
 typedef enum {
     BUTTON,
     TEXT_BOX,
@@ -98,6 +101,8 @@ typedef struct _wnd_lst{
 
 }WindowList;
 
+#define BACKGROUND_COLOR 0x00008081
+
 
 void window_draw();
 void window_mouse_handle();
@@ -147,3 +152,6 @@ int draw_taskbar_clock();
 #define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
 #define MAX_NUM_WINDOWS 6
 Window *pressed_window_taskbar();
+
+
+#endif
