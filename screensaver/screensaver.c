@@ -3,9 +3,12 @@
 #include <math.h>
 #include "screensaver.h"
 #include "waffle_xpm.h"
+#include "orange_juice_xpm.h"
+#include "bacon_xpm.h"
 #include "vbe.h"
+#include "window/window.h" // TODO IS THIS REALLY NECESSARY??? Used to access background color
 
-static uint8_t * waffle;
+static uint8_t *waffle, *bacon, *orange_juice;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
 static int currentElements = 0;
@@ -19,32 +22,64 @@ int initialize_screensaver() {
     /* Get bytes per pixel from vbe */
     bytes_per_pixel = get_bytes_per_pixel();
 
-    /* Load the entire font */
+    /* Load the waffle xpm */
     xpm_image_t img;
     uint8_t * sprite = xpm_load(waffle_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
 
     waffle = malloc(img.width * img.height * bytes_per_pixel);
-
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
             memcpy(waffle + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
 
 
+    /* Load the bacon xpm */
+    sprite = xpm_load(bacon_xpm, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+
+    bacon = malloc(img.width * img.height * bytes_per_pixel);
+    for(int i = 0; i < img.height; i++)
+        for(int j = 0; j<img.width; j++)
+            memcpy(bacon + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+
+
+    /* Load the orange juice xpm */
+    sprite = xpm_load(orange_juice_xpm, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+
+    orange_juice = malloc(img.width * img.height * bytes_per_pixel);
+    for(int i = 0; i < img.height; i++)
+        for(int j = 0; j<img.width; j++)
+            memcpy(orange_juice + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+
+
     add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(500, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
+    add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon);
+    add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice);
     add_element_to_screensaver(500, 700, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(800, 500, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(0, 500, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
+    add_element_to_screensaver(800, 500, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon);
+    add_element_to_screensaver(0, 500, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice);
 
     hasInit = true;
 
     return OK;
 }
 
+void free_screensaver() {
+    free(waffle);
+    free(bacon);
+    free(orange_juice);
+
+    for (int i = 0; i < currentElements; i++) {
+        free(screensaver_elements[i]);
+    }
+}
+
 void screensaver_draw() {    
-    clear_buffer_four(0x00008081);
+    clear_buffer_four(BACKGROUND_COLOR);
 
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
@@ -79,6 +114,11 @@ void screensaver_draw() {
         	new_y = get_y_res() - scr_ele->height;        	
         }
 
+
+        /* Update position */
+        scr_ele->next_x = new_x;
+        scr_ele->next_y = new_y;
+
         /* Check if collides at new position */
         ScreensaverEle * collidingEle = NULL;
         if ((collidingEle = element_at_position(scr_ele, new_x, new_y)) != NULL) {
@@ -90,11 +130,6 @@ void screensaver_draw() {
             collidingEle->y_move = scr_ele->y_move;
             scr_ele->x_move = temp_x_move;
             scr_ele->y_move = temp_y_move;
-        }
-        else {
-        	/* Update position */
-            scr_ele->next_x = new_x;
-            scr_ele->next_y = new_y;
         }
     }
 

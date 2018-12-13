@@ -276,6 +276,9 @@ int (proj_main_loop)(int argc, char *argv[]) {
         }
     }
 
+
+    free_screensaver();
+
     /* Unsubscribe timer interrupts */
     if(timer_unsubscribe_int() != OK){
       vg_exit();
