@@ -3,7 +3,7 @@ PROG=proj
 SRCS += proj.c vbe.c util.c 
 
 .PATH: ${.CURDIR}/interrupts
-SRCS += mouse.c kbc.c timer.c rtc.c keyboard.c
+SRCS += mouse.c kbc.c timer.c rtc.c keyboard.c serial_port.c
 
 .PATH: ${.CURDIR}/font
 SRCS += letters.c
