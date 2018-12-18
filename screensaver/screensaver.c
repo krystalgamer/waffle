@@ -1,5 +1,5 @@
 #include <lcom/lcf.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <math.h>
 #include "screensaver.h"
 #include "vbe.h"

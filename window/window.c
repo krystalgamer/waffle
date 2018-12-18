@@ -259,10 +259,6 @@ void window_draw(){
 
     draw_taskbar();
     pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF);
-
-
-
-    pj_draw_vline(100, 800, 100, 0);
 }
 
 void delete_window(Window *wnd){
