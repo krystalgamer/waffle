@@ -99,6 +99,9 @@ typedef struct _wnd_lst{
 
     }taskbar;
 
+    uint8_t * background_sprite;
+    uint16_t bckg_width, bckg_height;
+
 }WindowList;
 
 #define BACKGROUND_COLOR 0x00008081

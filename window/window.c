@@ -14,14 +14,13 @@ WindowList wnd_list = { NULL, NULL,
         {0, NULL, 0, 0, false, NULL},
         /*clock*/
         {0, 0, 0},
-        NULL, 0, 0 }
+        NULL, 0, 0 },
+    NULL, 0, 0
 };
 extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
 static uint16_t window_frame_height = 0;
-
-static uint8_t *window_background; 
 
 void init_internal_status(){
 
@@ -59,15 +58,21 @@ void init_internal_status(){
         printf("(%s) error loading ChocoTab background xpm\n", __func__);
         return;
     }
-    window_background = malloc(img.width * img.height * bytes_per_pixel);
+
+    /* Store the xpm in the wnd_list */
+    wnd_list.background_sprite = malloc(img.width * img.height * bytes_per_pixel);
+    wnd_list.bckg_width = img.width;
+    wnd_list.bckg_height = img.height;
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
-            memcpy(window_background + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+            memcpy(wnd_list.background_sprite + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
 
 }
 
 void free_window() {
-    free(window_background);
+    free(wnd_list.background_sprite);
+
+    /* TODO Free all allocated memory */
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
@@ -188,7 +193,7 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 void window_draw(){
     
     //clear_buffer_four(BACKGROUND_COLOR);
-    draw_pixmap_direct_mode(window_background, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+    draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
 
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
@@ -253,7 +258,11 @@ void window_draw(){
     }
 
     draw_taskbar();
-    pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF); 
+    pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF);
+
+
+
+    pj_draw_vline(100, 800, 100, 0);
 }
 
 void delete_window(Window *wnd){
