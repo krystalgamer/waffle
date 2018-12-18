@@ -99,6 +99,9 @@ typedef struct _wnd_lst{
 
     }taskbar;
 
+    uint8_t * background_sprite;
+    uint16_t bckg_width, bckg_height;
+
 }WindowList;
 
 #define BACKGROUND_COLOR 0x00008081
@@ -144,6 +147,7 @@ uint32_t update_state(const struct packet *pp);
 void draw_taskbar();
 bool has_taskbar_button_been_pressed();
 void init_taskbar_menu();
+void free_window();
 void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
 ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
