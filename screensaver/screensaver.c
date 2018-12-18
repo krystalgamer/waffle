@@ -8,8 +8,9 @@
 #include "waffle_xpm.h"
 #include "orange_juice_xpm.h"
 #include "bacon_xpm.h"
+#include "screensaver_background.h"
 
-static uint8_t *waffle, *bacon, *orange_juice;
+static uint8_t *waffle, *bacon, *orange_juice, *screensaver_back;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
 static int currentElements = 0;
@@ -54,6 +55,16 @@ int initialize_screensaver() {
             memcpy(orange_juice + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
 
 
+    /* Load the screensaver background xpm */
+    sprite = xpm_load(breakfast_background_xpm, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    screensaver_back = malloc(img.width * img.height * bytes_per_pixel);
+    for(int i = 0; i < img.height; i++)
+        for(int j = 0; j<img.width; j++)
+            memcpy(screensaver_back + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+
+
     /* Add elements to screensaver */
     add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
     add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon);
@@ -71,6 +82,7 @@ void free_screensaver() {
     free(waffle);
     free(bacon);
     free(orange_juice);
+    free(screensaver_back);
 
     for (int i = 0; i < currentElements; i++) {
         free(screensaver_elements[i]);
@@ -78,7 +90,8 @@ void free_screensaver() {
 }
 
 void screensaver_draw() {    
-    clear_buffer_four(BACKGROUND_COLOR);
+    //clear_buffer_four(BACKGROUND_COLOR);
+    draw_pixmap_direct_mode(screensaver_back, 0,0, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT, 0, false);
 
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];

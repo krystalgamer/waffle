@@ -3,6 +3,7 @@
 #include "../font/letters.h"
 #include "util.h"
 #include "window.h"
+#include "window_background.h"
 
 WindowList wnd_list = { NULL, NULL,
     /* cursor */ 
@@ -19,6 +20,8 @@ extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
 static uint16_t window_frame_height = 0;
+
+static uint8_t *window_background; 
 
 void init_internal_status(){
 
@@ -47,6 +50,24 @@ void init_internal_status(){
     wnd_list.taskbar.clock.width = FONT_WIDTH*N_CLOCK_SYMBOLS + 20;
     wnd_list.taskbar.clock.symbol_color = 0;
     wnd_list.taskbar.clock.background_color = 0x008A8A8A;
+
+    /* Load the ChocoTab xpm */
+    xpm_image_t img;
+    uint8_t bytes_per_pixel = get_bytes_per_pixel();
+    uint8_t * sprite = xpm_load(ChocoTab_background, XPM_8_8_8_8, &img);
+    if (sprite == NULL){
+        printf("(%s) error loading ChocoTab background xpm\n", __func__);
+        return;
+    }
+    window_background = malloc(img.width * img.height * bytes_per_pixel);
+    for(int i = 0; i < img.height; i++)
+        for(int j = 0; j<img.width; j++)
+            memcpy(window_background + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+
+}
+
+void free_window() {
+    free(window_background);
 }
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
@@ -166,7 +187,9 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 
 void window_draw(){
     
-    clear_buffer_four(BACKGROUND_COLOR);
+    //clear_buffer_four(BACKGROUND_COLOR);
+    draw_pixmap_direct_mode(window_background, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 
