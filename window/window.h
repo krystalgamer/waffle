@@ -34,7 +34,9 @@ typedef struct _element{
 typedef struct _window{
     uint32_t id;
     int16_t x,y;
+
     uint16_t width, height;
+    uint16_t orig_width, orig_height; /* Redundancy for maximize sake */
     uint32_t color;
     bool minimized;
     bool maximized;

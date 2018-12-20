@@ -112,8 +112,9 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     new_window->id = cur_id++;
     new_window->x = get_x_res()/2 - width/2;
     new_window->y = get_y_res()/2 - height/2;
-    new_window->width = width;
-    new_window->height = height;
+    new_window->width = new_window->orig_width = width;
+    new_window->height = new_window->orig_height = height;
+
     new_window->color = color;
     new_window->minimized = false;
     new_window->minimized = false;
@@ -195,8 +196,20 @@ void window_draw(){
 
     
     //clear_buffer_four(BACKGROUND_COLOR);
-    draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
-    desenhar_palavra();
+
+    Window *pre_walker = wnd_list.first;
+    bool anything_maximized = false;
+    while(pre_walker){
+
+        if(pre_walker->maximized && pre_walker->minimized == false){
+            anything_maximized = true;
+            break;
+        }
+        pre_walker = pre_walker->next;
+    }
+
+    if(!anything_maximized)
+        draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
 
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
@@ -206,12 +219,6 @@ void window_draw(){
             continue;
         }
 
-        if(cur_wnd->maximized){
-
-            cur_wnd->x = 0;
-            cur_wnd->y = wnd_list.taskbar.height + window_frame_height;
-        }
-
         if(cur_wnd->attr.border){
             //TODO Optimize border rendering
             uint32_t border_width = cur_wnd->attr.border_width;
@@ -219,6 +226,7 @@ void window_draw(){
             uint32_t height = cur_wnd->height+border_width*2 + (cur_wnd->attr.border ? window_frame_height : 0);
             pj_draw_rectangle(cur_wnd->x-border_width, y, cur_wnd->width+border_width*2, height, 0x59C0);
         }
+
 
         if(cur_wnd->attr.frame){
             
@@ -250,13 +258,9 @@ void window_draw(){
                 pj_draw_rectangle(maximize_x, maximize_y, button_l, button_l, maximize_color);
                 pj_draw_rectangle(close_x, close_y, button_l, button_l, close_color);
             }
-
-
-
         }
 
-        pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color);
-        draw_elements(cur_wnd);
+        pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color); draw_elements(cur_wnd);
         cur_wnd = cur_wnd->prev;
     }
 
@@ -359,7 +363,18 @@ bool pressed_three_buttons(Window *wnd){
             uint32_t maximize_x = wnd->x + wnd->width - (button_l+pad_between)*2 + pad_between/2;
             uint32_t maximize_y =  wnd->y - window_frame_height + button_pad/2;
             if(mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l)){
-                wnd->maximized = true;
+                wnd->maximized = !wnd->maximized;
+
+                if(wnd->maximized){
+                    wnd->x = 0;
+                    wnd->y = wnd_list.taskbar.height+window_frame_height;
+                    wnd->height = get_y_res()-wnd->y;
+                    wnd->width = get_x_res();
+                }
+                else{
+                    wnd->height = wnd->orig_height;
+                    wnd->width = wnd->orig_width;
+                }
                 return true;
             }
 
@@ -509,6 +524,7 @@ void window_mouse_handle(const struct packet *pp){
 
 
 
+                /* Checks if the window frame was pressed */
                 uint16_t frame_impact = (cur_wnd->attr.frame ? window_frame_height : 0);
                 if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
                     ((cur_wnd->y-frame_impact) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y))
@@ -517,6 +533,7 @@ void window_mouse_handle(const struct packet *pp){
                         
                         if(pressed_three_buttons(cur_wnd))
                             return;
+
                         //printf("ANTES\n");
                         //printf("Window List %p %p\n", wnd_list.first, wnd_list.last);
                         //print_list();
@@ -524,8 +541,12 @@ void window_mouse_handle(const struct packet *pp){
                         move_to_front(cur_wnd);
                         //printf("DEPOIS\n");
                         //print_list();
-                        move_window(cur_wnd, pp);
-                        is_moving_window = true;
+
+                        /* Dont move maximized windows */
+                        if(!cur_wnd->maximized){
+                            move_window(cur_wnd, pp);
+                            is_moving_window = true;
+                        }
                         return;
                     }
                 else if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
