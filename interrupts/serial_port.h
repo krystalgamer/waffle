@@ -63,11 +63,12 @@
 #define IIR_PENDING_INT ~BIT(0)
 #define IIR_NOT_PENDING_INT BIT(0)
 
+#define IIR_INT_ORIGIN_MASK BIT(3) | BIT(2) | BIT(1)
 #define IIR_MODEM_STATUS_INT ~(BIT(3) | BIT(2) | BIT(1))
 #define IIR_TRANSMITTER_EMPTY_INT BIT(1)
 #define IIR_CHARACTER_TIMEOUT_INT BIT(3)
 #define IIR_RECEIVED_DATA_AVAILABLE_INT BIT(2)
-#define IIR_LINE_STATUS_INT BIT(2) | BIT(1)
+#define IIR_LINE_STATUS_INT BIT(2) | BIT(1)	
 
 #define IIR_64B_FIFO BIT(5)
 
@@ -90,7 +91,9 @@ int (ser_subscribe_int)(uint8_t *bit_no);
 int (ser_unsubscribe_int)();
 int ser_read_register(uint8_t reg, uint8_t * register_content);
 int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate);
-
+int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool line_status);
+int ser_deactivate_interrupts();
+void ser_ih();
 
 
 #endif
