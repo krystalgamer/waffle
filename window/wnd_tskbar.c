@@ -93,6 +93,9 @@ bool has_taskbar_button_been_pressed(){
     return wnd_list.taskbar.menu.b_pressed;
 }
 
+void so_para_a_nota(){
+    wnd_list.taskbar.menu.b_pressed = true;
+}
 
 void leave_graphic(){
     pressed_the_secret_button = true;

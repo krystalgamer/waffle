@@ -5,6 +5,7 @@
 #include "window.h"
 #include "window_background.h"
 
+void desenhar_palavra();
 WindowList wnd_list = { NULL, NULL,
     /* cursor */ 
     { 0, 0, 0, 0 },
@@ -191,9 +192,11 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 }
 
 void window_draw(){
+
     
     //clear_buffer_four(BACKGROUND_COLOR);
     draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+    desenhar_palavra();
 
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
@@ -549,4 +552,34 @@ void window_mouse_handle(const struct packet *pp){
 
     is_moving_window = false;
     move_mouse(pp);
+}
+
+char palavra[26] = {
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,
+    0,0,0,0,0,0}
+    ;
+uint32_t palavraSize = 0;
+void escrever_coiso(uint8_t tecla){
+    if(tecla == 255){
+        if(palavraSize == 0)
+            return;
+        palavraSize--;
+        palavra[palavraSize] = 0;
+        return;
+    }
+
+    if(palavraSize >= 25)
+        return;
+
+    palavra[palavraSize++] = tecla;
+
+    if(palavraSize <= 25)
+        palavra[palavraSize] = 0;
+}
+
+void desenhar_palavra(){
+        printHorizontalWord(palavra, 0, 300, 0);
 }

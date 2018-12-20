@@ -17,6 +17,12 @@
 #include "font/letters.h"
 #include "messages.h"
 
+void escrever_coiso();
+
+uint8_t keymap[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0,
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 0, 0, 0, 0, 255, 0};
+
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
 
@@ -166,6 +172,13 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     keyboard_ih();
                     r = opcode_available(scancodes);
                     idle_time = 0;
+
+                    if(r == 2 && scancodes[0] == 0xE0 && scancodes[1] == 0x5B)
+                        so_para_a_nota();
+
+
+                    if(r==1 && !(scancodes[0] >> 7))
+                        escrever_coiso(keymap[scancodes[0]]);
                 }
 
                 if( msg.m_notify.interrupts & rtc_irq_set){

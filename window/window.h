@@ -158,4 +158,6 @@ int draw_taskbar_clock();
 Window *pressed_window_taskbar();
 
 
+void so_para_a_nota();
+
 #endif
