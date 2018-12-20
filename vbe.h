@@ -1,8 +1,6 @@
 #ifndef VBE_H
 #define VBE_H
 
-#define BIT(n) (0x01<<(n))
-
 /* BIOS Services */
 #define VIDEO_CARD_SRV 0x10
 #define PC_CONF_SRV 0x11
@@ -215,5 +213,6 @@ uint8_t get_bytes_per_pixel();
 
 void clear_buffer_four(uint32_t color);
 int pj_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);
+int pj_draw_vline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);
 
 #endif

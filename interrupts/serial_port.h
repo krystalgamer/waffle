@@ -7,6 +7,8 @@
 #define COM2_IRQ 3
 #define COM2_BASE_ADDR 0x2F8
 
+#define MAX_BIT_RATE 115200
+
 /* UART addresses */
 #define RECEIVER_BUFFER_REG 0x0
 #define TRANSMITTER_HOLDING_REG 0x0
@@ -23,15 +25,15 @@
 #define DIVISOR_LATCH_MSB 0x1
 
 /* Line Control Register */
-#define LCR_LENGTH_5 0
+#define LCR_LENGTH_5 ~(BIT(0) | BIT(1))
 #define LCR_LENGTH_6 BIT(0)
 #define LCR_LENGTH_7 BIT(1)
 #define LCR_LENGTH_8 BIT(0) | BIT(1)
 
-#define LCR_1_STOP_BIT 0
+#define LCR_1_STOP_BIT ~BIT(2)
 #define LCR_2_STOP_BIT BIT(2)
 
-#define LCR_NO_PARITY 0
+#define LCR_NO_PARITY ~(BIT(5) | BIT(4) | BIT(3))
 #define LCR_ODD_PARITY BIT(3)
 #define LCR_EVEN_PARITY BIT(4) | BIT(3)
 #define LCR_1_PARITY BIT(5) | BIT(3)
@@ -40,7 +42,7 @@
 #define LCR_BREAK_ENABLE BIT(6)
 
 #define LCR_SELECT_DL BIT(7)
-#define LCR_SELECT_DATA 0
+#define LCR_SELECT_DATA ~BIT(7)
 
 /* Line Status Register */
 #define LSR_RECEIVER_READY BIT(0)
@@ -58,10 +60,10 @@
 #define IER_ENABLE_MODEM_STATUS_INT BIT(3)
 
 /* Interrupt Identification Register */
-#define IIR_PENDING_INT 0
+#define IIR_PENDING_INT ~BIT(0)
 #define IIR_NOT_PENDING_INT BIT(0)
 
-#define IIR_MODEM_STATUS_INT 0
+#define IIR_MODEM_STATUS_INT ~(BIT(3) | BIT(2) | BIT(1))
 #define IIR_TRANSMITTER_EMPTY_INT BIT(1)
 #define IIR_CHARACTER_TIMEOUT_INT BIT(3)
 #define IIR_RECEIVED_DATA_AVAILABLE_INT BIT(2)
@@ -69,7 +71,7 @@
 
 #define IIR_64B_FIFO BIT(5)
 
-#define IIR_NO_FIFO 0
+#define IIR_NO_FIFO ~(BIT(7) | BIT(6))
 #define IIR_ENABLED_FIFO BIT(7) | BIT(6)
 #define IIR_UNUSABLE_FIFO BIT(7)
 
@@ -78,13 +80,17 @@
 #define FCR_CLEAR_RCV_FIFO BIT(1)
 #define FCR_CLEAR_TRANS_FIFO BIT(2)
 #define FCR_ENABLE_64_B_FIFO BIT(5)
-#define FCR_INT_TRIGGER_LVL_1 0
+#define FCR_INT_TRIGGER_LVL_1 ~(BIT(7) | BIT(6))
 #define FCR_INT_TRIGGER_LVL_4 BIT(6)
 #define FCR_INT_TRIGGER_LVL_8 BIT(7)
 #define FCR_INT_TRIGGER_LVL_14 BIT(7) | BIT(6)
 
+
 int (ser_subscribe_int)(uint8_t *bit_no);
 int (ser_unsubscribe_int)();
+int ser_read_register(uint8_t reg, uint8_t * register_content);
+int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate);
+
 
 
 #endif

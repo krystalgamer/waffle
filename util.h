@@ -6,6 +6,8 @@
 
 #define BYTE_SIZE 8
 
+#define BIT(n) (0x01<<(n))
+
 /**
  * @brief Creates a bit mask filled with 1's from index 0 to n
  * 
@@ -24,6 +26,9 @@ uint8_t calculate_size_in_bytes(uint8_t bits);
 
 
 void *alloc_struct(uint32_t size);
+
+int (util_get_LSB)(uint16_t val, uint8_t *lsb);
+int (util_get_MSB)(uint16_t val, uint8_t *msb);
 
 
 #endif

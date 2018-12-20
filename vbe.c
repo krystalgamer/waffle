@@ -162,6 +162,29 @@ int (pj_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
     return VBE_OK;
 }
 
+int (pj_draw_vline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
+
+    /* Check if out of bounds */
+    if (x >= get_x_res() || y >= get_y_res()) {         
+        printf("(%s) Invalid coordinates: x=%d, y=%d", __func__, x, y);
+        return VBE_INVALID_COORDS;      
+    }
+
+    /* Calculate size in bytes each pixel occupies */
+    for (uint32_t i = 0; i < len; i++){
+        /* Check if x is outside of range */
+        if (y+i >= get_y_res())
+        return VBE_OK;
+
+        /* Color the pixel */
+        uint32_t y_coord = (y+i) * get_x_res() * bytes_per_pixel;
+        uint32_t x_coord = x * bytes_per_pixel;  
+        memcpy(backbuffer + y_coord + x_coord, &color, bytes_per_pixel);
+    }
+
+    return VBE_OK;
+}
+
 
 int (pj_draw_rectangle)(int16_t x, int16_t y, uint16_t width, uint16_t height, uint32_t color) {
 
