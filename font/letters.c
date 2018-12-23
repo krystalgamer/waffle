@@ -1,7 +1,7 @@
 #include <lcom/lcf.h>
 #include "letters.h"
 
-static uint8_t * font_sprites[FONT_SYMBOLS_NUMBER];
+static uint8_t * font_sprites = NULL;
 static uint8_t bytes_per_pixel;
 
 int initLetters() {
@@ -16,8 +16,7 @@ int initLetters() {
 
     /* Allocate memory for the font sprites */
     /* TODO try to put them closer*/
-    for (int i = 0; i < FONT_SYMBOLS_NUMBER; i++)
-        font_sprites[i] = malloc(FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel);
+    font_sprites = malloc(FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel * FONT_SYMBOLS_NUMBER);
 
     /* Load the entire font */
     xpm_image_t img;
@@ -29,14 +28,11 @@ int initLetters() {
     for (int symbol_offset = 0; symbol_offset < FONT_SYMBOLS_NUMBER; symbol_offset++){
          /* Iterate lines */
         for(int i = 0; i < FONT_HEIGHT; i++){
-
-            /* Iterate columns */
-            for(int j = 0; j<FONT_WIDTH; j++){
-
-                memcpy(font_sprites[symbol_offset] + (i*FONT_WIDTH + j) * bytes_per_pixel, sprite + (i*img.width + j + symbol_offset * FONT_WIDTH) * bytes_per_pixel, bytes_per_pixel);
-            }
+            memcpy(&font_sprites[symbol_offset  *FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel] + (i*FONT_WIDTH) * bytes_per_pixel, sprite + (i*img.width + symbol_offset * FONT_WIDTH) * bytes_per_pixel, bytes_per_pixel*FONT_WIDTH);
         }
     }
+
+    free(sprite);
 
     hasInit = true;
 
@@ -55,7 +51,7 @@ int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
     }
 
     /* Draw the font symbol */
-    draw_pixmap_direct_mode(font_sprites[symbol_offset], x, y, FONT_WIDTH, FONT_HEIGHT, color, true);
+    draw_pixmap_direct_mode(&font_sprites[symbol_offset*FONT_WIDTH*FONT_HEIGHT*bytes_per_pixel], x, y, FONT_WIDTH, FONT_HEIGHT, color, true);
 
     return OK;
 }
