@@ -53,7 +53,6 @@ void init_internal_status(){
 
     /* Load the ChocoTab xpm */
     xpm_image_t img;
-    uint8_t bytes_per_pixel = get_bytes_per_pixel();
     uint8_t * sprite = xpm_load(ChocoTab_background, XPM_8_8_8_8, &img);
     if (sprite == NULL){
         printf("(%s) error loading ChocoTab background xpm\n", __func__);
@@ -61,12 +60,9 @@ void init_internal_status(){
     }
 
     /* Store the xpm in the wnd_list */
-    wnd_list.background_sprite = malloc(img.width * img.height * bytes_per_pixel);
+    wnd_list.background_sprite = sprite;
     wnd_list.bckg_width = img.width;
     wnd_list.bckg_height = img.height;
-    for(int i = 0; i < img.height; i++)
-        for(int j = 0; j<img.width; j++)
-            memcpy(wnd_list.background_sprite + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
 
 }
 
@@ -182,7 +178,7 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
         return false;
 
     /* Check if the element is inside the window */
-    if( !(x < wnd->width && (x+width) < wnd->width && y < wnd->height && (y+height) < wnd->height))
+    if( !(x < wnd->width && (x+width) <= wnd->width && y < wnd->height && (y+height) <= wnd->height))
         return false;
 
     Element *element = build_element(type, x, y, width, height, attr);
@@ -194,7 +190,6 @@ bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, u
 
 void window_draw(){
 
-    
     //clear_buffer_four(BACKGROUND_COLOR);
 
     Window *pre_walker = wnd_list.first;
@@ -211,6 +206,8 @@ void window_draw(){
     if(!anything_maximized)
         draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
 
+    desenhar_palavra();
+
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 
@@ -219,6 +216,7 @@ void window_draw(){
             continue;
         }
 
+
         if(cur_wnd->attr.border){
             //TODO Optimize border rendering
             uint32_t border_width = cur_wnd->attr.border_width;
@@ -226,7 +224,6 @@ void window_draw(){
             uint32_t height = cur_wnd->height+border_width*2 + (cur_wnd->attr.border ? window_frame_height : 0);
             pj_draw_rectangle(cur_wnd->x-border_width, y, cur_wnd->width+border_width*2, height, 0x59C0);
         }
-
 
         if(cur_wnd->attr.frame){
             
@@ -260,7 +257,8 @@ void window_draw(){
             }
         }
 
-        pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color); draw_elements(cur_wnd);
+        pj_draw_rectangle(cur_wnd->x, cur_wnd->y, cur_wnd->width, cur_wnd->height, cur_wnd->color);
+        draw_elements(cur_wnd);
         cur_wnd = cur_wnd->prev;
     }
 
@@ -479,6 +477,33 @@ void print_list(){
 
 }
 
+extern uint8_t keymap[];
+void window_kbd_handle(const uint8_t *scancode, uint32_t num){
+
+    /* No scancode to be read */
+    if(!num)
+        return;
+
+    Window *wnd = wnd_list.first;
+
+
+    /* TODO this souldnt be needed, just here for future reference */
+    if(wnd->minimized)
+        return;
+
+    /* Call the handler if it returns true then use this */
+    Element *cur_el = wnd->elements;
+    while(cur_el){
+
+        if(cur_el->type == TEXT_BOX){
+            if(cur_el->attr.text_box.selected)
+                modify_text_box(cur_el, scancode, num);
+        }
+        cur_el = cur_el->next;
+    }
+
+    return;
+}
 
 void window_mouse_handle(const struct packet *pp){
     

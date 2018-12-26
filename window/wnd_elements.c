@@ -1,7 +1,23 @@
 #include <lcom/lcf.h>
+#include "../font/letters.h"
 #include "window.h"
 #include "util.h"
 #include "vbe.h"
+
+uint8_t keymap[] = {
+    /* 0x02 1 */
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 255, 255, 
+    /* 0x10 q  0x1C }  (2 extra for padding new line)*/
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', 0, 0,
+
+    /* 0x1E a  0x28 ' (3 extra for padding) */
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 0, 0, 0,
+
+
+    /* 0x2C z  0x35 / */ 
+    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'
+    
+};
 
 Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr){
 
@@ -18,8 +34,14 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
     switch(type){
 
         case BUTTON:
-                memcpy(&new_el->attr, (attr == NULL ? &DEFAULT_BUTTON_ATTR : attr), sizeof(struct _button_attr)); 
-                break;
+            memcpy(&new_el->attr, (attr == NULL ? &DEFAULT_BUTTON_ATTR : attr), sizeof(struct _button_attr)); 
+            break;
+        case TEXT_BOX:
+            memcpy(&new_el->attr, (attr == NULL ? &DEFAULT_TEXT_BOX_ATTR : attr), sizeof(struct _text_box_attr));
+            /* TODO dont assume stuff */
+            new_el->attr.text_box.text = malloc(new_el->attr.text_box.text_size);
+            memset(new_el->attr.text_box.text, 0, new_el->attr.text_box.text_size);
+            break;
         default:
             free(new_el);
             return NULL;
@@ -67,9 +89,36 @@ static void draw_button(const Window *wnd, const Element *element){
 }
 
 static void draw_text_box(const Window *wnd, const Element *element){
-    printf("%p %p\n", wnd, element);
+    pj_draw_rectangle(wnd->x + element->x, wnd->y + element->y, element->width, element->height, element->attr.text_box.background_color);
+    printHorizontalWord(element->attr.text_box.text, wnd->x + element->x , wnd->y + element->y, 0xFFFFFFFF);
 }
 
 static void draw_radio_button(const Window *wnd, const Element *element){
     printf("%p %p\n", wnd, element);
+}
+
+void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
+
+    if(num == 1){
+        /* Ignore breakcodes */
+        if(scancode[0] >> 7)
+            return;
+
+        uint8_t cur = keymap[scancode[0]];
+        uint32_t len = strlen(element->attr.text_box.text);
+        /* Backspace was pressed */
+        if(cur == 255){
+            if(!len) return;
+
+            element->attr.text_box.text[--len] = 0;
+            return;
+        }
+
+        /* Dont write more than necessary */
+        if(len >= element->attr.text_box.text_size-1)
+            return;
+
+        element->attr.text_box.text[len++] = cur;
+    }
+    
 }

@@ -24,6 +24,13 @@ typedef struct _element{
             uint32_t color, overlay_color;
         }button;
 
+        struct _text_box_attr{
+            char *text;
+            uint32_t text_size;
+            uint32_t background_color, text_color;
+            bool selected;
+        }text_box;
+
     }attr;
 
     struct _element *next;
@@ -111,6 +118,7 @@ typedef struct _wnd_lst{
 
 void window_draw();
 void window_mouse_handle();
+void window_kbd_handle(const uint8_t *scancode, uint32_t num);
 uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name);
 void init_internal_status();
 bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
@@ -123,6 +131,7 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
 void draw_elements(const Window *wnd);
 
 static const struct _button_attr DEFAULT_BUTTON_ATTR = { "DEFAULT", 0x12131415, 0xFF252319 };
+static const struct _text_box_attr DEFAULT_TEXT_BOX_ATTR = { NULL, 50, 0, 0xFFFFFFFF, true };
 
 /* TODO fazer isto com bits */
 #define L_BUTTON 4 
@@ -161,5 +170,6 @@ Window *pressed_window_taskbar();
 
 
 void so_para_a_nota();
+void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num);
 
 #endif
