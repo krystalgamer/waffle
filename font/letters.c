@@ -70,6 +70,21 @@ int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
     return OK;
 }
 
+int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, uint32_t color){
+
+    /* Print each symbol of the word in the correct position */
+    for(int i = 0; len && word[i]; i++,len--){
+        if(word[i] == 32)//skip spaces
+            continue;
+        if (printSymbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
+            printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
+            return 1;
+        }
+    }
+    return OK;
+
+}
+
 int printVerticalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
     
     /* Print each symbol of the word in the correct position */

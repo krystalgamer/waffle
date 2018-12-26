@@ -119,8 +119,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     init_internal_status();
     //create_window(200, 100, 0x0AAAAAA, "Janela Fixe");
     //create_window(100, 200, 0x0AAAAAA, "Feia");
-    uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita");
-    create_terminus();
+    uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita", NULL);
 
     window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
     window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);

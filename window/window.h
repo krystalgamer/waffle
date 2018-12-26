@@ -12,6 +12,7 @@ typedef enum {
 
 typedef struct _element{
     
+    uint32_t id;
     ElementType type;
     uint16_t x, y;
 
@@ -45,8 +46,10 @@ typedef struct _window{
     uint16_t width, height;
     uint16_t orig_width, orig_height; /* Redundancy for maximize sake */
     uint32_t color;
+    bool (*handler)(Element *el, unsigned type, void *data);
     bool minimized;
     bool maximized;
+    uint32_t last_el_id;
     Element *elements;
 
     struct{
@@ -119,9 +122,9 @@ typedef struct _wnd_lst{
 void window_draw();
 void window_mouse_handle();
 void window_kbd_handle(const uint8_t *scancode, uint32_t num);
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name);
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*));
 void init_internal_status();
-bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
+uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
 
 bool is_window_focused(const Window *wnd);
 
@@ -171,5 +174,15 @@ Window *pressed_window_taskbar();
 
 void so_para_a_nota();
 void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num);
+
+typedef struct _kbd_msg{
+    uint32_t num;
+    uint8_t scancodes[3];
+}kbd_msg;
+
+enum MESSAGE_TYPE{
+    KEYBOARD,
+    MOUSE
+};
 
 #endif

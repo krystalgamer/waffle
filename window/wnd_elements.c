@@ -7,15 +7,16 @@
 uint8_t keymap[] = {
     /* 0x02 1 */
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 255, 255, 
-    /* 0x10 q  0x1C }  (2 extra for padding new line)*/
-    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', 0, 0,
+
+    /* 0x10 q  0x1B }  (2 extra for padding new line)*/
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', 254, 0,
 
     /* 0x1E a  0x28 ' (3 extra for padding) */
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 0, 0, 0,
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 0, 0, 254,
 
 
     /* 0x2C z  0x35 / */ 
-    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'
+    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,0,0, ' '
     
 };
 
@@ -90,7 +91,19 @@ static void draw_button(const Window *wnd, const Element *element){
 
 static void draw_text_box(const Window *wnd, const Element *element){
     pj_draw_rectangle(wnd->x + element->x, wnd->y + element->y, element->width, element->height, element->attr.text_box.background_color);
-    printHorizontalWord(element->attr.text_box.text, wnd->x + element->x , wnd->y + element->y, 0xFFFFFFFF);
+
+    char *text = element->attr.text_box.text; 
+    uint32_t text_len = strlen(text);
+    uint32_t lines = (text_len*FONT_WIDTH)/wnd->width + ((text_len*FONT_WIDTH)%wnd->width ? 1 : 0);
+
+    /*clamp num lines */
+    uint32_t max_lines = wnd->height/FONT_HEIGHT;
+    lines = (lines > max_lines ? max_lines : lines);
+    uint32_t char_per_line = wnd->width/FONT_WIDTH;
+
+    for(unsigned i = 0; i<lines; i++){
+        print_horizontal_word_len(&text[i*char_per_line], char_per_line, wnd->x + element->x , wnd->y + element->y + i*FONT_HEIGHT, element->attr.text_box.text_color);
+    }
 }
 
 static void draw_radio_button(const Window *wnd, const Element *element){
@@ -119,6 +132,7 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
             return;
 
         element->attr.text_box.text[len++] = cur;
+
     }
     
 }

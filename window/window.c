@@ -93,7 +93,7 @@ void add_window_to_list(Window *wnd){
     wnd_list.last = wnd;
 }
 
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name){
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*)){
     
     /* Garantir no futuro o suporte de 4 milhoes */
     static uint32_t cur_id = 1;
@@ -110,10 +110,12 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     new_window->y = get_y_res()/2 - height/2;
     new_window->width = new_window->orig_width = width;
     new_window->height = new_window->orig_height = height;
+    new_window->last_el_id = 1;
 
     new_window->color = color;
     new_window->minimized = false;
     new_window->minimized = false;
+    new_window->handler = input_handler;
     new_window->attr.border = true; /* TODO allow the option in the future */
     new_window->attr.border_width = 2; /* TODO allow the option in the future */
     new_window->attr.frame = true;
@@ -151,11 +153,11 @@ Window *window_get_by_id(uint32_t id){
     return return_wnd;
 }
 
-bool window_add_element_to_list(Window *wnd, Element *element){
+void window_add_element_to_list(Window *wnd, Element *element){
     
     if(wnd->elements == NULL){
         wnd->elements = element;
-        return true;
+        return;
     }
 
     Element *cur_element = wnd->elements;
@@ -163,29 +165,29 @@ bool window_add_element_to_list(Window *wnd, Element *element){
         cur_element = cur_element->next;
 
     cur_element->next = element;
-    return true;
-
 }
 
-bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr){
+uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr){
     
     if(id == 0)
-        return false;
+        return 0;
 
     //TODO por agora vamos so permitir elementos que caibam na janela
     Window *wnd = window_get_by_id(id);
     if(wnd == NULL)
-        return false;
+        return 0;
 
     /* Check if the element is inside the window */
     if( !(x < wnd->width && (x+width) <= wnd->width && y < wnd->height && (y+height) <= wnd->height))
-        return false;
+        return 0;
 
     Element *element = build_element(type, x, y, width, height, attr);
     if(element == NULL)
-        return false;
+        return 0;
 
-    return window_add_element_to_list(wnd, element);
+    element->id = wnd->last_el_id++;
+    window_add_element_to_list(wnd, element);
+    return element->id;
 }
 
 void window_draw(){
@@ -496,8 +498,18 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
     while(cur_el){
 
         if(cur_el->type == TEXT_BOX){
-            if(cur_el->attr.text_box.selected)
-                modify_text_box(cur_el, scancode, num);
+            if(cur_el->attr.text_box.selected){
+                kbd_msg msg = {num, {scancode[0], scancode[1], scancode[2]}};
+
+                if(wnd->handler == NULL){
+                    modify_text_box(cur_el, scancode, num);
+                    break;
+                }
+
+                if(!wnd->handler(cur_el, KEYBOARD, &msg))
+                    modify_text_box(cur_el, scancode, num);
+                break;
+            }
         }
         cur_el = cur_el->next;
     }
