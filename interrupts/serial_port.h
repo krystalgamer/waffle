@@ -97,6 +97,7 @@ uint8_t ser_read_ack();
 void ser_flush_rbr();
 int ser_write_char(uint8_t chr);
 int ser_write_msg(uint8_t msg);
+uint8_t ser_msg_status();
 void ser_ih();
 
 
