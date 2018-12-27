@@ -20,13 +20,14 @@ uint8_t keymap[] = {
     
 };
 
-Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr){
+Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier){
 
     Element *new_el = alloc_struct(sizeof(Element));
     if(new_el == NULL)
         return NULL;
 
     new_el->type = type;
+    new_el->identifier = identifier;
     new_el->width = width;
     new_el->height = height;
     new_el->x = x;
@@ -43,6 +44,23 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
             new_el->attr.text_box.text = malloc(new_el->attr.text_box.text_size);
             memset(new_el->attr.text_box.text, 0, new_el->attr.text_box.text_size);
             break;
+        case LIST_VIEW:
+            if(attr == NULL)
+                break;
+            memcpy(&new_el->attr, attr, sizeof(struct _list_view_attr));
+            new_el->attr.list_view.scrollbar_active = (new_el->attr.list_view.num_entries > new_el->height/FONT_HEIGHT); 
+            new_el->attr.list_view.drawable_entries = (new_el->attr.list_view.scrollbar_active ? new_el->height/FONT_HEIGHT : new_el->attr.list_view.num_entries);
+
+            new_el->attr.list_view.max_chars = new_el->width/FONT_WIDTH;
+            new_el->attr.list_view.scrollbar_selected = false;
+            new_el->attr.list_view.scrollbar_y = 0;
+            /* size in percentage */
+            float percentage_scroll = (float)(new_el->attr.list_view.drawable_entries) / (new_el->attr.list_view.num_entries); 
+            new_el->attr.list_view.scrollbar_height = (uint32_t)(percentage_scroll*new_el->height);
+            break;
+        case CHECKBOX:
+            memcpy(&new_el->attr, attr, sizeof(struct _checkbox_attr));
+            break;
         default:
             free(new_el);
             return NULL;
@@ -54,13 +72,16 @@ static void draw_button(const Window *wnd, const Element *element);
 static void draw_text_box(const Window *wnd, const Element *element);
 static void draw_radio_button(const Window *wnd, const Element *element);
 static void draw_button(const Window *wnd, const Element *element);
+static void draw_list_view(const Window *wnd, const Element *element);
+static void draw_checkbox(const Window *wnd, const Element *element);
+
 
 static void draw_invalid(const Window *wnd, const Element *element){
     /* TODO */
     printf("%p %p\n", wnd, element);
 }
 
-static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_invalid };
+static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_invalid };
 
 //TODO deveria passar Window? ou coords da janela
 void draw_elements(const Window *wnd){
@@ -87,6 +108,30 @@ static void draw_button(const Window *wnd, const Element *element){
     else
         pj_draw_rectangle(wnd->x + element->x, wnd->y + element->y, element->width, element->height, element->attr.button.color);
 
+    uint32_t text_x = wnd->x + element->x + element->width/2 - strlen(element->attr.button.text)*FONT_WIDTH/2;
+    uint32_t text_y = wnd->y + element->y + element->height/2 - FONT_HEIGHT/2;
+    uint32_t num_chars = ((element->x + element->width)-text_x)/FONT_WIDTH;
+
+    print_horizontal_word_len(element->attr.button.text, num_chars, text_x, text_y, 0);
+
+}
+
+static void draw_list_view(const Window *wnd, const Element *element){
+    pj_draw_rectangle(wnd->x+element->x, wnd->y+element->y, element->width, element->height, 0);
+    
+    if(element->attr.list_view.scrollbar_active){
+        pj_draw_rectangle(wnd->x+element->x+element->width, wnd->y+element->y+element->attr.list_view.scrollbar_y, FONT_WIDTH, element->attr.list_view.scrollbar_height, 0xFFFFFFFF);
+    }
+
+    /* TODO dont use constants */
+    uint32_t height_per_ele = element->height/element->attr.list_view.num_entries; 
+    uint32_t start_index = element->attr.list_view.scrollbar_y/height_per_ele;
+
+    for(unsigned i = 0; i<element->attr.list_view.drawable_entries; i++){
+	
+        print_horizontal_word_len(element->attr.list_view.entries[start_index+i], element->attr.list_view.max_chars, wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, (mouse_over_coords(wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, wnd->x+element->x+element->width,wnd->y+element->y+i*FONT_HEIGHT + FONT_HEIGHT ) ? 0x000000FF : 0xFFFFFFFF));
+
+    }
 }
 
 static void draw_text_box(const Window *wnd, const Element *element){
@@ -110,6 +155,19 @@ static void draw_radio_button(const Window *wnd, const Element *element){
     printf("%p %p\n", wnd, element);
 }
 
+static void draw_checkbox(const Window *wnd, const Element *element){
+    pj_draw_rectangle(wnd->x+element->x, wnd->y+element->y, FONT_HEIGHT, FONT_HEIGHT, 0);
+
+
+    if(element->attr.checkbox.enabled)
+        printHorizontalWord("X", wnd->x+element->x+FONT_HEIGHT/2-FONT_WIDTH/2, wnd->y+element->y, 0xFFFFFFFF);
+
+
+    uint32_t num_chars = (wnd->width-element->x)/FONT_WIDTH;
+    print_horizontal_word_len(element->attr.checkbox.text, num_chars,wnd->x+element->x+FONT_HEIGHT, wnd->y+element->y, 0);
+
+}
+
 void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
 
     if(num == 1){
@@ -126,6 +184,8 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
             element->attr.text_box.text[--len] = 0;
             return;
         }
+        /* Enter was pressed*/
+        else if(cur == 254) return;
 
         /* Dont write more than necessary */
         if(len >= element->attr.text_box.text_size-1)
@@ -135,4 +195,58 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
 
     }
     
+}
+
+Element *find_by_id(Window *wnd, char *identifier){
+    Element *el = wnd->elements;    
+    while(el){
+
+        if(el->identifier != NULL){
+            if(!strcmp(identifier, el->identifier))
+                return el;
+        }
+
+        el = el->next;
+    }
+
+    return NULL;
+}
+
+void set_list_view_elements(Element *element, char **entries, unsigned num){
+
+        if(element == NULL){
+
+            printf("Passaste nulo oh filho\n");
+            return;
+        }
+
+        if(element->type != LIST_VIEW){
+            printf("NAO PASSASTE UMA LSITA FILHO DA PUTA\n");
+            return;
+        }
+
+        element->attr.list_view.num_entries = num;
+
+        /* TODO THis leaks memory, jsoe do futuro, no build_element garante que as strings sao duplicadas para 
+         * as poderes libertar, beijocas, fode-te */
+
+        char **new_entries = malloc(sizeof(char*)*num);
+        if(new_entries == NULL)
+            return;
+
+        for(unsigned i = 0; i<num; i++)
+            new_entries[i] = strdup(entries[i]);
+
+        element->attr.list_view.entries = new_entries;
+    
+        element->attr.list_view.scrollbar_active = (element->attr.list_view.num_entries > element->height/FONT_HEIGHT); 
+        element->attr.list_view.drawable_entries = (element->attr.list_view.scrollbar_active ? element->height/FONT_HEIGHT : element->attr.list_view.num_entries);
+
+        element->attr.list_view.max_chars = element->width/FONT_WIDTH;
+        element->attr.list_view.scrollbar_selected = false;
+        element->attr.list_view.scrollbar_y = 0;
+
+        /* size in percentage */
+        float percentage_scroll = (float)(element->attr.list_view.drawable_entries) / (element->attr.list_view.num_entries); 
+        element->attr.list_view.scrollbar_height = (uint32_t)(percentage_scroll*element->height);
 }

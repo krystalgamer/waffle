@@ -4,8 +4,11 @@
 typedef enum {
     BUTTON,
     TEXT_BOX,
+
     RADIO_BUTTON,
 
+    LIST_VIEW,
+    CHECKBOX,
     INVALID
 
 }ElementType;
@@ -13,6 +16,7 @@ typedef enum {
 typedef struct _element{
     
     uint32_t id;
+    char *identifier;/* LCOM specific id */
     ElementType type;
     uint16_t x, y;
 
@@ -32,6 +36,24 @@ typedef struct _element{
             bool selected;
         }text_box;
 
+        struct _list_view_attr_real{
+            char **entries;
+            uint32_t num_entries;
+
+            uint32_t drawable_entries;
+            bool scrollbar_active;
+            bool scrollbar_selected;
+            uint32_t scrollbar_y;
+            uint32_t scrollbar_height;
+            uint32_t max_chars;
+
+        }list_view;
+
+        struct _checkbox_attr{
+            char *text;
+            bool enabled;
+        }checkbox;
+
     }attr;
 
     struct _element *next;
@@ -46,7 +68,7 @@ typedef struct _window{
     uint16_t width, height;
     uint16_t orig_width, orig_height; /* Redundancy for maximize sake */
     uint32_t color;
-    bool (*handler)(Element *el, unsigned type, void *data);
+    bool (*handler)(Element *el, unsigned type, void *data, struct _window *wnd);
     bool minimized;
     bool maximized;
     uint32_t last_el_id;
@@ -122,18 +144,18 @@ typedef struct _wnd_lst{
 void window_draw();
 void window_mouse_handle();
 void window_kbd_handle(const uint8_t *scancode, uint32_t num);
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*));
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*, Window*));
 void init_internal_status();
-uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
+uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr, char *identifier);
 
 bool is_window_focused(const Window *wnd);
 
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf);
 
-Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr);
+Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier);
 void draw_elements(const Window *wnd);
 
-static const struct _button_attr DEFAULT_BUTTON_ATTR = { "DEFAULT", 0x12131415, 0xFF252319 };
+static const struct _button_attr DEFAULT_BUTTON_ATTR = { "TEST", 0x007A7A7A, 0x00BABABA};
 static const struct _text_box_attr DEFAULT_TEXT_BOX_ATTR = { NULL, 50, 0, 0xFFFFFFFF, true };
 
 /* TODO fazer isto com bits */
@@ -172,6 +194,11 @@ int draw_taskbar_clock();
 Window *pressed_window_taskbar();
 
 
+struct _list_view_attr{
+    char **entries;
+    uint32_t num_entries;
+};
+
 void so_para_a_nota();
 void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num);
 
@@ -180,9 +207,19 @@ typedef struct _kbd_msg{
     uint8_t scancodes[3];
 }kbd_msg;
 
+typedef struct _list_view_msg{
+    uint32_t index;
+}list_view_msg;
+
 enum MESSAGE_TYPE{
     KEYBOARD,
-    MOUSE
+    MOUSE,
+    LIST_VIEW_MSG,
+    BUTTON_MSG
+
 };
 
+Element *find_by_id(Window *wnd, char *identifier);
+void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp);
+void set_list_view_elements(Element *element, char **entries, unsigned num);
 #endif

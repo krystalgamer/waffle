@@ -57,6 +57,9 @@ int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
 }
 
 int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
+
+    if(word == NULL)
+        return 1;
     
     /* Print each symbol of the word in the correct position */
     for(int i = 0; word[i]; i++){
@@ -71,6 +74,9 @@ int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
 }
 
 int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, uint32_t color){
+
+    if(word == NULL)
+        return 1;
 
     /* Print each symbol of the word in the correct position */
     for(int i = 0; len && word[i]; i++,len--){

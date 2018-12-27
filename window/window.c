@@ -72,6 +72,141 @@ void free_window() {
     /* TODO Free all allocated memory */
 }
 
+void element_deselect_others(Window *wnd, Element *ignore){
+
+    Element *el = wnd->elements;
+    while(el){
+
+        if(el != ignore){
+            if(el->type == LIST_VIEW)
+                el->attr.list_view.scrollbar_selected = false;
+            else if(el->type == TEXT_BOX)
+                el->attr.text_box.selected = false;
+        }
+
+        el = el->next;
+    }
+}
+
+void element_deselect_all(Window *wnd){
+
+    if(wnd == NULL)
+        return;
+
+    Element *el = wnd->elements;
+    while(el){
+        if(el->type == LIST_VIEW)
+            el->attr.list_view.scrollbar_selected = false;
+        else if(el->type == TEXT_BOX)
+            el->attr.text_box.selected = false;
+        el = el->next;
+    }
+}
+
+void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp){
+    Element *cur_el = wnd->elements;
+
+    /* Person is holding the mouse button */
+    if(!pressed){
+
+        Element *selected = NULL;
+
+        while(cur_el){
+            if(cur_el->type == LIST_VIEW && cur_el->attr.list_view.scrollbar_selected){
+                selected = cur_el;
+                break;
+            }
+            cur_el = cur_el->next;
+        }
+
+        if(!selected)
+            return;
+
+        if(selected->type != LIST_VIEW)
+            return;
+
+
+        /* Someone is moving the scrollbar */
+        if(pp->delta_y > 0)
+            selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) > selected->attr.list_view.scrollbar_y ? 0 :
+                    selected->attr.list_view.scrollbar_y - pp->delta_y);
+        else
+            selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) + selected->attr.list_view.scrollbar_y > selected->height - selected->attr.list_view.scrollbar_height ?  selected->height - selected->attr.list_view.scrollbar_height : selected->attr.list_view.scrollbar_y - pp->delta_y);
+
+        return;
+    }
+
+    while(cur_el){
+
+        if(cur_el->type == LIST_VIEW){
+
+            /*TODO DONT USE FONT_WIDTH */
+            if(mouse_over_coords(wnd->x+cur_el->x, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y+cur_el->height)){
+
+                element_deselect_all(wnd);
+                /* By default we dont do anything with presses on the list view objects */
+                if(wnd->handler == NULL)
+                    break;
+
+                uint32_t index_over = 0;
+                /*Sometimes the lsit_view box is larger than the text, so if we're not pressing anything dont do anything*/
+                bool pressed_anything = false;
+                for(unsigned i = 0; i<cur_el->attr.list_view.drawable_entries; i++){
+                    if(mouse_over_coords(wnd->x+cur_el->x, wnd->y+cur_el->y+i*FONT_HEIGHT, wnd->x+cur_el->x+cur_el->width,wnd->y+cur_el->y+i*FONT_HEIGHT + FONT_HEIGHT )){
+                        index_over = i;
+                        pressed_anything = true;
+                        break;
+                    }
+                }
+
+                if(!pressed_anything)
+                    return;
+
+                uint32_t height_per_ele = cur_el->height/cur_el->attr.list_view.num_entries; 
+                uint32_t start_index = cur_el->attr.list_view.scrollbar_y/height_per_ele;
+
+                list_view_msg msg = { start_index+index_over };
+
+                /* Dont care about the return, there's nothing to do there */
+                wnd->handler(cur_el, LIST_VIEW_MSG, &msg, wnd);
+                return;
+            }
+            /* Check for scrollbar presses */
+            else if(mouse_over_coords(wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width+FONT_WIDTH, wnd->y+cur_el->y+cur_el->height)){
+                cur_el->attr.list_view.scrollbar_selected = true;
+                element_deselect_others(wnd, cur_el);
+                break;
+            }
+
+        }
+        else if(mouse_over_coords(wnd->x + cur_el->x, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y+cur_el->height)){
+
+            if(cur_el->type == TEXT_BOX)
+                cur_el->attr.text_box.selected = true;
+
+            if(cur_el->type == CHECKBOX)
+                cur_el->attr.checkbox.enabled = !cur_el->attr.checkbox.enabled;
+
+            /* By default buttons dont require any special treatment */
+            if(cur_el->type == BUTTON && wnd->handler != NULL)
+                wnd->handler(cur_el, BUTTON_MSG, NULL, wnd);
+
+
+
+            element_deselect_others(wnd, cur_el);
+            break;
+        }
+
+
+        if(cur_el->type == TEXT_BOX)
+            cur_el->attr.text_box.selected = false;
+        else if(cur_el->type == LIST_VIEW)
+            cur_el->attr.list_view.scrollbar_selected = false;
+
+        cur_el = cur_el->next;
+    }
+}
+
 bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf){
     return ( (x <= wnd_list.cursor.x && wnd_list.cursor.x < xf) && (y <= wnd_list.cursor.y && wnd_list.cursor.y < yf));
 }
@@ -93,7 +228,7 @@ void add_window_to_list(Window *wnd){
     wnd_list.last = wnd;
 }
 
-uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*)){
+uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*, Window *)){
     
     /* Garantir no futuro o suporte de 4 milhoes */
     static uint32_t cur_id = 1;
@@ -167,7 +302,7 @@ void window_add_element_to_list(Window *wnd, Element *element){
     cur_element->next = element;
 }
 
-uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr){
+uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier){
     
     if(id == 0)
         return 0;
@@ -181,7 +316,7 @@ uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t 
     if( !(x < wnd->width && (x+width) <= wnd->width && y < wnd->height && (y+height) <= wnd->height))
         return 0;
 
-    Element *element = build_element(type, x, y, width, height, attr);
+    Element *element = build_element(type, x, y, width, height, attr, identifier);
     if(element == NULL)
         return 0;
 
@@ -506,7 +641,7 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
                     break;
                 }
 
-                if(!wnd->handler(cur_el, KEYBOARD, &msg))
+                if(!wnd->handler(cur_el, KEYBOARD, &msg, wnd))
                     modify_text_box(cur_el, scancode, num);
                 break;
             }
@@ -529,26 +664,33 @@ void window_mouse_handle(const struct packet *pp){
            call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height); 
         }
 
-
         /* Check for button presses on the taskbar */
-        if(has_taskbar_button_been_pressed())
+        if(has_taskbar_button_been_pressed()){
+            element_deselect_all(wnd_list.first);
             return;
+        }
 
         Window *pressed = pressed_window_taskbar();
         if(pressed != NULL){
             if(pressed->minimized == false){
                 if(pressed == wnd_list.first)
                     pressed->minimized = true;
-                else
+                else{
+                    element_deselect_all(wnd_list.first);
                     move_to_front(pressed);
+                }
             }
             else{
+                element_deselect_all(wnd_list.first);
                 pressed->minimized = false;
                 move_to_front(pressed);
             }
 
         } 
         else if( !(state & L_KEPT) ){
+
+            bool window_pressed = false;
+
             /* No window is being moved, search where the click landed */
             Window *cur_wnd = wnd_list.first;
             while(cur_wnd){
@@ -559,25 +701,24 @@ void window_mouse_handle(const struct packet *pp){
                     continue;
                 }
 
-
-
                 /* Checks if the window frame was pressed */
                 uint16_t frame_impact = (cur_wnd->attr.frame ? window_frame_height : 0);
                 if( (cur_wnd->x < wnd_list.cursor.x && wnd_list.cursor.x < (cur_wnd->x + cur_wnd->width)) &&
                     ((cur_wnd->y-frame_impact) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y))
                     ){
                         
+                        /* Dont need to check for window_pressed here since it already handles the deselection
+                         * of elements*/
                         
                         if(pressed_three_buttons(cur_wnd))
                             return;
 
-                        //printf("ANTES\n");
-                        //printf("Window List %p %p\n", wnd_list.first, wnd_list.last);
-                        //print_list();
                         moving_window = cur_wnd;
+
+                        /* Elements get deselected from the current active window */
+                        if(wnd_list.first != cur_wnd)
+                            element_deselect_all(wnd_list.first);
                         move_to_front(cur_wnd);
-                        //printf("DEPOIS\n");
-                        //print_list();
 
                         /* Dont move maximized windows */
                         if(!cur_wnd->maximized){
@@ -590,19 +731,40 @@ void window_mouse_handle(const struct packet *pp){
                     ((cur_wnd->y) < wnd_list.cursor.y && wnd_list.cursor.y < (cur_wnd->y + cur_wnd->height))
                     )
                        {
-                        /*Pressed on the window just move it to the fron */
-                        move_to_front(cur_wnd);
+                        window_pressed = true;
+                        /* Check if an element was pressed */
+                        if(wnd_list.first == cur_wnd){
+                            mouse_element_interaction(cur_wnd, true, pp);
+                        }
+                        /*Pressed on the window just move it to the front */
+                        else{
+                            /*Deselect all elements of old window*/
+                            element_deselect_all(wnd_list.first);
+                            move_to_front(cur_wnd);
+                        }
+
                         break;
                         }
-                    cur_wnd = cur_wnd->next;
+                cur_wnd = cur_wnd->next;
+            }
+
+            /* If the desktop was pressed then deselect all elements of the first window */
+            if(!window_pressed){
+                element_deselect_all(wnd_list.first);
             }
 
         }
         else{
+
             /* Left button is being helf, thus continue to move a window */
             if(is_moving_window){
                 move_window(moving_window, pp);
                 return;
+            }
+            /* moving scroll bar probably */
+            else{
+                if(wnd_list.first)
+                    mouse_element_interaction(wnd_list.first, false, pp);
             }
         }
     }
