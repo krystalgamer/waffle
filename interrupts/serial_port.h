@@ -10,34 +10,34 @@
 #define MAX_BIT_RATE 115200
 
 /* UART addresses */
-#define RECEIVER_BUFFER_REG 0x0
-#define TRANSMITTER_HOLDING_REG 0x0
-#define INTERRUPT_ENABLE_REG 0x1
-#define INTERRUPT_IDENTIFICATION_REG 0x2
-#define FIFO_CTRL_REG 0x2
-#define LINE_CTRL_REG 0x3
-#define MODEM_CTRL_REG 0x4
-#define LINE_STATUS_REG 0x5
-#define MODEM_STATUS_REG 0x6
-#define SCRATCHPAD_REG 0x7
+#define RECEIVER_BUFFER_REG 0
+#define TRANSMITTER_HOLDING_REG 0
+#define INTERRUPT_ENABLE_REG 1
+#define INTERRUPT_IDENTIFICATION_REG 2
+#define FIFO_CTRL_REG 2
+#define LINE_CTRL_REG 3
+#define MODEM_CTRL_REG 4
+#define LINE_STATUS_REG 5
+#define MODEM_STATUS_REG 6
+#define SCRATCHPAD_REG 7
 
-#define DIVISOR_LATCH_LSB 0x0
-#define DIVISOR_LATCH_MSB 0x1
+#define DIVISOR_LATCH_LSB 0
+#define DIVISOR_LATCH_MSB 1
 
 /* Line Control Register */
 #define LCR_LENGTH_5 ~(BIT(0) | BIT(1))
 #define LCR_LENGTH_6 BIT(0)
 #define LCR_LENGTH_7 BIT(1)
-#define LCR_LENGTH_8 BIT(0) | BIT(1)
+#define LCR_LENGTH_8 (BIT(0) | BIT(1))
 
 #define LCR_1_STOP_BIT ~BIT(2)
 #define LCR_2_STOP_BIT BIT(2)
 
 #define LCR_NO_PARITY ~(BIT(5) | BIT(4) | BIT(3))
 #define LCR_ODD_PARITY BIT(3)
-#define LCR_EVEN_PARITY BIT(4) | BIT(3)
-#define LCR_1_PARITY BIT(5) | BIT(3)
-#define LCR_0_PARITY BIT(5) | BIT(4) | BIT(3)
+#define LCR_EVEN_PARITY (BIT(4) | BIT(3))
+#define LCR_1_PARITY (BIT(5) | BIT(3))
+#define LCR_0_PARITY (BIT(5) | BIT(4) | BIT(3))
 
 #define LCR_BREAK_ENABLE BIT(6)
 
@@ -63,17 +63,17 @@
 #define IIR_PENDING_INT ~BIT(0)
 #define IIR_NOT_PENDING_INT BIT(0)
 
-#define IIR_INT_ORIGIN_MASK BIT(3) | BIT(2) | BIT(1)
+#define IIR_INT_ORIGIN_MASK (BIT(3) | BIT(2) | BIT(1))
 #define IIR_MODEM_STATUS_INT ~(BIT(3) | BIT(2) | BIT(1))
 #define IIR_TRANSMITTER_EMPTY_INT BIT(1)
 #define IIR_CHARACTER_TIMEOUT_INT BIT(3)
 #define IIR_RECEIVED_DATA_AVAILABLE_INT BIT(2)
-#define IIR_LINE_STATUS_INT BIT(2) | BIT(1)	
+#define IIR_LINE_STATUS_INT (BIT(2) | BIT(1))	
 
 #define IIR_64B_FIFO BIT(5)
 
 #define IIR_NO_FIFO ~(BIT(7) | BIT(6))
-#define IIR_ENABLED_FIFO BIT(7) | BIT(6)
+#define IIR_ENABLED_FIFO (BIT(7) | BIT(6))
 #define IIR_UNUSABLE_FIFO BIT(7)
 
 /* FIFO Control Register */
@@ -84,7 +84,7 @@
 #define FCR_INT_TRIGGER_LVL_1 ~(BIT(7) | BIT(6))
 #define FCR_INT_TRIGGER_LVL_4 BIT(6)
 #define FCR_INT_TRIGGER_LVL_8 BIT(7)
-#define FCR_INT_TRIGGER_LVL_14 BIT(7) | BIT(6)
+#define FCR_INT_TRIGGER_LVL_14 (BIT(7) | BIT(6))
 
 
 int (ser_subscribe_int)(uint8_t *bit_no);

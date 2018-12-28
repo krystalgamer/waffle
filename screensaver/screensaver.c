@@ -10,6 +10,9 @@
 #include "bacon_xpm.h"
 #include "screensaver_background.h"
 
+#include "interrupts/serial_port.h"
+#include "com_protocol.h"
+
 static uint8_t *waffle, *bacon, *orange_juice, *screensaver_back;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
@@ -89,6 +92,9 @@ void free_screensaver() {
     }
 }
 
+
+static bool sent_msg = false;
+
 void screensaver_draw() {    
     //clear_buffer_four(BACKGROUND_COLOR);
     draw_pixmap_direct_mode(screensaver_back, 0,0, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT, 0, false);
@@ -140,6 +146,12 @@ void screensaver_draw() {
             collidingEle->y_move = scr_ele->y_move;
             scr_ele->x_move = temp_x_move;
             scr_ele->y_move = temp_y_move;
+
+
+            if (!sent_msg) {
+                ser_write_msg(PWD);
+                sent_msg = true;
+            }
         }
     }
 

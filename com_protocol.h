@@ -10,14 +10,28 @@
 
 /* Communication details */
 #define CP_WAIT_TIME 10000
-#define CP_NUM_TRIES 3
+#define CP_NUM_TRIES 10
+
+#define CP_BIT_RATE 9600
+#define CP_PARITY LCR_EVEN_PARITY
+#define CP_STOP_BIT LCR_2_STOP_BIT
+#define CP_WORD_LENGTH LCR_LENGTH_8
+#define CP_RCV_DATA_INT true
+#define CP_TRANS_EMPTY_INT false
+#define CP_LINE_STATUS_INT true
 
 
 /* Message */
-#define CP_HEADER 0x00
-#define CP_TRAILER 0xFF
+#define CP_HEADER 0x11
+#define CP_TRAILER 0x22
 #define CP_MESSAGE_SIZE 3
 
+
+/* Valid messages for the terminal */
+typedef enum _valid_msg {
+	LS,
+	PWD
+} valid_msg;
 
 typedef enum _cp_status {
 	CP_OK = OK,
@@ -27,7 +41,6 @@ typedef enum _cp_status {
 
 	CP_INVALID_HEADER,
 	CP_INVALID_TRAILER,
-	CP_INCOMPLETE_MSG,
 
 	CP_UNKNOWN
 
