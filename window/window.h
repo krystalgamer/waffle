@@ -110,7 +110,7 @@ typedef struct _wnd_lst{
 void window_draw();
 void window_mouse_handle();
 uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name);
-void init_internal_status();
+int init_internal_status();
 bool window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr);
 
 bool is_window_focused(const Window *wnd);

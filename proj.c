@@ -79,6 +79,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /* Configure the UART */
     if (ser_configure_settings(CP_WORD_LENGTH, CP_STOP_BIT, CP_PARITY, CP_BIT_RATE, CP_RCV_DATA_INT, CP_TRANS_EMPTY_INT, CP_LINE_STATUS_INT) != OK) {
         printf("(%s) Error configuring the UART settings\n", __func__);
+        vg_exit();
         return 1;
     }
 
@@ -128,7 +129,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int maxFrames = 2;
     int curFrame = 1;
 
-    init_internal_status();
+    if (init_internal_status() != OK) {
+        printf("(%s) error initializing internal status\n");
+        vg_exit();
+        return 1;
+    }
+
     create_window(200, 100, 0x0AAAAAA, "Janela Fixe");
     create_window(100, 200, 0x0AAAAAA, "Feia");
     uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita");
@@ -142,7 +148,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
         return 1;
     }
     uint32_t rtc_irq_set = BIT(bitNum);
-
 
     rtc_enable_update_int();
 

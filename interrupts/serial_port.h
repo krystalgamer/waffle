@@ -93,6 +93,8 @@ int ser_read_register(uint8_t reg, uint8_t * register_content);
 int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status);
 int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool line_status);
 int ser_deactivate_interrupts();
+int ser_enable_fifo(uint8_t trigger_lvl);
+int ser_disable_fifo();
 uint8_t ser_read_ack();
 void ser_flush_rbr();
 int ser_write_char(uint8_t chr);

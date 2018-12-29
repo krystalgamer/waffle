@@ -22,7 +22,7 @@ extern bool pressed_the_secret_button;
 /* TODO find a better alternative */
 static uint16_t window_frame_height = 0;
 
-void init_internal_status(){
+int init_internal_status(){
 
     memset(&wnd_list, 0, sizeof(WindowList));
     wnd_list.cursor.width = 20;
@@ -56,7 +56,7 @@ void init_internal_status(){
     uint8_t * sprite = xpm_load(ChocoTab_background, XPM_8_8_8_8, &img);
     if (sprite == NULL){
         printf("(%s) error loading ChocoTab background xpm\n", __func__);
-        return;
+        return 1;
     }
 
     /* Store the xpm in the wnd_list */
@@ -66,6 +66,8 @@ void init_internal_status(){
     for(int i = 0; i < img.height; i++)
         for(int j = 0; j<img.width; j++)
             memcpy(wnd_list.background_sprite + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+
+    return 0;
 
 }
 

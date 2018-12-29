@@ -10,7 +10,7 @@
 
 /* Communication details */
 #define CP_WAIT_TIME 10000
-#define CP_NUM_TRIES 10
+#define CP_NUM_TRIES 4
 
 #define CP_BIT_RATE 9600
 #define CP_PARITY LCR_EVEN_PARITY

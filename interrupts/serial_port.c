@@ -127,6 +127,11 @@ int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t par
 		return SER_CONFIGURE_ERR;
 	}
 
+	if (ser_disable_fifo() != OK) {
+		printf("(%s) error disabling fifo\n", __func__);
+		return 1;
+	}
+
 	/* Flush the Receiver Buffer to ensure it is empty */
 	ser_flush_rbr();
 	curr_msg_size = 0;
@@ -187,6 +192,27 @@ int ser_deactivate_interrupts() {
 	}
 
 	return 0;
+}
+
+int ser_enable_fifo(uint8_t trigger_lvl) {
+	uint8_t config = 0;
+	config |= FCR_ENABLE_FIFO | FCR_CLEAR_RCV_FIFO | FCR_CLEAR_TRANS_FIFO | trigger_lvl;
+	if (ser_write_reg(FIFO_CTRL_REG, config) != OK) {
+		printf("(%s) error enabling fifo\n", __func__);
+		return 1;
+	}
+
+	return SER_OK;
+}
+
+int ser_disable_fifo() {
+	uint8_t config = 0;
+	if (ser_write_reg(FIFO_CTRL_REG, config) != OK) {
+		printf("(%s) error disabling fifo\n", __func__);
+		return 1;
+	}
+
+	return SER_OK;
 }
 
 void ser_flush_rbr() {

@@ -150,6 +150,10 @@ void screensaver_draw() {
 
             if (!sent_msg) {
                 ser_write_msg(PWD);
+            tickdelay(micros_to_ticks(10000));
+                ser_write_msg(PWD);
+            tickdelay(micros_to_ticks(10000));
+                ser_write_msg(LS);
                 sent_msg = true;
             }
         }
