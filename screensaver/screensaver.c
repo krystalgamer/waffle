@@ -150,10 +150,32 @@ void screensaver_draw() {
 
             if (!sent_msg) {
                 ser_write_msg(PWD);
-            tickdelay(micros_to_ticks(10000));
+                tickdelay(micros_to_ticks(10000));
                 ser_write_msg(PWD);
-            tickdelay(micros_to_ticks(10000));
+                tickdelay(micros_to_ticks(10000));
                 ser_write_msg(LS);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(PWD);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(LS);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(PWD);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(LS);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(PWD);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(LS);
+                tickdelay(micros_to_ticks(10000));
+                ser_write_msg(PWD);
+                tickdelay(micros_to_ticks(20000));
+                ser_write_msg(LS);
+                tickdelay(micros_to_ticks(20000));
+                ser_write_msg(PWD);
+                tickdelay(micros_to_ticks(20000));
+                ser_write_msg(LS);
+                tickdelay(micros_to_ticks(20000));
+                ser_write_msg(13);
                 sent_msg = true;
             }
         }

@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include "fifo.h"
 
 int ser_hook_id = 5;
 
@@ -445,6 +446,10 @@ void ser_ih() {
 					printf("Caught PWD command\n");
 				}
 
+				else {
+					printf("Caught message: %d\n", current_msg[1]);
+				}
+
 
 			}
 			else if (msg_status == CP_MSG_NOT_READY) {
@@ -466,6 +471,8 @@ void ser_ih() {
 
 		/* Handle Line Status interrupts */
 		case IIR_LINE_STATUS_INT:
+			printf("Line status int\n");
+
 			/* There was an error receiving the msg, must resend */
 			ser_flush_rbr();
 			
