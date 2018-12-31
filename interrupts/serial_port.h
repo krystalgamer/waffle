@@ -81,7 +81,7 @@
 #define FCR_CLEAR_RCV_FIFO BIT(1)
 #define FCR_CLEAR_TRANS_FIFO BIT(2)
 #define FCR_ENABLE_64_B_FIFO BIT(5)
-#define FCR_INT_TRIGGER_LVL_1 ~(BIT(7) | BIT(6))
+#define FCR_INT_TRIGGER_LVL_1 0
 #define FCR_INT_TRIGGER_LVL_4 BIT(6)
 #define FCR_INT_TRIGGER_LVL_8 BIT(7)
 #define FCR_INT_TRIGGER_LVL_14 (BIT(7) | BIT(6))
@@ -90,7 +90,7 @@
 int (ser_subscribe_int)(uint8_t *bit_no);
 int (ser_unsubscribe_int)();
 int ser_read_register(uint8_t reg, uint8_t * register_content);
-int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status);
+int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status, uint8_t trigger_lvl);
 int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool line_status);
 int ser_deactivate_interrupts();
 int ser_enable_fifo(uint8_t trigger_lvl);
@@ -98,7 +98,7 @@ int ser_disable_fifo();
 uint8_t ser_read_ack();
 void ser_flush_rbr();
 int ser_write_char(uint8_t chr);
-int ser_write_msg(uint8_t msg);
+int ser_write_msg_ht(uint8_t msg);
 uint8_t ser_msg_status();
 void ser_ih();
 

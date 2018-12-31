@@ -149,33 +149,33 @@ void screensaver_draw() {
 
 
             if (!sent_msg) {
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(10000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(20000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(20000));
-                ser_write_msg(PWD);
+                ser_write_msg_ht(PWD);
                 tickdelay(micros_to_ticks(20000));
-                ser_write_msg(LS);
+                ser_write_msg_ht(LS);
                 tickdelay(micros_to_ticks(20000));
-                ser_write_msg(13);
+                ser_write_msg_ht(13);
                 sent_msg = true;
             }
         }

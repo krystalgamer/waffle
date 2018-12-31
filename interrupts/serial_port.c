@@ -5,13 +5,16 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include "fifo.h"
+#include "queue.h"
 
 int ser_hook_id = 5;
 
 static uint8_t rbr_content;
 static uint8_t current_msg[3];
 static uint8_t curr_msg_size = 0;
+
+//static queue send_fifo;
+//static queue rcv_fifo;
 
 int (ser_subscribe_int)(uint8_t *bit_no) {
 
@@ -105,7 +108,7 @@ int ser_set_bit_rate(uint16_t bit_rate) {
 }
 
 
-int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status) {
+int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status, uint8_t trigger_lvl) {
 
 	/* Read previous configuration */
 	uint8_t config = (bits_per_char | stop_bits | parity);
@@ -128,10 +131,12 @@ int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t par
 		return SER_CONFIGURE_ERR;
 	}
 
-	if (ser_disable_fifo() != OK) {
+	if (ser_enable_fifo(trigger_lvl) != OK) {
 		printf("(%s) error disabling fifo\n", __func__);
 		return 1;
 	}
+
+	ser_disable_fifo();
 
 	/* Flush the Receiver Buffer to ensure it is empty */
 	ser_flush_rbr();
@@ -299,7 +304,7 @@ uint8_t ser_read_ack() {
 	return SER_TRIES_EXCEEDED;
 }
 
-int ser_write_msg(uint8_t msg) {
+int ser_write_msg_ht(uint8_t msg) {
 
 	uint8_t tries = CP_NUM_TRIES;
 	while (tries) {
@@ -401,6 +406,49 @@ uint8_t ser_msg_status() {
 	return CP_UNKNOWN;
 }
 
+void ser_handle_msg_ht() {
+
+	/* Read from the RBR */
+	if (ser_read_register(RECEIVER_BUFFER_REG, &rbr_content) != OK) {
+		printf("(%s) error reading rbr register\n", __func__);
+		return;
+	}
+
+	/* Get the current state of the msg */
+	uint8_t msg_status = ser_msg_status();
+
+	if (msg_status == CP_MSG_READY) {
+		ser_write_char(CP_ACK);
+
+		if (current_msg[1] == LS) {
+			printf("Caught LS command\n");
+		}
+		else if (current_msg[1] == PWD) {
+			printf("Caught PWD command\n");
+		}
+
+		else {
+			printf("Caught message: %d\n", current_msg[1]);
+		}
+
+
+	}
+	else if (msg_status == CP_MSG_NOT_READY) {
+		/* Send ACK to keep receiving the rest of the msg */
+		ser_write_char(CP_ACK);
+	}
+	else if (msg_status == CP_INVALID_HEADER || msg_status == CP_INVALID_TRAILER) {
+		/* Send NACK to resend msg */
+		ser_write_char(CP_NACK);
+
+	}
+	else {
+		/* Unknown msg status */
+		printf("(%s) there was a problem handling msg status\n", __func__);
+		return;
+	}
+}
+
 void ser_ih() {
 
 	/* Read the IIR */
@@ -421,52 +469,13 @@ void ser_ih() {
 			/* Send next data */
 			printf("IIR_TRANSMITTER_EMPTY_INT\n");
 
-
+			//ser_fill_send_fifo();
 			break;
 
 		/* Handle Received Data Available interrupts */	
 		case IIR_RECEIVED_DATA_AVAILABLE_INT:
 
-			/* Read from the RBR */
-			if (ser_read_register(RECEIVER_BUFFER_REG, &rbr_content) != OK) {
-				printf("(%s) error reading rbr register\n", __func__);
-				return;
-			}
-
-			/* Get the current state of the msg */
-			uint8_t msg_status = ser_msg_status();
-
-			if (msg_status == CP_MSG_READY) {
-				ser_write_char(CP_ACK);
-
-				if (current_msg[1] == LS) {
-					printf("Caught LS command\n");
-				}
-				else if (current_msg[1] == PWD) {
-					printf("Caught PWD command\n");
-				}
-
-				else {
-					printf("Caught message: %d\n", current_msg[1]);
-				}
-
-
-			}
-			else if (msg_status == CP_MSG_NOT_READY) {
-				/* Send ACK to keep receiving the rest of the msg */
-				ser_write_char(CP_ACK);
-			}
-			else if (msg_status == CP_INVALID_HEADER || msg_status == CP_INVALID_TRAILER) {
-				/* Send NACK to resend msg */
-				ser_write_char(CP_NACK);
-
-			}
-			else {
-				/* Unknown msg status */
-				printf("(%s) there was a problem handling msg status\n", __func__);
-				return;
-			}
-
+			ser_handle_msg_ht();
 			break;
 
 		/* Handle Line Status interrupts */
