@@ -152,6 +152,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
                 /*Sometimes the lsit_view box is larger than the text, so if we're not pressing anything dont do anything*/
                 bool pressed_anything = false;
                 for(unsigned i = 0; i<cur_el->attr.list_view.drawable_entries; i++){
+
                     if(mouse_over_coords(wnd->x+cur_el->x, wnd->y+cur_el->y+i*FONT_HEIGHT, wnd->x+cur_el->x+cur_el->width,wnd->y+cur_el->y+i*FONT_HEIGHT + FONT_HEIGHT )){
                         index_over = i;
                         pressed_anything = true;
@@ -164,6 +165,10 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
 
                 uint32_t height_per_ele = cur_el->height/cur_el->attr.list_view.num_entries; 
                 uint32_t start_index = cur_el->attr.list_view.scrollbar_y/height_per_ele;
+
+                /* User pressed on unused space */
+                if(start_index+index_over >= cur_el->attr.list_view.num_entries)
+                    return;
 
                 list_view_msg msg = { start_index+index_over };
 

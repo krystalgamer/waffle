@@ -9,6 +9,8 @@ typedef enum {
 
     LIST_VIEW,
     CHECKBOX,
+    TEXT,
+
     INVALID
 
 }ElementType;
@@ -53,6 +55,11 @@ typedef struct _element{
             char *text;
             bool enabled;
         }checkbox;
+	
+	struct _text_attr{
+        char *text;
+        uint32_t color;
+	}text;
 
     }attr;
 
@@ -222,4 +229,5 @@ enum MESSAGE_TYPE{
 Element *find_by_id(Window *wnd, char *identifier);
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp);
 void set_list_view_elements(Element *element, char **entries, unsigned num);
+void set_text(Element *el, char *new_text);
 #endif

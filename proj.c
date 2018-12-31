@@ -20,8 +20,6 @@
 
 void escrever_coiso();
 
-
-
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
 
