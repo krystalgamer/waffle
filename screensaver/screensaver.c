@@ -149,34 +149,13 @@ void screensaver_draw() {
 
 
             if (!sent_msg) {
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(10000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(20000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(20000));
-                ser_write_msg_ht(PWD);
-                tickdelay(micros_to_ticks(20000));
-                ser_write_msg_ht(LS);
-                tickdelay(micros_to_ticks(20000));
-                ser_write_msg_ht(13);
+                char msg[98] = "TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!\n";
+                ser_write_msg_fifo(msg, sizeof(msg));
+
+
+                ser_write_msg_fifo(msg, sizeof(msg));
                 sent_msg = true;
+                printf("Message sent!\n");
             }
         }
     }

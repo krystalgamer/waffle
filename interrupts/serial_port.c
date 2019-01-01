@@ -472,10 +472,30 @@ void ser_handle_line_status_interrupt_msg_ht() {
 	}
 }
 
+void ser_write_msg_fifo(char * msg, uint32_t msg_size) {
+
+	/* Add elements to the queue */
+	for (uint32_t i = 0; i < msg_size; i++)
+		queue_push(send_fifo, msg[i]);
+
+	/* Fill the send fifo */
+	ser_fill_send_fifo();
+
+}
+
+void print_rcv_fifo() {
+	/* Pop and print the entire queue */
+	while(!is_queue_empty(rcv_fifo)){
+		printf("%c", queue_top(rcv_fifo));
+		if(queue_pop(rcv_fifo))
+			break;
+	}
+}
+
 int ser_fill_send_fifo(){
 
 	uint8_t lsr_config;
-
+	
 	/* Loop while there still are elements left */
 	while(!is_queue_empty(send_fifo)){
 
@@ -495,7 +515,7 @@ int ser_fill_send_fifo(){
 			return 1;
 		}
 
-		/* Remove transmitted element */
+		/* Remove sent element */
 		queue_pop(send_fifo);
 	}
 
@@ -517,10 +537,6 @@ int ser_fill_rcv_fifo(){
 	/* Read from the receiver fifo while there are elements to read */
 	while(lsr_config & LSR_RECEIVER_READY){
 
-		//printf("\tLSR::Receiver Ready\n");
-
-		//printf("\tLSR = 0x%x\n",lsr);
-
 		/* Check for errors */
 		if((lsr_config & LSR_OVERRUN_ERR) != OK){
 			printf("(%s) lsr overrun error\n", __func__);
@@ -541,8 +557,6 @@ int ser_fill_rcv_fifo(){
 			return 1;
 		}
 
-		//printf("\tchar = %c\n",receiver_buff);
-
 		/* Store read element in receiver queue */
 		queue_push(rcv_fifo, receiver_buff);
 
@@ -551,14 +565,7 @@ int ser_fill_rcv_fifo(){
 			printf("(%s) error reading LSR register\n", __func__);
 			return SER_READ_REG_ERR;
 		}
-
-
-		//	printf("\tchar again = %c\n",receiver_buff);
-		//if(receiver_buff == 46)
-		//	break;
 	}
-
-	// printf("\tLeft clear_receiver\n");
 
 	return 0;
 }
@@ -589,9 +596,13 @@ void ser_ih() {
 		/* Handle Received Data Available interrupts */	
 		case IIR_RECEIVED_DATA_AVAILABLE_INT:
 
+			printf("Data available\n");
+
 			//ser_handle_msg_ht();
 
 			ser_fill_rcv_fifo();
+
+			print_rcv_fifo();
 			break;
 
 		/* Handle Line Status interrupts */
@@ -606,6 +617,8 @@ void ser_ih() {
 			printf("Char timeout int\n");
 
 			ser_fill_rcv_fifo();
+
+			print_rcv_fifo();
 			break;
 	}
 }

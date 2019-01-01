@@ -6,11 +6,11 @@ queue *init_queue(){
 	return new;
 }
 
-queue_ele *new_ele(uint8_t val){
-	uint8_t *content;
+queue_ele *new_ele(char val){
+	char *content;
 	queue_ele *new = (queue_ele *)malloc(sizeof(queue_ele));
 	new->next = NULL;
-	content = (uint8_t *)malloc(sizeof(val));
+	content = (char *)malloc(sizeof(val));
 	*content = val;
 	new->val = content;
 
@@ -21,18 +21,7 @@ int is_queue_empty(queue *q){
 	return (q->front == NULL);
 }
 
-void print_queue(queue *q){
-
-	/* Pop and print the entire queue */
-	while(!is_queue_empty(q)){
-		printf("%c", queue_top(q));
-		if(queue_pop(q))
-			break;
-	}
-
-}
-
-int queue_push(queue *q, uint8_t val){
+int queue_push(queue *q, char val){
 	/* Check null pointer */
 	if(q == NULL)
 		return 1;
@@ -67,7 +56,7 @@ int queue_pop(queue *q){
 	return 0;
 }
 
-uint8_t queue_top(queue *q){
+char queue_top(queue *q){
 	/* Check null pointers */
 	if(q == NULL || q->front == NULL)
 		return 0;
