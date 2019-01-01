@@ -20,7 +20,7 @@ SRCS += terminus.c
 .PATH: ${.CURDIR}/file_browser
 SRCS += file_browser.c
 
-CPPFLAGS += -pedantic # -D __LCOM_OPTIMIZED__
+CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}
 LDADD += -llcf 

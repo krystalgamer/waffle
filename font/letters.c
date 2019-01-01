@@ -28,9 +28,18 @@ int initLetters() {
     for (int symbol_offset = 0; symbol_offset < FONT_SYMBOLS_NUMBER; symbol_offset++){
          /* Iterate lines */
         for(int i = 0; i < FONT_HEIGHT; i++){
-            memcpy(&font_sprites[symbol_offset  *FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel] + (i*FONT_WIDTH) * bytes_per_pixel, sprite + (i*img.width + symbol_offset * FONT_WIDTH) * bytes_per_pixel, bytes_per_pixel*FONT_WIDTH);
+            memcpy(&font_sprites[symbol_offset * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel] + (i*FONT_WIDTH) * bytes_per_pixel, sprite + (i*img.width + symbol_offset * FONT_WIDTH) * bytes_per_pixel, bytes_per_pixel*FONT_WIDTH);
         }
     }
+
+    /*switcharoo que o mario se enganou*/
+    char tmp[FONT_WIDTH*FONT_HEIGHT*4];
+    memcpy(tmp, &font_sprites[('.'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
+
+    memcpy(&font_sprites[('.'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], &font_sprites[('-'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
+
+    memcpy(&font_sprites[('-'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], tmp, FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
+
 
     free(sprite);
 

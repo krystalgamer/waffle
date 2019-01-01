@@ -27,7 +27,7 @@ bool terminus_kbd_handler(Element* UNUSED(el), kbd_msg *msg){
 
 bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 
-    printf("", wnd);
+    printf("%p", wnd);
     if(type == KEYBOARD)
         return terminus_kbd_handler(el, (kbd_msg*)data);
     return false;

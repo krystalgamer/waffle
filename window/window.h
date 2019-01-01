@@ -11,6 +11,7 @@ typedef enum {
     CHECKBOX,
     TEXT,
 
+    DATA,
     INVALID
 
 }ElementType;
@@ -59,7 +60,12 @@ typedef struct _element{
 	struct _text_attr{
         char *text;
         uint32_t color;
+        bool active;
 	}text;
+
+    struct _data_attr{
+        void *space;
+    }data;
 
     }attr;
 
@@ -114,6 +120,7 @@ typedef struct _wnd_lst{
     struct{
         int16_t x,y;
         uint16_t width, height;/* temporary fields */
+		void *image;	
     }cursor;
 
     struct{
@@ -230,4 +237,36 @@ Element *find_by_id(Window *wnd, char *identifier);
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp);
 void set_list_view_elements(Element *element, char **entries, unsigned num);
 void set_text(Element *el, char *new_text);
+Window *window_get_by_id(uint32_t id);
+
+
+static const char *cursor[] = {
+/* columns rows colors chars-per-pixel */
+"12 20 3 1",
+". c None",
+"B c #000000",
+"W c #FFFFFF",
+/* pixels */
+"B...........",
+"BB..........",
+"BWB.........",
+"BWWB........",
+"BWWWB.......",
+"BWWWWB......",
+"BWWWWWB.....",
+"BWWWWWWB....",
+"BWWWWWWWB...",
+"BWWWWWWWWB..",
+"BWWWWWWWWWB.",
+"BWWWWWWBBBBB",
+"BWWWBWWB....",
+"BWWWBWWB....",
+"BWWB.BWWB...",
+"BWB..BWWB...",
+"BB....BWWB..",
+"B.....BWWB..",
+"B......BWWB.",
+"........BBB.",
+};
+
 #endif

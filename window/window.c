@@ -8,7 +8,7 @@
 void desenhar_palavra();
 WindowList wnd_list = { NULL, NULL,
     /* cursor */ 
-    { 0, 0, 0, 0 },
+    { 0, 0, 0, 0, NULL },
     /*taskbar*/
     { 0, 0, 0,
         /*menu */
@@ -26,8 +26,11 @@ static uint16_t window_frame_height = 0;
 void init_internal_status(){
 
     memset(&wnd_list, 0, sizeof(WindowList));
-    wnd_list.cursor.width = 20;
-    wnd_list.cursor.height = 20;
+
+	xpm_image_t img_cursor;
+	wnd_list.cursor.image = xpm_load(cursor, XPM_8_8_8_8, &img_cursor);
+    wnd_list.cursor.width = img_cursor.width;
+    wnd_list.cursor.height = img_cursor.height;
     wnd_list.cursor.x = get_x_res()/2 - wnd_list.cursor.width/2;
     wnd_list.cursor.y = get_y_res()/2 - wnd_list.cursor.height/2;
 
@@ -405,7 +408,7 @@ void window_draw(){
     }
 
     draw_taskbar();
-    pj_draw_rectangle(wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0xFFFFFFF);
+	draw_pixmap_direct_mode(wnd_list.cursor.image, wnd_list.cursor.x, wnd_list.cursor.y, wnd_list.cursor.width, wnd_list.cursor.height, 0, false);
 }
 
 void delete_window(Window *wnd){

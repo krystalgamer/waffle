@@ -66,6 +66,9 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
                 break;
             memcpy(&new_el->attr, attr, sizeof(struct _text_attr));
             break;
+		case DATA:
+			memcpy(&new_el->attr.data.space, attr, 4);
+			break;
         default:
             free(new_el);
             return NULL;
@@ -97,7 +100,8 @@ void draw_elements(const Window *wnd){
     
     Element *cur_el = wnd->elements;
     while(cur_el){
-        dispatch_draw[cur_el->type](wnd, cur_el);
+        if(cur_el->type != DATA)
+            dispatch_draw[cur_el->type](wnd, cur_el);
         cur_el = cur_el->next;
     }
 }
@@ -168,6 +172,9 @@ static void draw_radio_button(const Window *wnd, const Element *element){
 
 static void draw_text(const Window *wnd, const Element *element){
     /* TODO DONT MAKE THIS HERE */
+
+    if(!element->attr.text.active)
+        return;
     uint32_t num_chars = (wnd->width-element->x)/FONT_WIDTH;
 
     print_horizontal_word_len(element->attr.text.text, num_chars, wnd->x+element->x, wnd->y+element->y, element->attr.text.color);
@@ -218,12 +225,10 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
 Element *find_by_id(Window *wnd, char *identifier){
     Element *el = wnd->elements;    
 
-    printf("AQWUI ESTOU\n");
     while(el){
 
         if(el->identifier != NULL){
             if(!strcmp(identifier, el->identifier)){
-                printf("AQWUI SAI\n");
                 return el;
             }
         }
@@ -231,7 +236,6 @@ Element *find_by_id(Window *wnd, char *identifier){
         el = el->next;
     }
 
-    printf("AQUI GRUNI\n");
     return NULL;
 }
 
@@ -247,9 +251,6 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
             return;
         }
 
-        printf("CONA\n");
-
-
         /* TODO THis leaks memory, jsoe do futuro, no build_element garante que as strings sao duplicadas para 
          * as poderes libertar, beijocas, fode-te */
 
@@ -259,7 +260,6 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
 
         for(unsigned i = 0; i<num; i++)
             new_entries[i] = strdup(entries[i]);
-        printf("TEST\n");
 
         element->attr.list_view.num_entries = num;
         element->attr.list_view.entries = new_entries;
@@ -275,8 +275,11 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
         float percentage_scroll = (float)(element->attr.list_view.drawable_entries) / (element->attr.list_view.num_entries); 
         element->attr.list_view.scrollbar_height = (uint32_t)(percentage_scroll*element->height);
 
+        printf("scrollbar height %d drawable entries %d\n", element->attr.list_view.scrollbar_height, element->attr.list_view.drawable_entries);
+
         /* Fix for divisions where the quocient has 0.5 > */
-        element->attr.list_view.scrollbar_height += (element->height - (element->attr.list_view.scrollbar_height*element->attr.list_view.drawable_entries))/element->attr.list_view.drawable_entries;
+        if( !(element->attr.list_view.scrollbar_height * element->attr.list_view.drawable_entries > element->height) )
+            element->attr.list_view.scrollbar_height += (element->height - (element->attr.list_view.scrollbar_height*element->attr.list_view.drawable_entries))/element->attr.list_view.drawable_entries;
 
         printf("height %d s height %d\n", element->height, element->attr.list_view.scrollbar_height);
 }
