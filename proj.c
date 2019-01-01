@@ -16,12 +16,9 @@
 #include "vbe.h"
 #include "font/letters.h"
 #include "messages.h"
+#include "terminus/terminus.h"
 
 void escrever_coiso();
-
-uint8_t keymap[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0,
-    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 0, 0, 0, 0, 255, 0};
 
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
@@ -118,12 +115,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int curFrame = 1;
 
     init_internal_status();
-    create_window(200, 100, 0x0AAAAAA, "Janela Fixe");
-    create_window(100, 200, 0x0AAAAAA, "Feia");
-    uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita");
+    //create_window(200, 100, 0x0AAAAAA, "Janela Fixe");
+    //create_window(100, 200, 0x0AAAAAA, "Feia");
+    uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita", NULL);
 
-    window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL);
-    window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL);
+    window_add_element(id_fixe, BUTTON, 20, 20, 50, 50, NULL, NULL);
+    window_add_element(id_fixe, BUTTON, 80, 80, 20, 10, NULL, NULL);
 
     uint32_t idle_time = 0; // time in interrupts
     if(rtc_subscribe_int(&bitNum) != OK){
@@ -148,10 +145,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 if ( msg.m_notify.interrupts & mouse_irq_set) { /* subscribed interrupt */
 
                     mouse_ih();
-	                if (assemble_mouse_packet(mouse_packet)) {
+                    if (assemble_mouse_packet(mouse_packet)) {
                         parse_mouse_packet(mouse_packet, &pp);
-			            if(pp.mb)
-				              pressed_the_secret_button = true;
+                        if(pp.mb)
+                            pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
                     }
                     idle_time = 0;
@@ -172,13 +169,8 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     keyboard_ih();
                     r = opcode_available(scancodes);
                     idle_time = 0;
+                    window_kbd_handle(scancodes, r);
 
-                    if(r == 2 && scancodes[0] == 0xE0 && scancodes[1] == 0x5B)
-                        so_para_a_nota();
-
-
-                    if(r==1 && !(scancodes[0] >> 7))
-                        escrever_coiso(keymap[scancodes[0]]);
                 }
 
                 if( msg.m_notify.interrupts & rtc_irq_set){
@@ -188,16 +180,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
             default:
                 return 1;
                 break; /* no other notifications expected: do nothing */
-            }
-        }
-        else { /* received a standard message, not a notification */
-
-            MsgDefaultFormat *dformat = (MsgDefaultFormat*)&msg.m_u32;
-            if(msg.m_type == 46){
-                    MsgWaffleHi *hi_msg = (void*)dformat;
-                    printf("A process %d says hi!\n", hi_msg->pid);
-                    ipc_send(msg.m_source, &msg);
-
             }
         }
     }

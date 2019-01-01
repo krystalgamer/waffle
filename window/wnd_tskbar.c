@@ -1,5 +1,7 @@
 #include <lcom/lcf.h>
 #include "window.h"
+#include "../terminus/terminus.h"
+#include "../file_browser/file_browser.h"
 #include "../font/letters.h"
 #include "interrupts/rtc.h"
 #include "vbe.h"
@@ -101,6 +103,14 @@ void leave_graphic(){
     pressed_the_secret_button = true;
 }
 
+void create_random_window(){
+    
+    char randomName[5];
+    for(int i =0; i<5;i++)
+        randomName[i] = rand()%57 + 65;
+    create_window(400+rand()%100, 300+rand()%100, 0x0AAAAAA, randomName, NULL);
+}
+
 void init_taskbar_menu(){
 
     wnd_list.taskbar.menu.b_text = "Start";
@@ -115,7 +125,9 @@ void init_taskbar_menu(){
         return;
 
     ContextMenu *menu = wnd_list.taskbar.menu.context;
-    add_context_menu_entry(menu, "Applications", false, NULL);
+    add_context_menu_entry(menu, "Applications", true, (void*)create_random_window);
+    add_context_menu_entry(menu, "Terminus", true, (void*)create_terminus);
+    add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 

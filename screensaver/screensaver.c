@@ -29,41 +29,26 @@ int initialize_screensaver() {
     uint8_t * sprite = xpm_load(waffle_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    waffle = malloc(img.width * img.height * bytes_per_pixel);
-    for(int i = 0; i < img.height; i++)
-        for(int j = 0; j<img.width; j++)
-            memcpy(waffle + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
+    waffle = sprite;
 
 
     /* Load the bacon xpm */
     sprite = xpm_load(bacon_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    bacon = malloc(img.width * img.height * bytes_per_pixel);
-    for(int i = 0; i < img.height; i++)
-        for(int j = 0; j<img.width; j++)
-            memcpy(bacon + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
-
-
+    bacon = sprite;
+    
     /* Load the orange juice xpm */
     sprite = xpm_load(orange_juice_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    orange_juice = malloc(img.width * img.height * bytes_per_pixel);
-    for(int i = 0; i < img.height; i++)
-        for(int j = 0; j<img.width; j++)
-            memcpy(orange_juice + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
-
-
+    orange_juice = sprite;
+    
     /* Load the screensaver background xpm */
     sprite = xpm_load(breakfast_background_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    screensaver_back = malloc(img.width * img.height * bytes_per_pixel);
-    for(int i = 0; i < img.height; i++)
-        for(int j = 0; j<img.width; j++)
-            memcpy(screensaver_back + (i*img.width + j) * bytes_per_pixel, sprite + (i*img.width + j) * bytes_per_pixel, bytes_per_pixel);
-
+    screensaver_back = sprite;
 
     /* Add elements to screensaver */
     add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
@@ -98,9 +83,9 @@ void screensaver_draw() {
 
         /* Check borders at current position */
         if (scr_ele->x < 0) scr_ele->x = 0;
+        else if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
         if (scr_ele->y < 0) scr_ele->y = 0;
-        if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
-        if (scr_ele->y + scr_ele->height > get_y_res()) scr_ele->y = get_y_res() - scr_ele->height;
+        else if (scr_ele->y + scr_ele->height > get_y_res()) scr_ele->y = get_y_res() - scr_ele->height;
 
         /* Calculate new position */
         int16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
