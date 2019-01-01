@@ -149,11 +149,9 @@ void screensaver_draw() {
 
 
             if (!sent_msg) {
-                char msg[98] = "TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!TEST STRING!\n";
+                char msg[8] = "LSLSLSLS";
                 ser_write_msg_fifo(msg, sizeof(msg));
 
-
-                ser_write_msg_fifo(msg, sizeof(msg));
                 sent_msg = true;
                 printf("Message sent!\n");
             }

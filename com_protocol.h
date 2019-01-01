@@ -19,7 +19,7 @@
 #define CP_RCV_DATA_INT true
 #define CP_TRANS_EMPTY_INT true
 #define CP_LINE_STATUS_INT true
-#define CP_TRIGGER_LVL FCR_INT_TRIGGER_LVL_4
+#define CP_TRIGGER_LVL FCR_INT_TRIGGER_LVL_8
 
 
 /* Message */
