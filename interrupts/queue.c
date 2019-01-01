@@ -1,9 +1,9 @@
 #include "queue.h"
-#include <lcom/lcf.h>
 
 queue *init_queue(){
 	queue* new = (queue *) malloc (sizeof(queue));
 	new->front = NULL;
+	return new;
 }
 
 queue_ele *new_ele(uint8_t val){
@@ -76,11 +76,10 @@ uint8_t queue_top(queue *q){
 	return *(q->front->val);
 }
 
-int queue_delete(queue *q){
+int del_queue(queue *q){
 
 	/* queue already empty */
-	if(q == NULL)
-		return 1;
+	if(q == NULL) return 1;
 
 	/* Pop all elements */
 	while(!is_queue_empty(q))

@@ -2,6 +2,7 @@
 #define QUEUE_H
 
 #include <stdio.h>
+#include <lcom/lcf.h>
 
 /**
  * @brief Element of the queue, with a pointer to the next element and a pointer to the stored value
@@ -15,7 +16,7 @@ typedef struct _queue_ele {
  * @brief stores the front of the queue
  */
 typedef struct	{
-	queue_ele *qront;
+	queue_ele *front;
 } queue;
 
 /**
@@ -58,6 +59,6 @@ uint8_t queue_top(queue *q);
 /**
  * @brief deletes the queue data structure
  */
-int queue_del(queue *q);
+int del_queue(queue *q);
 
 #endif

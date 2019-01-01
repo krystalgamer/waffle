@@ -101,7 +101,10 @@ int ser_write_char(uint8_t chr);
 int ser_write_msg_ht(uint8_t msg);
 uint8_t ser_msg_status();
 void ser_ih();
-
+void free_fifo_queues();
+void ser_handle_data_interrupt_msg_ht();
+int ser_fill_send_fifo();
+int ser_fill_rcv_fifo();
 
 typedef enum _ser_status {
 	SER_OK = OK,

@@ -13,8 +13,8 @@ static uint8_t rbr_content;
 static uint8_t current_msg[3];
 static uint8_t curr_msg_size = 0;
 
-//static queue send_fifo;
-//static queue rcv_fifo;
+static queue *send_fifo;
+static queue *rcv_fifo;
 
 int (ser_subscribe_int)(uint8_t *bit_no) {
 
@@ -133,7 +133,7 @@ int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t par
 
 	if (ser_enable_fifo(trigger_lvl) != OK) {
 		printf("(%s) error disabling fifo\n", __func__);
-		return 1;
+		return SER_CONFIGURE_ERR;
 	}
 
 	ser_disable_fifo();
@@ -142,8 +142,21 @@ int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t par
 	ser_flush_rbr();
 	curr_msg_size = 0;
 
+	/* Initialize receiver and sender queues */
+	rcv_fifo = init_queue();
+	send_fifo = init_queue();
+	if (rcv_fifo == NULL || send_fifo == NULL) {
+		printf("(%s) error initializing fifos\n", __func__);
+		return SER_CONFIGURE_ERR;
+	}
+
 	return OK;
 
+}
+
+void free_fifo_queues() {
+	del_queue(rcv_fifo);
+	del_queue(send_fifo);
 }
 
 int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool line_status) {
@@ -406,7 +419,7 @@ uint8_t ser_msg_status() {
 	return CP_UNKNOWN;
 }
 
-void ser_handle_msg_ht() {
+void ser_handle_data_interrupt_msg_ht() {
 
 	/* Read from the RBR */
 	if (ser_read_register(RECEIVER_BUFFER_REG, &rbr_content) != OK) {
@@ -449,6 +462,107 @@ void ser_handle_msg_ht() {
 	}
 }
 
+void ser_handle_line_status_interrupt_msg_ht() {
+
+	/* There was an error receiving the msg, must resend */
+	ser_flush_rbr();
+	if (ser_write_char(CP_NACK) != OK) {
+		printf("(%s) error writing nack\n", __func__);
+		return;
+	}
+}
+
+int ser_fill_send_fifo(){
+
+	uint8_t lsr_config;
+
+	/* Loop while there still are elements left */
+	while(!is_queue_empty(send_fifo)){
+
+		/* Read LSR configuration */
+		if (ser_read_register(LINE_STATUS_REG, &lsr_config) != OK) {
+			printf("(%s) error reading LSR register\n", __func__);
+			return SER_READ_REG_ERR;
+		}
+
+		/* Check if fifo is full */
+		if(!(lsr_config & LSR_TRANSMITTER_HOLDING_EMPTY))
+			break;
+
+		/* Write element to transmit in the fifo */
+		if (ser_write_reg(TRANSMITTER_HOLDING_REG, queue_top(send_fifo)) != OK) {
+			printf("(%s) error putting element in send fifo\n", __func__);
+			return 1;
+		}
+
+		/* Remove transmitted element */
+		queue_pop(send_fifo);
+	}
+
+	return 0;
+}
+
+int ser_fill_rcv_fifo(){
+
+	uint8_t lsr_config;
+	uint8_t receiver_buff;
+
+
+	/* Read LSR configuration */
+	if (ser_read_register(LINE_STATUS_REG, &lsr_config) != OK) {
+		printf("(%s) error reading LSR register\n", __func__);
+		return SER_READ_REG_ERR;
+	}
+
+	/* Read from the receiver fifo while there are elements to read */
+	while(lsr_config & LSR_RECEIVER_READY){
+
+		//printf("\tLSR::Receiver Ready\n");
+
+		//printf("\tLSR = 0x%x\n",lsr);
+
+		/* Check for errors */
+		if((lsr_config & LSR_OVERRUN_ERR) != OK){
+			printf("(%s) lsr overrun error\n", __func__);
+			return 1;
+		}
+		if((lsr_config & LSR_PARITY_ERR) != OK){
+			printf("(%s) lsr parity error\n", __func__);
+			return 1;
+		}
+		if((lsr_config & LSR_FRAMING_ERR) != OK){
+			printf("(%s) lsr framing error\n", __func__);
+			return 1;
+		}
+
+		/* Read from the receiver fifo */
+		if (ser_read_register(RECEIVER_BUFFER_REG, &receiver_buff) != OK) {
+			printf("(%s) error reading from rbr\n", __func__);
+			return 1;
+		}
+
+		//printf("\tchar = %c\n",receiver_buff);
+
+		/* Store read element in receiver queue */
+		queue_push(rcv_fifo, receiver_buff);
+
+		/* Read LSR configuration */
+		if (ser_read_register(LINE_STATUS_REG, &lsr_config) != OK) {
+			printf("(%s) error reading LSR register\n", __func__);
+			return SER_READ_REG_ERR;
+		}
+
+
+		//	printf("\tchar again = %c\n",receiver_buff);
+		//if(receiver_buff == 46)
+		//	break;
+	}
+
+	// printf("\tLeft clear_receiver\n");
+
+	return 0;
+}
+
 void ser_ih() {
 
 	/* Read the IIR */
@@ -469,33 +583,29 @@ void ser_ih() {
 			/* Send next data */
 			printf("IIR_TRANSMITTER_EMPTY_INT\n");
 
-			//ser_fill_send_fifo();
+			ser_fill_send_fifo();
 			break;
 
 		/* Handle Received Data Available interrupts */	
 		case IIR_RECEIVED_DATA_AVAILABLE_INT:
 
-			ser_handle_msg_ht();
+			//ser_handle_msg_ht();
+
+			ser_fill_rcv_fifo();
 			break;
 
 		/* Handle Line Status interrupts */
 		case IIR_LINE_STATUS_INT:
 			printf("Line status int\n");
-
-			/* There was an error receiving the msg, must resend */
-			ser_flush_rbr();
-			
-
-			if (ser_write_char(CP_NACK) != OK) {
-				printf("(%s) error writing nack\n", __func__);
-				return;
-			}
+			//ser_handle_line_status_interrupt_msg_ht();
 
 			break;
 
 		/* Handle Character Timeout interrupts */
 		case IIR_CHARACTER_TIMEOUT_INT:
-			/* Do nothing */
+			printf("Char timeout int\n");
+
+			ser_fill_rcv_fifo();
 			break;
 	}
 }

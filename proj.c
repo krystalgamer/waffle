@@ -218,6 +218,9 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /* Free the memory allocated for the screensaver */
     free_screensaver();
 
+    /* Free the memory allocated for the fifo queues */
+    free_fifo_queues();
+
     /* Disable rtc update Interrupts */
     if (rtc_disable_update_int() != OK) {
         printf("(%s) error disabling rtc update interrupts\n", __func__);
