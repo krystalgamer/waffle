@@ -67,7 +67,7 @@ char queue_top(queue *q){
 
 int del_queue(queue *q){
 
-	/* queue already empty */
+	/* Queue already empty */
 	if(q == NULL) return 1;
 
 	/* Pop all elements */
@@ -76,6 +76,17 @@ int del_queue(queue *q){
 
 	/* Point queue to NULL */
 	q = NULL;
+
+	return 0;
+}
+
+int empty_queue(queue *q) {
+	/* Queue already empty */
+	if(q == NULL) return 1;
+
+	/* Pop all elements */
+	while(!is_queue_empty(q))
+		queue_pop(q);
 
 	return 0;
 }

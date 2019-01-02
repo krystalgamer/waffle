@@ -56,4 +56,6 @@ char queue_top(queue *q);
  */
 int del_queue(queue *q);
 
+int empty_queue(queue *q);
+
 #endif

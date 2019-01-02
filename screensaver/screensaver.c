@@ -13,6 +13,8 @@
 #include "interrupts/serial_port.h"
 #include "com_protocol.h"
 
+#include "util.h"
+
 static uint8_t *waffle, *bacon, *orange_juice, *screensaver_back;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
@@ -149,10 +151,21 @@ void screensaver_draw() {
 
 
             if (!sent_msg) {
-                char msg[8] = "LSLSLSLS";
-                ser_write_msg_fifo(msg, sizeof(msg));
+                if (ser_write_msg_ht(LS) != OK) {
+                    printf("(%s) error writing msg\n", __func__);
+                    sent_msg = true;
+                    return;
+                }
 
+                /* Enable fifos to receive message */
+                if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
+                    printf("(%s) error disabling fifo\n", __func__);
+                    return;
+                }
+
+                
                 sent_msg = true;
+
                 printf("Message sent!\n");
             }
         }

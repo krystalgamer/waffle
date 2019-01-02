@@ -77,7 +77,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
 
     /* Configure the UART */
-    if (ser_configure_settings(CP_WORD_LENGTH, CP_STOP_BIT, CP_PARITY, CP_BIT_RATE, CP_RCV_DATA_INT, CP_TRANS_EMPTY_INT, CP_LINE_STATUS_INT, CP_TRIGGER_LVL) != OK) {
+    if (ser_configure_settings(CP_WORD_LENGTH, CP_STOP_BIT, CP_PARITY, CP_BIT_RATE, CP_RCV_DATA_INT, CP_TRANS_EMPTY_INT, CP_LINE_STATUS_INT) != OK) {
         printf("(%s) Error configuring the UART settings\n", __func__);
         vg_exit();
         return 1;
