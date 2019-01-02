@@ -6,6 +6,8 @@
 #define CONTEXT_EXTRA_SPACE 20
 #define CONTEXT_OPTION_HEIGHT 10
 
+extern WindowList wnd_list;
+
 ContextMenu *create_context_menu(uint32_t entries){
     
     ContextMenu *tmp = alloc_struct(sizeof(ContextMenu));
@@ -141,15 +143,24 @@ ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name){
     return NULL;
 }
 
+uint32_t get_entry_id_by_ptr(ContextMenu *menu, ContextMenu *ptr){
+    for(uint32_t i = 0; i < menu->size; i ++){
+        if(menu->entries[i]->menu == ptr)
+            return i;
+    }
+    return -1;
+}
+
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
     
     if(menu == NULL)
         return false;
     
+    /* Verifies if anything is being pressed */
     ContextMenu *cur_menu = menu;
     while(cur_menu->active_sub){
         x += (menu->longer_entry + 5)*FONT_WIDTH + CONTEXT_EXTRA_SPACE;
-        y += menu->size*(FONT_HEIGHT + CONTEXT_OPTION_HEIGHT);
+        y += get_entry_id_by_ptr(cur_menu, cur_menu->active_sub)*(FONT_HEIGHT + CONTEXT_OPTION_HEIGHT);
         cur_menu = cur_menu->active_sub;
     }
 
@@ -165,11 +176,13 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
 
     for(uint32_t i = 0; i<cur_menu->size; i++){
 
-        if(mouse_over_coords(x, y+i*(height/menu->size), x+width, y+(i+1)*(height/menu->size)))
+        if(mouse_over_coords(x, y+i*(height/cur_menu->size), x+width, y+(i+1)*(height/cur_menu->size))){
             if(cur_menu->entries[i]->callback != NULL){
                 cur_menu->entries[i]->callback();
                 return true;
             }
+            return false;
+        }
     }
 
     return false;

@@ -20,6 +20,12 @@ SRCS += terminus.c
 .PATH: ${.CURDIR}/file_browser
 SRCS += file_browser.c
 
+.PATH: ${.CURDIR}/system_info
+SRCS += system_info.c
+
+.PATH: ${.CURDIR}/background_chooser
+SRCS += background_chooser.c
+
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}

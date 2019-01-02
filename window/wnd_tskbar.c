@@ -2,6 +2,8 @@
 #include "window.h"
 #include "../terminus/terminus.h"
 #include "../file_browser/file_browser.h"
+#include "../system_info/system_info.h"
+#include "../background_chooser/background_chooser.h"
 #include "../font/letters.h"
 #include "interrupts/rtc.h"
 #include "vbe.h"
@@ -129,13 +131,14 @@ void init_taskbar_menu(){
     add_context_menu_entry(menu, "Terminus", true, (void*)create_terminus);
     add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
+    add_context_menu_entry(menu, "System Information", true, (void*)create_system_info);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 
     ContextMenu *settings_sub = create_context_menu(5);
     if(settings_sub == NULL)
         return;
     
-    add_context_menu_entry(settings_sub, "Desktop", true, NULL);
+    add_context_menu_entry(settings_sub, "Desktop Background", true, (void*)create_background_chooser);
     add_context_menu_entry(settings_sub, "System", true, NULL);
     add_context_menu_entry(settings_sub, "Startup", true, NULL);
     add_context_menu_entry(settings_sub, "Data Server", true, NULL);

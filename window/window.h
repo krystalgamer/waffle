@@ -10,6 +10,7 @@ typedef enum {
     LIST_VIEW,
     CHECKBOX,
     TEXT,
+    IMAGE,
 
     DATA,
     INVALID
@@ -62,6 +63,10 @@ typedef struct _element{
         uint32_t color;
         bool active;
 	}text;
+
+    struct _image_attr{
+        void *space;
+    }image;
 
     struct _data_attr{
         void *space;

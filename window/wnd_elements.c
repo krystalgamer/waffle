@@ -64,11 +64,15 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
         case TEXT:
             if(attr==NULL)
                 break;
+            /* TODO DUPLICATE */
             memcpy(&new_el->attr, attr, sizeof(struct _text_attr));
             break;
 		case DATA:
 			memcpy(&new_el->attr.data.space, attr, 4);
 			break;
+        case IMAGE:
+            memcpy(&new_el->attr.image.space, attr, 4);
+            break;
         default:
             free(new_el);
             return NULL;
@@ -81,6 +85,7 @@ static void draw_text_box(const Window *wnd, const Element *element);
 static void draw_radio_button(const Window *wnd, const Element *element);
 static void draw_button(const Window *wnd, const Element *element);
 static void draw_list_view(const Window *wnd, const Element *element);
+static void draw_image(const Window *wnd, const Element *element);
 static void draw_checkbox(const Window *wnd, const Element *element);
 static void draw_text(const Window *wnd, const Element *element);
 
@@ -90,7 +95,7 @@ static void draw_invalid(const Window *wnd, const Element *element){
     printf("%p %p\n", wnd, element);
 }
 
-static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_invalid };
+static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_image, draw_invalid };
 
 //TODO deveria passar Window? ou coords da janela
 void draw_elements(const Window *wnd){
@@ -106,6 +111,10 @@ void draw_elements(const Window *wnd){
     }
 }
 
+
+static void draw_image(const Window *wnd, const Element *element){
+	draw_pixmap_direct_mode(element->attr.image.space, wnd->x+element->x,wnd->y+element->y, element->width, element->height, 0, false);
+}
 
 static void draw_button(const Window *wnd, const Element *element){
 
