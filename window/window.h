@@ -1,6 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#define SLIDER_WIDTH 5
 typedef enum {
     BUTTON,
     TEXT_BOX,
@@ -11,6 +12,8 @@ typedef enum {
     CHECKBOX,
     TEXT,
     IMAGE,
+
+    SLIDER,
 
     DATA,
     INVALID
@@ -58,19 +61,24 @@ typedef struct _element{
             bool enabled;
         }checkbox;
 	
-	struct _text_attr{
-        char *text;
-        uint32_t color;
-        bool active;
-	}text;
+        struct _text_attr{
+            char *text;
+            uint32_t color;
+            bool active;
+        }text;
 
-    struct _image_attr{
-        void *space;
-    }image;
+        struct _image_attr{
+            void *space;
+        }image;
 
-    struct _data_attr{
-        void *space;
-    }data;
+        struct _slider_atr{
+            uint32_t pos;
+            bool selected;
+        }slider;
+
+        struct _data_attr{
+            void *space;
+        }data;
 
     }attr;
 
@@ -155,6 +163,9 @@ typedef struct _wnd_lst{
     uint8_t * background_sprite;
     uint16_t bckg_width, bckg_height;
 
+    bool bckg_image;
+    uint32_t bckg_color;
+
 }WindowList;
 
 #define BACKGROUND_COLOR 0x00008081
@@ -234,8 +245,10 @@ enum MESSAGE_TYPE{
     KEYBOARD,
     MOUSE,
     LIST_VIEW_MSG,
-    BUTTON_MSG
-
+    BUTTON_MSG,
+    SLIDER_MSG,
+    CHECKBOX_MSG,
+    MAXIMIZE_MSG
 };
 
 Element *find_by_id(Window *wnd, char *identifier);

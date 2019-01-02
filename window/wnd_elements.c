@@ -73,6 +73,9 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
         case IMAGE:
             memcpy(&new_el->attr.image.space, attr, 4);
             break;
+        case SLIDER:
+            new_el->width += SLIDER_WIDTH;
+            break;
         default:
             free(new_el);
             return NULL;
@@ -84,6 +87,7 @@ static void draw_button(const Window *wnd, const Element *element);
 static void draw_text_box(const Window *wnd, const Element *element);
 static void draw_radio_button(const Window *wnd, const Element *element);
 static void draw_button(const Window *wnd, const Element *element);
+static void draw_slider(const Window *wnd, const Element *element);
 static void draw_list_view(const Window *wnd, const Element *element);
 static void draw_image(const Window *wnd, const Element *element);
 static void draw_checkbox(const Window *wnd, const Element *element);
@@ -95,7 +99,7 @@ static void draw_invalid(const Window *wnd, const Element *element){
     printf("%p %p\n", wnd, element);
 }
 
-static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_image, draw_invalid };
+static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_image, draw_slider, draw_invalid };
 
 //TODO deveria passar Window? ou coords da janela
 void draw_elements(const Window *wnd){
@@ -133,6 +137,14 @@ static void draw_button(const Window *wnd, const Element *element){
 
     print_horizontal_word_len(element->attr.button.text, num_chars, text_x, text_y, 0);
 
+}
+
+static void draw_slider(const Window *wnd, const Element *element){
+    printf("", wnd, element);
+
+    pj_draw_hline(wnd->x + element->x, wnd->y+element->y+element->height/2, element->width, 0);
+    pj_draw_rectangle(wnd->x + element->x + element->attr.slider.pos, wnd->y+element->y, SLIDER_WIDTH, element->height,  0xFFFFFFFF);
+    return;
 }
 
 static void draw_list_view(const Window *wnd, const Element *element){
