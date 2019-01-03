@@ -21,7 +21,9 @@
 #include "terminus/terminus.h"
 
 void escrever_coiso();
+void window_scroll_handle(uint8_t scroll);
 
+bool set_scroll();
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
 
@@ -95,6 +97,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     } 
     uint32_t mouse_irq_set = BIT(bitNum);
 
+
+	/* Activates scroll wheel */
+	set_scroll();
+
     /* Subscribe Keyboard Interrupts */
     if(keyboard_subscribe_int(&bitNum) != OK) {
         printf("(%s) There was a problem enabling timer interrupts\n", __func__);
@@ -124,7 +130,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     message msg;
     uint32_t r = 0;
     
-    uint8_t mouse_packet[MOUSE_PACKET_SIZE];
+    uint8_t mouse_packet[4];
 	struct packet pp;
 
     uint8_t scancodes[SCANCODES_BYTES_LEN];
@@ -161,11 +167,13 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 if ( msg.m_notify.interrupts & mouse_irq_set) { /* subscribed interrupt */
 
                     mouse_ih();
-                    if (assemble_mouse_packet(mouse_packet)) {
+                    if ((r = assemble_mouse_packet(mouse_packet))) {
                         parse_mouse_packet(mouse_packet, &pp);
                         if(pp.mb)
                             pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
+						if(r == 4)
+							window_scroll_handle((int8_t)mouse_packet[3]);
                     }
                     idle_time = 0;
                 }

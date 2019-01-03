@@ -50,7 +50,7 @@ void mouse_poll_handler() {
 
 uint32_t assemble_mouse_packet(uint8_t * packet_bytes) {
 
-    static uint8_t bytes[MOUSE_PACKET_SIZE];
+    static uint8_t bytes[4];
     static uint8_t current_packet_size = 0;
     const static uint32_t buffer_not_full = 0;
     
@@ -132,9 +132,15 @@ int mouse_send_cmd(uint8_t arg) {
     if(send_with_ack(arg, &ack) == false)
         continue;
 
+	/* It's intellimouse */
+	if(arg == 0xeb && ack == 3){
+		MOUSE_PACKET_SIZE = 4;
+		return MOUSE_OK;
+	}
+
     /* If the ack byte is not ACK or NACK, end with an error */
     if (ack != MOUSE_ACK && ack != MOUSE_NACK) {
-        printf("(%s) mouse ack error %02X\n", __func__, ack);
+        printf("(%s) mouse ack error %02X %02X\n", __func__, arg, ack);
         return MOUSE_SEND_CMD_FAILED;
     }
 
@@ -253,4 +259,25 @@ bool send_with_ack(uint8_t arg, uint8_t *ack) {
 
     printf("(%s) Tries exceeded\n", __func__);
     return false;
+}
+
+bool set_scroll(){
+
+    sys_irqdisable(&mouse_hook_id);
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0xc8);
+
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0x64);
+
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0x50);
+
+	mouse_send_cmd(0xf2);
+
+    tickdelay(micros_to_ticks(15000));
+	printf("%d coiso\n", mouse_read_data_cmd());
+    sys_irqenable(&mouse_hook_id);
+	return true;
+
 }

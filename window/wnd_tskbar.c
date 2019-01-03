@@ -95,6 +95,8 @@ Window *pressed_window_taskbar(){
 
 bool has_taskbar_button_been_pressed(){
     wnd_list.taskbar.menu.b_pressed = mouse_over_coords(0,0, wnd_list.taskbar.menu.b_width, wnd_list.taskbar.height); 
+	if(wnd_list.taskbar.menu.b_pressed == false)
+		deactivate_subs(wnd_list.taskbar.menu.context);
     return wnd_list.taskbar.menu.b_pressed;
 }
 

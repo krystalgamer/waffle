@@ -16,6 +16,7 @@ void create_painter(){
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50, 255, 30, NULL, "red"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30+5, 255, 30, NULL, "green"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10, 255, 30, NULL, "blue"); 
+    window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10*2, 50, 30, NULL, "brush"); 
 
 
     void *color_display = malloc((30*2+10)*(30*2+10)*4);
@@ -25,6 +26,9 @@ void create_painter(){
 
 void do_horizontal_brush(Element *canvas, uint32_t *pixels, uint32_t brush_size, uint32_t pos, uint32_t color){
 
+    if(pos > (canvas->width * canvas->height)){
+        return;
+	}
     /* Only paints pixels on the same line */
     uint32_t line = pos/canvas->width;
 
@@ -46,8 +50,9 @@ void paint_with_brush(Element *canvas, uint32_t brush_size, uint32_t x, uint32_t
 
     uint32_t pos = x + (y*canvas->width);
 
-    if(pos > (canvas->width * canvas->height))
+    if(pos > (canvas->width * canvas->height)){
         return;
+	}
 
     uint32_t *pixels = canvas->attr.canvas.space;
 
@@ -68,10 +73,11 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
     printf("", el, type, data, wnd);
 
     if(type == CANVAS_MSG){
+		uint32_t brush_size = find_by_id(wnd, "brush")->attr.slider.pos+1;
         uint32_t color = *(uint32_t*)find_by_id(wnd, "color")->attr.image.space;
 
         uint32_t x =  wnd_list.cursor.x - wnd->x - el->x, y = wnd_list.cursor.y - wnd->y - el->y;
-        paint_with_brush(el, 5, x, y, color); 
+        paint_with_brush(el, brush_size, x, y, color); 
         struct packet *pp = data;
 
         if(pp->delta_x == 0 && pp->delta_y == 0)
@@ -83,6 +89,16 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
         uint32_t steps_y = abs(pp->delta_y);
         bool upwards = (pp->delta_y > 0); 
         bool right = (pp->delta_x > 0); 
+
+		if(right)
+			steps_x = (x + steps_x > el->width) ? (el->width-x-1) : steps_x;
+		else
+			steps_x = (x < steps_x) ? x : steps_x;
+
+		if(upwards)
+			steps_y = (y < steps_y) ? y : steps_y;
+		else
+			steps_y = (y + steps_y > el->height) ? (el->height-y-1) : steps_y;
 
         for(; steps_x || steps_y; ){
                 if(steps_x){
@@ -96,7 +112,7 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
                     steps_y--;
                 }
             
-                paint_with_brush(el, 5, x, y, color); 
+                paint_with_brush(el, brush_size, x, y, color); 
         }
     }
     else if(type == SLIDER_MSG){
@@ -112,7 +128,7 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
             color &= 0xFFFFFF00;
             color |= blue;
         }
-        else{
+        else if(!strcmp(el->identifier, "green")){
             uint8_t green = (uint8_t)el->attr.slider.pos;
             color &= 0xFFFF00FF;
             color |= green<<8;

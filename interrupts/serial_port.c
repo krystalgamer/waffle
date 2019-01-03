@@ -361,7 +361,7 @@ int ser_write_msg_ht(uint8_t msg) {
 			continue;
 		}
 
-		/* Message */
+		/* Trailer */
 		if (ser_write_char(CP_TRAILER) != OK) {
 			tries--;
 			tickdelay(micros_to_ticks(CP_WAIT_TIME));
@@ -431,6 +431,7 @@ uint8_t ser_msg_status() {
 }
 
 int ser_send_terminal_cmd(uint8_t cmd) {
+
 	if (ser_write_msg_ht(cmd) != OK) {
         printf("(%s) error writing msg\n", __func__);
         return SER_WRITE_MSG_ERR;
@@ -471,6 +472,7 @@ void ser_handle_data_interrupt_msg_ht() {
             ser_write_msg_fifo(msg, sizeof(msg));
 		}
 		else if (current_msg[1] == PWD) {
+			printf("OLA MOR\n");
 			/* Enable fifos */
 			if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
 				printf("(%s) error disabling fifo\n", __func__);
@@ -521,8 +523,8 @@ void ser_write_msg_fifo(char * msg, uint32_t msg_size) {
 		queue_push(send_fifo, msg[i]);
 
 	/* Write additional spaces to assure whole msg is sent */
-	//for (uint8_t i = 0; i < 14; i++)
-	//	queue_push(send_fifo, ' ');
+	for (uint8_t i = 0; i < 14; i++)
+		queue_push(send_fifo, ' ');
 
 	/* Fill the send fifo and check if could write whole msg */
 	if (ser_fill_send_fifo() == FIFO_END_OF_MSG) {

@@ -262,6 +262,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
 void set_list_view_elements(Element *element, char **entries, unsigned num);
 void set_text(Element *el, char *new_text);
 Window *window_get_by_id(uint32_t id);
+void deactivate_subs(ContextMenu *menu);
 
 
 static const char *cursor[] = {

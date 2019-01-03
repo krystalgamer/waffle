@@ -20,6 +20,8 @@ uint8_t keymap[] = {
     
 };
 
+extern WindowList wnd_list;
+
 Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier){
 
     Element *new_el = alloc_struct(sizeof(Element));
@@ -54,9 +56,9 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
             new_el->attr.list_view.max_chars = new_el->width/FONT_WIDTH;
             new_el->attr.list_view.scrollbar_selected = false;
             new_el->attr.list_view.scrollbar_y = 0;
-            /* size in percentage */
-            float percentage_scroll = (float)(new_el->attr.list_view.drawable_entries) / (new_el->attr.list_view.num_entries); 
-            new_el->attr.list_view.scrollbar_height = (uint32_t)(percentage_scroll*new_el->height);
+
+			uint32_t height_per_ele = new_el->height/new_el->attr.list_view.num_entries; 
+			new_el->attr.list_view.scrollbar_height = new_el->height-height_per_ele*(new_el->attr.list_view.num_entries-new_el->attr.list_view.drawable_entries);
             break;
         case CHECKBOX:
             memcpy(&new_el->attr, attr, sizeof(struct _checkbox_attr));
@@ -173,7 +175,8 @@ static void draw_list_view(const Window *wnd, const Element *element){
         if(start_index+i >= element->attr.list_view.num_entries)
             break;
 	
-        print_horizontal_word_len(element->attr.list_view.entries[start_index+i], element->attr.list_view.max_chars, wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, (mouse_over_coords(wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, wnd->x+element->x+element->width,wnd->y+element->y+i*FONT_HEIGHT + FONT_HEIGHT ) ? 0x000000FF : 0xFFFFFFFF));
+
+        print_horizontal_word_len(element->attr.list_view.entries[start_index+i], element->attr.list_view.max_chars, wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, (mouse_over_coords(wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, wnd->x+element->x+element->width,wnd->y+element->y+i*FONT_HEIGHT + FONT_HEIGHT ) && wnd_list.first == wnd ? 0x000000FF : 0xFFFFFFFF));
 
     }
 }
@@ -301,16 +304,10 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
         element->attr.list_view.scrollbar_y = 0;
 
         /* size in percentage */
-        float percentage_scroll = (float)(element->attr.list_view.drawable_entries) / (element->attr.list_view.num_entries); 
-        element->attr.list_view.scrollbar_height = (uint32_t)(percentage_scroll*element->height);
+        //float percentage_scroll = (float)(element->attr.list_view.drawable_entries) / (element->attr.list_view.num_entries); 
+		uint32_t height_per_ele = element->height/element->attr.list_view.num_entries; 
+        element->attr.list_view.scrollbar_height = element->height-height_per_ele*(element->attr.list_view.num_entries-element->attr.list_view.drawable_entries);
 
-        printf("scrollbar height %d drawable entries %d\n", element->attr.list_view.scrollbar_height, element->attr.list_view.drawable_entries);
-
-        /* Fix for divisions where the quocient has 0.5 > */
-        if( !(element->attr.list_view.scrollbar_height * element->attr.list_view.drawable_entries > element->height) )
-            element->attr.list_view.scrollbar_height += (element->height - (element->attr.list_view.scrollbar_height*element->attr.list_view.drawable_entries))/element->attr.list_view.drawable_entries;
-
-        printf("height %d s height %d\n", element->height, element->attr.list_view.scrollbar_height);
 }
 
 void set_text(Element *el, char *new_text){

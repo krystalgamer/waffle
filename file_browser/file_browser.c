@@ -3,19 +3,23 @@
 #include <dirent.h>
 #include <errno.h>
 #include "window/window.h"
+#include "../font/font.h"
+#include "interrupts/serial_port.h"
+#include "com_protocol.h"
 
 bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+uint32_t wnd_width = 800, wnd_height = 600;
 
 void create_file_browser(){
+	//ser_send_terminal_cmd(PWD);
 
-    uint32_t wnd_width = 800, wnd_height = 600;
-    uint32_t wnd_id = create_window(wnd_width, wnd_height, 0xFFFF0000, "File browser", &file_browser_input_handler);
+    uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x00B86B77, "File browser", &file_browser_input_handler);
 
     char cwd[1024];
     char *counter[100];
     getcwd(cwd,1024);
 
-    uint32_t lst_width = 100, lst_height = 100;
+    uint32_t lst_width = 500, lst_height = 500;
     uint32_t num_files = 0;
     DIR *dirp;
     struct dirent *dp;
@@ -56,10 +60,10 @@ void create_file_browser(){
     window_add_element(wnd_id, BUTTON, wnd_width/2-lst_width/2 + 90, wnd_height/2-lst_height/2 + lst_height + 40, 200, 200, NULL, NULL);
 
     struct _text_attr text = { "COCO", 0xFFFFFFFF, true};
-    window_add_element(wnd_id, TEXT, 0, 0, 0, 0, (void*)&text, "manolo");
+    window_add_element(wnd_id, TEXT, wnd_width/2-strlen(cwd)/2*FONT_WIDTH, 0, 0, 0, (void*)&text, "manolo");
 
     struct _text_attr text_sexy = { "This is not a directory", 0xFFFFFFFF, false};
-    window_add_element(wnd_id, TEXT, 0, 90, 0, 0, (void*)&text_sexy, "homie");
+    window_add_element(wnd_id, TEXT, wnd_width/2-strlen("This is not a directory")/2 * FONT_WIDTH, 550, 0, 0, (void*)&text_sexy, "homie");
 
     set_text(find_by_id(window_get_by_id(wnd_id), "manolo"), cwd);
 
@@ -74,7 +78,7 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
 
     char *cwd = find_by_id(wnd, "cwd")->attr.data.space;
 
-    static char *counter[255];
+    static char *counter[1024];
     static unsigned num_files = 0;
     
     if(type == LIST_VIEW_MSG){
@@ -151,11 +155,14 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
         closedir(dirp);
 
         set_list_view_elements(find_by_id(wnd, "pastas"), counter, num_files);
-        set_text(find_by_id(wnd, "manolo"), cwd);
+
+		Element *text_el = find_by_id(wnd, "manolo");
+        set_text(text_el, cwd);
+		text_el->x = wnd_width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
+
 
     }
     else if(type == BUTTON_MSG){
-		
     }
 
     return false;
