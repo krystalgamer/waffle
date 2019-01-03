@@ -45,5 +45,6 @@ int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color);
  */
 int printVerticalWord(char * word, uint16_t x, uint16_t y, uint32_t color);
 
+int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, uint32_t color);
 
 #endif

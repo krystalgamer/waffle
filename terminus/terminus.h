@@ -1,0 +1,1 @@
+unsigned create_terminus();
