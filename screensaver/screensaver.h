@@ -2,7 +2,7 @@
 #define SCREENSAVER_H
 
 #define SCREENSAVER_NUMBER_OF_ELEMENTS 6 /* Number of elements in the screensaver */
-#define SCREENSAVER_IDLE_TIME 120 /* Time to start screensaver in interrupts */
+#define SCREENSAVER_IDLE_TIME 180 /* Time to start screensaver in interrupts */
 #define SCREENSAVER_ELE_SPEED 10 /* Speed of the screensaver elements */
 
 /* 

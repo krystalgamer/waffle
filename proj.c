@@ -11,6 +11,8 @@
 #include "interrupts/keyboard.h"
 #include "interrupts/timer_user.h"
 #include "interrupts/rtc.h"
+#include "interrupts/serial_port.h"
+#include "com_protocol.h"
 #include "screensaver/screensaver.h"
 #include "window/window.h"
 #include "vbe.h"
@@ -66,12 +68,21 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /* Initialize the font */
     if(initLetters() != OK) {
         printf("(%s) Error initializing the font\n", __func__);
+        vg_exit();
         return 1;
     }
 
     /* Initialize the screensaver elements */
     if(initialize_screensaver() != OK) {
         printf("(%s) Error initializing the screensaver\n", __func__);
+        vg_exit();
+        return 1;
+    }
+
+    /* Configure the UART */
+    if (ser_configure_settings(CP_WORD_LENGTH, CP_STOP_BIT, CP_PARITY, CP_BIT_RATE, CP_RCV_DATA_INT, CP_TRANS_EMPTY_INT, CP_LINE_STATUS_INT) != OK) {
+        printf("(%s) Error configuring the UART settings\n", __func__);
+        vg_exit();
         return 1;
     }
 
@@ -92,7 +103,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
     uint32_t keyboard_irq_set = BIT(bitNum);
 
-
     /* Subscribe Timer 0 Interrupts */
     if(timer_subscribe_int(&bitNum) != OK) {
         printf("(%s) There was a problem enabling timer interrupts\n", __func__);
@@ -100,6 +110,14 @@ int (proj_main_loop)(int argc, char *argv[]) {
         return 1;
     }
     uint32_t timer_irq_set = BIT(bitNum);
+
+    /* Subscribe UART Interrupts */
+    if (ser_subscribe_int(&bitNum) != OK) {
+        printf("(%s) There was a problem enabling uart interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+    uint32_t uart_irq_set = BIT(bitNum);
 
     /* Variables to hold results */
     int ipc_status;
@@ -114,7 +132,12 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int maxFrames = 2;
     int curFrame = 1;
 
-    init_internal_status();
+    if (init_internal_status() != OK) {
+        printf("(%s) error initializing internal status\n");
+        vg_exit();
+        return 1;
+    }
+
     //create_window(200, 100, 0x0AAAAAA, "Janela Fixe");
     //create_window(100, 200, 0x0AAAAAA, "Feia");
     uint32_t id_fixe = create_window(400, 300, 0x00AAAAAA, "Vonita", NULL);
@@ -128,7 +151,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
         return 1;
     }
     uint32_t rtc_irq_set = BIT(bitNum);
-
 
     rtc_enable_update_int();
 
@@ -176,6 +198,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 if( msg.m_notify.interrupts & rtc_irq_set){
                     rtc_int_handler();
                 }
+
+                if (msg.m_notify.interrupts & uart_irq_set) {
+                    ser_ih();
+                }
                 break;
             default:
                 return 1;
@@ -187,9 +213,19 @@ int (proj_main_loop)(int argc, char *argv[]) {
     /* Free the memory allocated for the screensaver */
     free_screensaver();
 
+    /* Free the memory allocated for the fifo queues */
+    free_fifo_queues();
+
     /* Disable rtc update Interrupts */
     if (rtc_disable_update_int() != OK) {
         printf("(%s) error disabling rtc update interrupts\n", __func__);
+        vg_exit();
+        return 1;
+    }
+
+    /* Unsubscribe UART Interrupts */
+    if (ser_unsubscribe_int() != OK) {
+        printf("(%s) error unsubscribing uart interrupts\n", __func__);
         vg_exit();
         return 1;
     }

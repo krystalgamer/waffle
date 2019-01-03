@@ -1,8 +1,6 @@
 #ifndef VBE_H
 #define VBE_H
 
-#define BIT(n) (0x01<<(n))
-
 /* BIOS Services */
 #define VIDEO_CARD_SRV 0x10
 #define PC_CONF_SRV 0x11

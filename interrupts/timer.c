@@ -1,5 +1,6 @@
 #include "timer_user.h"
 #include "i8254.h"
+#include "util.h"
 
 /* Hook id to be used when subscribing a timer interrupt */
 int timer_hook_id = 1;
@@ -199,20 +200,3 @@ void timer_reset_int_counter() { timer_int_counter = 0; }
 unsigned int get_timer_int_counter() { return timer_int_counter; }
 
 void set_internal_frequency_counter(uint32_t freq){ internal_freq = freq; }
-
-int(util_get_LSB)(uint16_t val, uint8_t *lsb) {
-    
-    if(lsb == NULL)
-        return 1;
-    // Downcasting discards MSB
-    *lsb = (uint8_t)val;
-    return OK;
-}
-int(util_get_MSB)(uint16_t val, uint8_t *msb) {
-    
-    if(msb == NULL)
-        return 1;
-    // Shift the MSB to the LSB and downcast to remove the new MSB
-    *msb = (uint8_t) (val>>8);
-    return OK;
-}

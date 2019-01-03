@@ -159,7 +159,7 @@ void window_draw();
 void window_mouse_handle();
 void window_kbd_handle(const uint8_t *scancode, uint32_t num);
 uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*, Window*));
-void init_internal_status();
+int init_internal_status();
 uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void * attr, char *identifier);
 
 bool is_window_focused(const Window *wnd);
