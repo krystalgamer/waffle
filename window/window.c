@@ -16,7 +16,8 @@ WindowList wnd_list = { NULL, NULL,
         /*clock*/
         {0, 0, 0},
         NULL, 0, 0 },
-    NULL, 0, 0
+    NULL, 0, 0,
+    true, BACKGROUND_COLOR
 };
 extern bool pressed_the_secret_button;
 
@@ -46,7 +47,6 @@ int init_internal_status(){
     
 
     window_frame_height = get_y_res()/30;
-    
 
     init_taskbar_menu();
 
@@ -66,6 +66,7 @@ int init_internal_status(){
     wnd_list.background_sprite = sprite;
     wnd_list.bckg_width = img.width;
     wnd_list.bckg_height = img.height;
+    wnd_list.bckg_image = true;
 
     return 0;
 
@@ -87,6 +88,8 @@ void element_deselect_others(Window *wnd, Element *ignore){
                 el->attr.list_view.scrollbar_selected = false;
             else if(el->type == TEXT_BOX)
                 el->attr.text_box.selected = false;
+            else if(el->type == SLIDER)
+                el->attr.slider.selected = false;
         }
 
         el = el->next;
@@ -104,6 +107,9 @@ void element_deselect_all(Window *wnd){
             el->attr.list_view.scrollbar_selected = false;
         else if(el->type == TEXT_BOX)
             el->attr.text_box.selected = false;
+        else if(el->type == SLIDER)
+            el->attr.slider.selected = false;
+
         el = el->next;
     }
 }
@@ -114,6 +120,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
     /* Person is holding the mouse button */
     if(!pressed){
 
+        /*First check for cavas press*/
         Element *selected = NULL;
 
         while(cur_el){
@@ -121,26 +128,55 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
                 selected = cur_el;
                 break;
             }
+            else if(cur_el->type == SLIDER && cur_el->attr.slider.selected){
+                selected = cur_el;
+                break;
+            }
+            else if(cur_el->type == CANVAS){
+
+                if(mouse_over_coords(wnd->x + cur_el->x, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y+cur_el->height)){
+                    element_deselect_all(wnd);
+                    if(wnd->handler)
+                        wnd->handler(cur_el, CANVAS_MSG, (void*)pp, wnd);
+                }
+
+            }
             cur_el = cur_el->next;
         }
 
         if(!selected)
             return;
 
-        if(selected->type != LIST_VIEW)
-            return;
-
-
         /* Someone is moving the scrollbar */
-        if(pp->delta_y > 0)
-            selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) > selected->attr.list_view.scrollbar_y ? 0 :
-                    selected->attr.list_view.scrollbar_y - pp->delta_y);
-        else
-            selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) + selected->attr.list_view.scrollbar_y > selected->height - selected->attr.list_view.scrollbar_height ?  selected->height - selected->attr.list_view.scrollbar_height : selected->attr.list_view.scrollbar_y - pp->delta_y);
+        if(selected->type == LIST_VIEW){
+
+            if(pp->delta_y > 0)
+                selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) > selected->attr.list_view.scrollbar_y ? 0 :
+                        selected->attr.list_view.scrollbar_y - pp->delta_y);
+            else
+                selected->attr.list_view.scrollbar_y = ((uint32_t)abs(pp->delta_y) + selected->attr.list_view.scrollbar_y > selected->height - selected->attr.list_view.scrollbar_height ?  selected->height - selected->attr.list_view.scrollbar_height : selected->attr.list_view.scrollbar_y - pp->delta_y);
+
+        }
+        else if(selected->type == SLIDER){
+
+            uint32_t old_pos = selected->attr.slider.pos;
+            
+            if(pp->delta_x > 0)
+                selected->attr.slider.pos = (pp->delta_x + selected->attr.slider.pos > (selected->width-SLIDER_WIDTH))? selected->width - SLIDER_WIDTH : pp->delta_x + selected->attr.slider.pos;
+            else
+                selected->attr.slider.pos = ((uint32_t)abs(pp->delta_x) > selected->attr.slider.pos) ? 0 : pp->delta_x + selected->attr.slider.pos;
+
+            /* Slider was moved */
+            if(selected->attr.slider.pos != old_pos){
+                if(wnd->handler)
+                    wnd->handler(selected, SLIDER_MSG, NULL, wnd);
+            }
+        }
 
         return;
     }
 
+    /* Mouse button was pressed */
     while(cur_el){
 
         if(cur_el->type == LIST_VIEW){
@@ -189,21 +225,37 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
             }
 
         }
+        else if(cur_el->type == SLIDER){
+            
+            if(mouse_over_coords(wnd->x + cur_el->x + cur_el->attr.slider.pos, wnd->y + cur_el->y, wnd->x + cur_el->x + cur_el->attr.slider.pos + SLIDER_WIDTH, wnd->y + cur_el->y + cur_el->height)){
+                cur_el->attr.slider.selected = true;
+                element_deselect_others(wnd, cur_el);
+                break;
+            }
+        }
         else if(mouse_over_coords(wnd->x + cur_el->x, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y+cur_el->height)){
 
             if(cur_el->type == TEXT_BOX)
                 cur_el->attr.text_box.selected = true;
 
-            if(cur_el->type == CHECKBOX)
+            if(cur_el->type == CHECKBOX){
                 cur_el->attr.checkbox.enabled = !cur_el->attr.checkbox.enabled;
+                if(wnd->handler)
+                    wnd->handler(cur_el, CHECKBOX_MSG, NULL, wnd);
+            }
+
+            if(cur_el->type == CANVAS){
+                if(wnd->handler)
+                    wnd->handler(cur_el, CANVAS_MSG, (void*)pp, wnd);
+            }
+
 
             /* By default buttons dont require any special treatment */
             if(cur_el->type == BUTTON && wnd->handler != NULL)
                 wnd->handler(cur_el, BUTTON_MSG, NULL, wnd);
 
-
-
             element_deselect_others(wnd, cur_el);
+
             break;
         }
 
@@ -212,6 +264,8 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
             cur_el->attr.text_box.selected = false;
         else if(cur_el->type == LIST_VIEW)
             cur_el->attr.list_view.scrollbar_selected = false;
+        else if(cur_el->type == SLIDER)
+            cur_el->attr.slider.selected = false;
 
         cur_el = cur_el->next;
     }
@@ -337,7 +391,6 @@ uint32_t window_add_element(uint32_t id, ElementType type, uint16_t x, uint16_t 
 
 void window_draw(){
 
-    //clear_buffer_four(BACKGROUND_COLOR);
 
     Window *pre_walker = wnd_list.first;
     bool anything_maximized = false;
@@ -350,8 +403,12 @@ void window_draw(){
         pre_walker = pre_walker->next;
     }
 
-    if(!anything_maximized)
-        draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+    if(!anything_maximized){
+        if(wnd_list.bckg_image)
+            draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+        else
+            clear_buffer_four(wnd_list.bckg_color);
+    }
 
     desenhar_palavra();
 
@@ -511,10 +568,20 @@ bool pressed_three_buttons(Window *wnd){
                 wnd->maximized = !wnd->maximized;
 
                 if(wnd->maximized){
+
+                    if(wnd->handler == NULL)
+                        return true;
+
+                    /* If true then everything is handled */
+                    if(wnd->handler(NULL, MAXIMIZE_MSG, NULL, wnd)){
+                        return true;
+                    }
+
                     wnd->x = 0;
                     wnd->y = wnd_list.taskbar.height+window_frame_height;
                     wnd->height = get_y_res()-wnd->y;
                     wnd->width = get_x_res();
+
                 }
                 else{
                     wnd->height = wnd->orig_height;
