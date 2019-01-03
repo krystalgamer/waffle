@@ -1,9 +1,11 @@
 #ifndef SERIAL_PORT_H
 #define SERIAL_PORT_H
 
+/* COM1 */
 #define COM1_IRQ 4
 #define COM1_BASE_ADDR 0x3F8
 
+/* COM2 */
 #define COM2_IRQ 3
 #define COM2_BASE_ADDR 0x2F8
 
@@ -117,6 +119,8 @@ typedef enum _ser_status {
 	SER_INT_SUB_ERR,
 	SER_INT_UNSUB_ERR,
 
+	SER_SYS_INB_ERR,
+
 	SER_READ_REG_ERR,
 	SER_WRITE_REG_ERR,
 
@@ -126,7 +130,8 @@ typedef enum _ser_status {
 
 	SER_TRIES_EXCEEDED,
 
-	SER_LSR_ERR
+	SER_LSR_ERR,
+	SER_ERR
 
 } ser_status;
 

@@ -3,15 +3,12 @@
 #include <math.h>
 #include "screensaver.h"
 #include "vbe.h"
-#include "window/window.h" // TODO IS THIS REALLY NECESSARY??? Used to access background color
+#include "window/window.h"
 
 #include "waffle_xpm.h"
 #include "orange_juice_xpm.h"
 #include "bacon_xpm.h"
 #include "screensaver_background.h"
-
-#include "interrupts/serial_port.h"
-#include "com_protocol.h"
 
 #include "util.h"
 
@@ -94,8 +91,7 @@ void free_screensaver() {
     }
 }
 
-void screensaver_draw() {    
-    //clear_buffer_four(BACKGROUND_COLOR);
+void screensaver_draw() {
     draw_pixmap_direct_mode(screensaver_back, 0,0, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT, 0, false);
 
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {

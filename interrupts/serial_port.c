@@ -57,11 +57,11 @@ int ser_read_register(uint8_t reg, uint8_t * register_content) {
 	uint32_t content;
 	if (sys_inb(COM1_BASE_ADDR + reg, &content) != OK) {
 		printf("(%s) sys_inb error\n", __func__);
-		return 1;
+		return SER_SYS_INB_ERR;
 	}
 
 	*register_content = (uint8_t) content;
-	return 0;
+	return SER_OK;
 }
 
 int ser_write_reg(uint8_t reg, uint8_t new_content) {
@@ -104,7 +104,7 @@ int ser_set_bit_rate(uint16_t bit_rate) {
 		return SER_WRITE_REG_ERR;
 	}
 
-	return 0;
+	return SER_OK;;
 }
 
 
@@ -159,7 +159,7 @@ int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool lin
 
 	if (ser_deactivate_interrupts() != OK) {
 		printf("(%s) error deactivating interrupts\n", __func__);
-		return 1;
+		return SER_ERR;
 	}
 
 	/* Read previous IER configuration */
@@ -185,7 +185,7 @@ int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool lin
 		return SER_WRITE_REG_ERR;
 	}
 
-	return 0;
+	return SER_OK;
 }
 
 int ser_deactivate_interrupts() {
@@ -206,7 +206,7 @@ int ser_deactivate_interrupts() {
 		return SER_WRITE_REG_ERR;
 	}
 
-	return 0;
+	return SER_OK;
 }
 
 int ser_enable_fifo(uint8_t trigger_lvl) {
@@ -214,7 +214,7 @@ int ser_enable_fifo(uint8_t trigger_lvl) {
 	config |= FCR_ENABLE_FIFO | FCR_CLEAR_RCV_FIFO | FCR_CLEAR_TRANS_FIFO | trigger_lvl;
 	if (ser_write_reg(FIFO_CTRL_REG, config) != OK) {
 		printf("(%s) error enabling fifo\n", __func__);
-		return 1;
+		return SER_WRITE_REG_ERR;
 	}
 
 	return SER_OK;
@@ -225,7 +225,7 @@ int ser_disable_fifo() {
 	config |= FCR_CLEAR_RCV_FIFO | FCR_CLEAR_TRANS_FIFO;
 	if (ser_write_reg(FIFO_CTRL_REG, config) != OK) {
 		printf("(%s) error disabling fifo\n", __func__);
-		return 1;
+		return SER_WRITE_REG_ERR;
 	}
 
 	return SER_OK;
@@ -234,9 +234,9 @@ int ser_disable_fifo() {
 int ser_empty_fifo_queues() {
 	if (empty_queue(rcv_fifo) != OK || empty_queue(send_fifo) != OK) {
 		printf("(%s) error emptying fifos\n", __func__);
-		return 1;
+		return SER_ERR;
 	}
-	return 0;
+	return SER_OK;
 }
 
 void ser_flush_rbr() {
@@ -433,13 +433,13 @@ uint8_t ser_msg_status() {
 int ser_send_terminal_cmd(uint8_t cmd) {
 	if (ser_write_msg_ht(cmd) != OK) {
         printf("(%s) error writing msg\n", __func__);
-        return 1;
+        return SER_WRITE_MSG_ERR;
     }
 
     /* Enable fifos to receive message */
     if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
         printf("(%s) error disabling fifo\n", __func__);
-        return 1;
+        return SER_WRITE_MSG_ERR;
     }
 
     return SER_OK;
@@ -630,7 +630,7 @@ int ser_fill_rcv_fifo(){
 		}
 	}
 
-	return 0;
+	return SER_OK;
 }
 
 void ser_ih() {
