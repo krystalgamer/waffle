@@ -118,6 +118,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
     /* Person is holding the mouse button */
     if(!pressed){
 
+        /*First check for cavas press*/
         Element *selected = NULL;
 
         while(cur_el){
@@ -128,6 +129,15 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
             else if(cur_el->type == SLIDER && cur_el->attr.slider.selected){
                 selected = cur_el;
                 break;
+            }
+            else if(cur_el->type == CANVAS){
+
+                if(mouse_over_coords(wnd->x + cur_el->x, wnd->y+cur_el->y, wnd->x+cur_el->x+cur_el->width, wnd->y+cur_el->y+cur_el->height)){
+                    element_deselect_all(wnd);
+                    if(wnd->handler)
+                        wnd->handler(cur_el, CANVAS_MSG, (void*)pp, wnd);
+                }
+
             }
             cur_el = cur_el->next;
         }
@@ -231,6 +241,12 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
                 if(wnd->handler)
                     wnd->handler(cur_el, CHECKBOX_MSG, NULL, wnd);
             }
+
+            if(cur_el->type == CANVAS){
+                if(wnd->handler)
+                    wnd->handler(cur_el, CANVAS_MSG, (void*)pp, wnd);
+            }
+
 
             /* By default buttons dont require any special treatment */
             if(cur_el->type == BUTTON && wnd->handler != NULL)

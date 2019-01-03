@@ -14,6 +14,7 @@ typedef enum {
     IMAGE,
 
     SLIDER,
+    CANVAS,
 
     DATA,
     INVALID
@@ -70,6 +71,10 @@ typedef struct _element{
         struct _image_attr{
             void *space;
         }image;
+
+        struct _canvas_attr{
+            void *space;
+        }canvas;
 
         struct _slider_atr{
             uint32_t pos;
@@ -248,7 +253,8 @@ enum MESSAGE_TYPE{
     BUTTON_MSG,
     SLIDER_MSG,
     CHECKBOX_MSG,
-    MAXIMIZE_MSG
+    MAXIMIZE_MSG,
+    CANVAS_MSG
 };
 
 Element *find_by_id(Window *wnd, char *identifier);

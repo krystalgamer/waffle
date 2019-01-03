@@ -73,6 +73,9 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
         case IMAGE:
             memcpy(&new_el->attr.image.space, attr, 4);
             break;
+        case CANVAS:
+            memcpy(&new_el->attr, attr, sizeof(struct _canvas_attr));
+            break;
         case SLIDER:
             new_el->width += SLIDER_WIDTH;
             break;
@@ -90,6 +93,7 @@ static void draw_button(const Window *wnd, const Element *element);
 static void draw_slider(const Window *wnd, const Element *element);
 static void draw_list_view(const Window *wnd, const Element *element);
 static void draw_image(const Window *wnd, const Element *element);
+static void draw_canvas(const Window *wnd, const Element *element);
 static void draw_checkbox(const Window *wnd, const Element *element);
 static void draw_text(const Window *wnd, const Element *element);
 
@@ -99,7 +103,7 @@ static void draw_invalid(const Window *wnd, const Element *element){
     printf("%p %p\n", wnd, element);
 }
 
-static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_image, draw_slider, draw_invalid };
+static void (*dispatch_draw[])(const Window *wnd, const Element *element) = { draw_button, draw_text_box, draw_radio_button, draw_list_view, draw_checkbox, draw_text, draw_image, draw_slider, draw_canvas, draw_invalid };
 
 //TODO deveria passar Window? ou coords da janela
 void draw_elements(const Window *wnd){
@@ -118,6 +122,10 @@ void draw_elements(const Window *wnd){
 
 static void draw_image(const Window *wnd, const Element *element){
 	draw_pixmap_direct_mode(element->attr.image.space, wnd->x+element->x,wnd->y+element->y, element->width, element->height, 0, false);
+}
+
+static void draw_canvas(const Window *wnd, const Element *element){
+	draw_pixmap_direct_mode(element->attr.canvas.space, wnd->x+element->x,wnd->y+element->y, element->width, element->height, 0, false);
 }
 
 static void draw_button(const Window *wnd, const Element *element){
