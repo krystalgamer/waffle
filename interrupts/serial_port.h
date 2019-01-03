@@ -108,6 +108,7 @@ int ser_fill_send_fifo();
 int ser_fill_rcv_fifo();
 void print_rcv_fifo();
 void ser_write_msg_fifo(char * msg, uint32_t msg_size);
+int ser_send_terminal_cmd(uint8_t cmd);
 
 typedef enum _ser_status {
 	SER_OK = OK,
@@ -123,7 +124,9 @@ typedef enum _ser_status {
 
 	SER_WRITE_MSG_ERR,
 
-	SER_TRIES_EXCEEDED
+	SER_TRIES_EXCEEDED,
+
+	SER_LSR_ERR
 
 } ser_status;
 

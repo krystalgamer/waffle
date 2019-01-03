@@ -94,9 +94,6 @@ void free_screensaver() {
     }
 }
 
-
-static bool sent_msg = false;
-
 void screensaver_draw() {    
     //clear_buffer_four(BACKGROUND_COLOR);
     draw_pixmap_direct_mode(screensaver_back, 0,0, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT, 0, false);
@@ -148,26 +145,6 @@ void screensaver_draw() {
             collidingEle->y_move = scr_ele->y_move;
             scr_ele->x_move = temp_x_move;
             scr_ele->y_move = temp_y_move;
-
-
-            if (!sent_msg) {
-                if (ser_write_msg_ht(LS) != OK) {
-                    printf("(%s) error writing msg\n", __func__);
-                    sent_msg = true;
-                    return;
-                }
-
-                /* Enable fifos to receive message */
-                if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
-                    printf("(%s) error disabling fifo\n", __func__);
-                    return;
-                }
-
-                
-                sent_msg = true;
-
-                printf("Message sent!\n");
-            }
         }
     }
 

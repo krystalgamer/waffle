@@ -258,6 +258,12 @@ void ser_flush_rbr() {
 
 }
 
+void ser_reset_fifos() {
+	ser_empty_fifo_queues();
+	ser_disable_fifo();		
+	ser_flush_rbr();
+}
+
 int ser_write_char(uint8_t chr) {
 	uint8_t lsr_config;
 	uint8_t tries = CP_NUM_TRIES;
@@ -424,6 +430,21 @@ uint8_t ser_msg_status() {
 	return CP_UNKNOWN;
 }
 
+int ser_send_terminal_cmd(uint8_t cmd) {
+	if (ser_write_msg_ht(cmd) != OK) {
+        printf("(%s) error writing msg\n", __func__);
+        return 1;
+    }
+
+    /* Enable fifos to receive message */
+    if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
+        printf("(%s) error disabling fifo\n", __func__);
+        return 1;
+    }
+
+    return SER_OK;
+}
+
 void ser_handle_data_interrupt_msg_ht() {
 
 	/* Read from the RBR */
@@ -439,8 +460,6 @@ void ser_handle_data_interrupt_msg_ht() {
 		ser_write_char(CP_ACK);
 
 		if (current_msg[1] == LS) {
-			printf("Caught LS command\n");
-
 			/* Enable fifos */
 			if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
 				printf("(%s) error disabling fifo\n", __func__);
@@ -448,11 +467,19 @@ void ser_handle_data_interrupt_msg_ht() {
 			}
 
 			/* Transmit big message */
-			char msg[14] = "Output of LS\n";
+			char msg[19] = "/var\n/usr\n/homete\n";
             ser_write_msg_fifo(msg, sizeof(msg));
 		}
 		else if (current_msg[1] == PWD) {
-			printf("Caught PWD command\n");
+			/* Enable fifos */
+			if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
+				printf("(%s) error disabling fifo\n", __func__);
+				return;
+			}
+
+			/* Transmit big message */
+			char msg[29] = "/usr/test/lcom/is/very/easy\n";
+            ser_write_msg_fifo(msg, sizeof(msg));
 		}
 
 		else {
@@ -494,8 +521,8 @@ void ser_write_msg_fifo(char * msg, uint32_t msg_size) {
 		queue_push(send_fifo, msg[i]);
 
 	/* Write additional spaces to assure whole msg is sent */
-	for (uint8_t i = 0; i < 14; i++)
-		queue_push(send_fifo, ' ');
+	//for (uint8_t i = 0; i < 14; i++)
+	//	queue_push(send_fifo, ' ');
 
 	/* Fill the send fifo and check if could write whole msg */
 	if (ser_fill_send_fifo() == FIFO_END_OF_MSG) {
@@ -504,7 +531,6 @@ void ser_write_msg_fifo(char * msg, uint32_t msg_size) {
 		ser_empty_fifo_queues();
 		ser_disable_fifo();
 		ser_flush_rbr();
-		printf("disabled fifo write msg\n");
 	}
 
 }
@@ -539,12 +565,11 @@ int ser_fill_send_fifo(){
 		/* Write element to transmit in the fifo */
 		if (ser_write_reg(TRANSMITTER_HOLDING_REG, queue_top(send_fifo)) != OK) {
 			printf("(%s) error putting element in send fifo\n", __func__);
-			return 1;
+			return SER_WRITE_REG_ERR;
 		}
 
 		/* If found the end of the msg */
 		if (queue_top(send_fifo) == '\0') {
-			printf("Found end of string while sending!\n");
 			found_end = true;
 		}
 
@@ -573,21 +598,21 @@ int ser_fill_rcv_fifo(){
 		/* Check for errors */
 		if((lsr_config & LSR_OVERRUN_ERR) != OK){
 			printf("(%s) lsr overrun error\n", __func__);
-			return 1;
+			return SER_LSR_ERR;
 		}
 		if((lsr_config & LSR_PARITY_ERR) != OK){
 			printf("(%s) lsr parity error\n", __func__);
-			return 1;
+			return SER_LSR_ERR;
 		}
 		if((lsr_config & LSR_FRAMING_ERR) != OK){
 			printf("(%s) lsr framing error\n", __func__);
-			return 1;
+			return SER_LSR_ERR;
 		}
 
 		/* Read from the receiver fifo */
 		if (ser_read_register(RECEIVER_BUFFER_REG, &receiver_buff) != OK) {
 			printf("(%s) error reading from rbr\n", __func__);
-			return 1;
+			return SER_READ_REG_ERR;
 		}
 
 		/* Store read element in receiver queue */
@@ -595,9 +620,6 @@ int ser_fill_rcv_fifo(){
 
 		/* If found the end of the msg */
 		if (receiver_buff == '\0') {
-			printf("Found end of string!\n");
-			/* Should read LSR again ???? */
-
 			return FIFO_END_OF_MSG;
 		}
 
@@ -632,20 +654,15 @@ void ser_ih() {
 		/* Handle Transmitter Empty interrupts */
 		case IIR_TRANSMITTER_EMPTY_INT:
 			/* Send next data */
-			printf("IIR_TRANSMITTER_EMPTY_INT\n");
 
 			/* If fifo enabled, send message */
 			if (fifo_enabled){
 
-				printf("Fifo enabled\n");
 				/* Disable fifos if sent whole msg */
 				if (ser_fill_send_fifo() == FIFO_END_OF_MSG) {
-					/* Wait some time before disabling fifo to allow msg to be sent */
-					//tickdelay(micros_to_ticks(CP_WAIT_TIME));
-					ser_empty_fifo_queues();
-					ser_disable_fifo();
-					ser_flush_rbr();
-					printf("disabled fifo trans empty\n");
+
+					/* Reset UART registers and queues */
+					ser_reset_fifos();		
 				}
 			}
 
@@ -654,24 +671,20 @@ void ser_ih() {
 		/* Handle Received Data Available interrupts */	
 		case IIR_RECEIVED_DATA_AVAILABLE_INT:
 
-			printf("Data available\n");
-
 			/* Check if should use fifos or not */
 			if (fifo_enabled) {
-				printf("Fifo enabled\n");
 				/* If already received full msg, disable fifo */
 				if (ser_fill_rcv_fifo() == FIFO_END_OF_MSG) {
 
 					/* Print the msg received */
 					print_rcv_fifo();
 
-					ser_empty_fifo_queues();
-					ser_disable_fifo();		
-					ser_flush_rbr();			
-					printf("disabled fifo data int\n");
+					/* Reset UART registers and queues */
+					ser_reset_fifos();		
 				}
 			}
 			else {
+				/* Handle message using Header and Trailer */
 				ser_handle_data_interrupt_msg_ht();
 			}
 
@@ -681,7 +694,6 @@ void ser_ih() {
 
 		/* Handle Line Status interrupts */
 		case IIR_LINE_STATUS_INT:
-			printf("Line status int\n");
 			
 			/* Handle line status interrupt if fifo not enabled */
 			if (!fifo_enabled)
@@ -691,11 +703,14 @@ void ser_ih() {
 
 		/* Handle Character Timeout interrupts */
 		case IIR_CHARACTER_TIMEOUT_INT:
-			printf("Char timeout int\n");
+			if (ser_fill_rcv_fifo() == FIFO_END_OF_MSG) {
 
-			ser_fill_rcv_fifo();
+				/* Print the msg received */
+				print_rcv_fifo();
 
-			print_rcv_fifo();
+				/* Reset UART registers and queues */
+				ser_reset_fifos();				
+			}
 			break;
 	}
 }
