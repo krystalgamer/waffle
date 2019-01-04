@@ -132,12 +132,6 @@ int mouse_send_cmd(uint8_t arg) {
     if(send_with_ack(arg, &ack) == false)
         continue;
 
-	/* It's intellimouse */
-	if(arg == 0xeb && ack == 3){
-		MOUSE_PACKET_SIZE = 4;
-		return MOUSE_OK;
-	}
-
     /* If the ack byte is not ACK or NACK, end with an error */
     if (ack != MOUSE_ACK && ack != MOUSE_NACK) {
         printf("(%s) mouse ack error %02X %02X\n", __func__, arg, ack);
@@ -274,10 +268,30 @@ bool set_scroll(){
 	mouse_send_cmd(0x50);
 
 	mouse_send_cmd(0xf2);
+    uint8_t id = 0;
+    for(unsigned tries = 0; tries < DELAY_TRIES; tries++) {
 
-    tickdelay(micros_to_ticks(15000));
-	printf("%d coiso\n", mouse_read_data_cmd());
+        update_obf_status();
+        if(copy_on_valid_OBF(&id) == false)
+            continue;
+        else
+            break;
+
+        /* Did not read an ACK byte
+        Wait for DELAY_US and try to read again */
+        tickdelay(micros_to_ticks(DELAY_US));
+    }
+
+    if(id == 3){
+        printf("Scroll wheel activated\n");
+        MOUSE_PACKET_SIZE = 4;
+    }
+    else{
+        printf("Normal mouse \n");
+    }
+
     sys_irqenable(&mouse_hook_id);
+
 	return true;
 
 }

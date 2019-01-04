@@ -29,6 +29,9 @@ SRCS += background_chooser.c
 .PATH: ${.CURDIR}/painter
 SRCS += painter.c
 
+.PATH: ${.CURDIR}/calculator
+SRCS += calculator.c
+
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}
