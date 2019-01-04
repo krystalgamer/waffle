@@ -21,6 +21,7 @@
 #include "terminus/terminus.h"
 
 void escrever_coiso();
+void rtc_int_handle_asm();
 void window_scroll_handle(uint8_t scroll);
 
 bool set_scroll();
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
 
 int (proj_main_loop)(int argc, char *argv[]) {
 
+    sys_enable_iop(SELF);
     /* Suprimir warnings */
     if(argc == 0 && argv != NULL)
         printf("yee\n");
@@ -153,6 +155,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     uint32_t rtc_irq_set = BIT(bitNum);
 
     rtc_enable_update_int();
+    rtc_int_handle_asm();
 
     while(!pressed_the_secret_button) {
         /* Get a request message.  */
@@ -198,7 +201,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
                 }
 
                 if( msg.m_notify.interrupts & rtc_irq_set){
-                    rtc_int_handler();
+                    rtc_int_handle_asm();
                 }
 
                 if (msg.m_notify.interrupts & uart_irq_set) {
