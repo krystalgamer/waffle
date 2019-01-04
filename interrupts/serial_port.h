@@ -68,8 +68,8 @@
 #define IIR_INT_ORIGIN_MASK (BIT(3) | BIT(2) | BIT(1))
 #define IIR_MODEM_STATUS_INT ~(BIT(3) | BIT(2) | BIT(1))
 #define IIR_TRANSMITTER_EMPTY_INT BIT(1)
-#define IIR_CHARACTER_TIMEOUT_INT BIT(3)
 #define IIR_RECEIVED_DATA_AVAILABLE_INT BIT(2)
+#define IIR_CHARACTER_TIMEOUT_INT (BIT(3) | BIT(2))
 #define IIR_LINE_STATUS_INT (BIT(2) | BIT(1))	
 
 #define IIR_64B_FIFO BIT(5)
@@ -109,7 +109,7 @@ void ser_handle_data_interrupt_msg_ht();
 int ser_fill_send_fifo();
 int ser_fill_rcv_fifo();
 void print_rcv_fifo();
-void ser_write_msg_fifo(char * msg, uint32_t msg_size);
+void ser_write_msg_fifo(char * msg, uint32_t msg_size, uint32_t type);
 int ser_send_terminal_cmd(uint8_t cmd);
 
 typedef enum _ser_status {
@@ -134,6 +134,11 @@ typedef enum _ser_status {
 	SER_ERR
 
 } ser_status;
+
+void ser_set_handler(void *hand, void *el, void *wnd);
+
+#define SERIAL_DRAW 744
+#define SLIDER_SERIAL 745
 
 #define FIFO_END_OF_MSG -1
 

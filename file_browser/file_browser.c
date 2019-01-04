@@ -11,12 +11,11 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
 uint32_t wnd_width = 800, wnd_height = 600;
 
 void create_file_browser(){
-	//ser_send_terminal_cmd(PWD);
 
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x00B86B77, "File browser", &file_browser_input_handler);
 
     char cwd[1024];
-    char *counter[100];
+    char **counter = malloc(sizeof(void*) * 100);
     getcwd(cwd,1024);
 
     uint32_t lst_width = 500, lst_height = 500;

@@ -202,6 +202,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
                 if( msg.m_notify.interrupts & rtc_irq_set){
                     rtc_int_handle_asm();
+                    idle_time = 0;
                 }
 
                 if (msg.m_notify.interrupts & uart_irq_set) {

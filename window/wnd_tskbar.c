@@ -132,10 +132,11 @@ void init_taskbar_menu(){
 
     ContextMenu *menu = wnd_list.taskbar.menu.context;
     add_context_menu_entry(menu, "Applications", true, (void*)create_random_window);
-    add_context_menu_entry(menu, "Terminus", true, (void*)create_terminus);
+    add_context_menu_entry(menu, "Notepad", true, (void*)create_terminus);
     add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
     add_context_menu_entry(menu, "System Information", true, (void*)create_system_info);
+    add_context_menu_entry(menu, "Multiplayer", false, NULL);
     add_context_menu_entry(menu, "Painter", true, (void*)create_painter);
     add_context_menu_entry(menu, "Calculator", true, (void*)create_calculator);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
@@ -143,6 +144,7 @@ void init_taskbar_menu(){
     ContextMenu *settings_sub = create_context_menu(5);
     if(settings_sub == NULL)
         return;
+
     
     add_context_menu_entry(settings_sub, "Desktop Background", true, (void*)create_background_chooser);
     add_context_menu_entry(settings_sub, "System", true, NULL);
@@ -152,4 +154,10 @@ void init_taskbar_menu(){
     ContextEntries *settings = get_entry_by_name(menu, "Settings");
     set_sub_menu(settings, settings_sub);
 
+    ContextMenu *multiplayer_sub = create_context_menu(5);
+    if(multiplayer_sub == NULL)
+        return;
+
+    add_context_menu_entry(multiplayer_sub, "Painter", true, (void*)create_painter);
+    set_sub_menu(get_entry_by_name(menu, "Multiplayer"), multiplayer_sub); 
 }
