@@ -1,8 +1,8 @@
 #include "kbc.h"
 
 /* Variable to hold value of output buffer and flag to say if value is valid */
-static uint8_t out_buffer;
-static int obf_status;
+uint8_t out_buffer;
+int obf_status;
 
 int get_kbc_status(uint8_t *out_status){
 

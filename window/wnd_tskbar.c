@@ -5,6 +5,8 @@
 #include "../system_info/system_info.h"
 #include "../background_chooser/background_chooser.h"
 #include "../painter/painter.h"
+#include "../login/login.h"
+#include "../calculator/calculator.h"
 #include "../font/letters.h"
 #include "interrupts/rtc.h"
 #include "vbe.h"
@@ -95,6 +97,8 @@ Window *pressed_window_taskbar(){
 
 bool has_taskbar_button_been_pressed(){
     wnd_list.taskbar.menu.b_pressed = mouse_over_coords(0,0, wnd_list.taskbar.menu.b_width, wnd_list.taskbar.height); 
+	if(wnd_list.taskbar.menu.b_pressed == false)
+		deactivate_subs(wnd_list.taskbar.menu.context);
     return wnd_list.taskbar.menu.b_pressed;
 }
 
@@ -129,16 +133,20 @@ void init_taskbar_menu(){
 
     ContextMenu *menu = wnd_list.taskbar.menu.context;
     add_context_menu_entry(menu, "Applications", true, (void*)create_random_window);
-    add_context_menu_entry(menu, "Terminus", true, (void*)create_terminus);
+    add_context_menu_entry(menu, "Notepad", true, (void*)create_terminus);
+    add_context_menu_entry(menu, "Login", true, (void*)create_login);
     add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
     add_context_menu_entry(menu, "System Information", true, (void*)create_system_info);
+    add_context_menu_entry(menu, "Multiplayer", false, NULL);
     add_context_menu_entry(menu, "Painter", true, (void*)create_painter);
+    add_context_menu_entry(menu, "Calculator", true, (void*)create_calculator);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 
     ContextMenu *settings_sub = create_context_menu(5);
     if(settings_sub == NULL)
         return;
+
     
     add_context_menu_entry(settings_sub, "Desktop Background", true, (void*)create_background_chooser);
     add_context_menu_entry(settings_sub, "System", true, NULL);
@@ -148,4 +156,10 @@ void init_taskbar_menu(){
     ContextEntries *settings = get_entry_by_name(menu, "Settings");
     set_sub_menu(settings, settings_sub);
 
+    ContextMenu *multiplayer_sub = create_context_menu(5);
+    if(multiplayer_sub == NULL)
+        return;
+
+    add_context_menu_entry(multiplayer_sub, "Painter", true, (void*)create_painter);
+    set_sub_menu(get_entry_by_name(menu, "Multiplayer"), multiplayer_sub); 
 }

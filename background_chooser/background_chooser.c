@@ -4,6 +4,7 @@
 #include "../font/font.h"
 
 extern WindowList wnd_list;
+extern uint8_t *backgrounds[];
 bool background_chooser_handler(Element *el, unsigned type, void *data, Window *wnd);
 
 uint32_t colors[] = {
@@ -46,8 +47,20 @@ void create_background_chooser(){
         "USSR RED"
     };
 
+    static char *images[] = {
+        "ChocoTab",
+        "Bliss",
+        "Desert",
+        "Aqua",
+        "Stonehenge",
+        "Tulips"
+    };
+
     struct _list_view_attr lst_view = {(char**)colors, sizeof(colors)/sizeof(char*)};
-    window_add_element(wnd_id, LIST_VIEW, wnd_width/2-lst_width/2, wnd_height/2-lst_height/2, lst_width, lst_height, &lst_view, NULL); 
+    window_add_element(wnd_id, LIST_VIEW, wnd_width/4-lst_width/2, wnd_height/2-lst_height/2, lst_width, lst_height, &lst_view, "cores"); 
+
+    struct _list_view_attr lst_view_ = {(char**)images, sizeof(images)/sizeof(char*)};
+    window_add_element(wnd_id, LIST_VIEW, 3*wnd_width/4-lst_width/2, wnd_height/2-lst_height/2, lst_width, lst_height, &lst_view_, "background"); 
 
     window_add_element(wnd_id, SLIDER, wnd_width/2 - 255/2, 0, 255, 50, NULL, "red"); 
     window_add_element(wnd_id, SLIDER, wnd_width/2 - 255/2, 50, 255, 50, NULL, "green"); 
@@ -69,7 +82,15 @@ bool background_chooser_handler(Element *el, unsigned type, void *data, Window *
 
     printf("", el, wnd, type, data);
     if(type == LIST_VIEW_MSG){
+
         list_view_msg *msg = data;
+        if(!strcmp(el->identifier, "background")){
+            wnd_list.background_sprite = backgrounds[msg->index];
+            find_by_id(wnd, "bg_image")->attr.checkbox.enabled = true;
+            wnd_list.bckg_image = true;
+            return false;
+        }
+
         wnd_list.bckg_image = find_by_id(wnd, "bg_image")->attr.checkbox.enabled = false;
         wnd_list.bckg_color = colors[msg->index];
         find_by_id(wnd, "red")->attr.slider.pos = (uint8_t)(wnd_list.bckg_color >> 16);

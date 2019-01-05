@@ -3,6 +3,8 @@
 /* Hook id to be used when subscribing a mouse interrupt */
 int mouse_hook_id = 3;
 
+void update_obf_status_asm();
+
 int (mouse_subscribe_int)(uint8_t *bit_no) {
 
 	/* Check null pointer */
@@ -41,16 +43,16 @@ int (mouse_unsubscribe_int)() {
 }
 
 void (mouse_ih)() {
-	update_obf_status();
+	update_obf_status_asm();
 }
 
 void mouse_poll_handler() {
-	update_obf_status();
+	update_obf_status_asm();
 }
 
 uint32_t assemble_mouse_packet(uint8_t * packet_bytes) {
 
-    static uint8_t bytes[MOUSE_PACKET_SIZE];
+    static uint8_t bytes[4];
     static uint8_t current_packet_size = 0;
     const static uint32_t buffer_not_full = 0;
     
@@ -134,7 +136,7 @@ int mouse_send_cmd(uint8_t arg) {
 
     /* If the ack byte is not ACK or NACK, end with an error */
     if (ack != MOUSE_ACK && ack != MOUSE_NACK) {
-        printf("(%s) mouse ack error %02X\n", __func__, ack);
+        printf("(%s) mouse ack error %02X %02X\n", __func__, arg, ack);
         return MOUSE_SEND_CMD_FAILED;
     }
 
@@ -240,7 +242,7 @@ bool send_with_ack(uint8_t arg, uint8_t *ack) {
     /* Try to read from OBF until obtaining a valid value */
     for(unsigned tries = 0; tries < DELAY_TRIES; tries++) {
 
-        update_obf_status();
+        update_obf_status_asm();
         if(copy_on_valid_OBF(ack) == false)
             continue;
         else
@@ -253,4 +255,46 @@ bool send_with_ack(uint8_t arg, uint8_t *ack) {
 
     printf("(%s) Tries exceeded\n", __func__);
     return false;
+}
+
+bool set_scroll(){
+
+    sys_irqdisable(&mouse_hook_id);
+
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0xc8);
+
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0x64);
+
+	mouse_send_cmd(0xf3);
+	mouse_send_cmd(0x50);
+
+	mouse_send_cmd(0xf2);
+    uint8_t id = 0;
+    for(unsigned tries = 0; tries < DELAY_TRIES; tries++) {
+
+        update_obf_status_asm();
+        if(copy_on_valid_OBF(&id) == false)
+            continue;
+        else
+            break;
+
+        /* Did not read an ACK byte
+        Wait for DELAY_US and try to read again */
+        tickdelay(micros_to_ticks(DELAY_US));
+    }
+
+    if(id == 3){
+        printf("Scroll wheel activated\n");
+        MOUSE_PACKET_SIZE = 4;
+    }
+    else{
+        printf("Normal mouse \n");
+    }
+
+    sys_irqenable(&mouse_hook_id);
+
+	return true;
+
 }

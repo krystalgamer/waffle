@@ -235,11 +235,11 @@ struct _list_view_attr{
 };
 
 void so_para_a_nota();
-void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num);
+void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num, Window *wnd);
 
 typedef struct _kbd_msg{
     uint32_t num;
-    uint8_t scancodes[3];
+    uint8_t scancode[3];
 }kbd_msg;
 
 typedef struct _list_view_msg{
@@ -262,6 +262,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
 void set_list_view_elements(Element *element, char **entries, unsigned num);
 void set_text(Element *el, char *new_text);
 Window *window_get_by_id(uint32_t id);
+void deactivate_subs(ContextMenu *menu);
 
 
 static const char *cursor[] = {

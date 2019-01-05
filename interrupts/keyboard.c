@@ -7,6 +7,7 @@
 #include "kbc.h"
 #include "i8042.h"
 
+void update_obf_status_asm();
 
 /* Send a command without arguments */
 #define send_command(x) send_command_internal(x, false, 0)
@@ -81,7 +82,7 @@ int (keyboard_unsubscribe_int)() {
 }
 
 void (keyboard_ih)() {
-    update_obf_status();
+    update_obf_status_asm();
 }
 
 uint32_t opcode_available(uint8_t *scancodes){

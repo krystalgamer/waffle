@@ -9,7 +9,7 @@
 
 
 /* Communication details */
-#define CP_WAIT_TIME 10000
+#define CP_WAIT_TIME 100000
 #define CP_NUM_TRIES 4
 
 #define CP_BIT_RATE 9600

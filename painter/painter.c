@@ -1,5 +1,17 @@
 #include <lcom/lcf.h>
 #include "../window/window.h"
+#include "../interrupts/serial_port.h"
+
+
+typedef struct painter_serial{
+    uint16_t x,y;
+    int16_t delta_x, delta_y;
+}painter_serial;
+
+typedef struct slider_serial{
+    uint32_t new_pos;
+    uint32_t id;
+}slider_serial;
 
 extern WindowList wnd_list;
 bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd);
@@ -11,20 +23,26 @@ void create_painter(){
 
     void *image = malloc(500*500*4);
     memset(image, 0xFF, 500*500*4);
-    window_add_element(wnd_id, CANVAS, 0, 0, wnd_width, wnd_width, (void*)&image, NULL);
+    window_add_element(wnd_id, CANVAS, 0, 0, wnd_width, wnd_width, (void*)&image, "canvas");
 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50, 255, 30, NULL, "red"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30+5, 255, 30, NULL, "green"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10, 255, 30, NULL, "blue"); 
+    window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10*4, 50, 30, NULL, "brush"); 
 
 
     void *color_display = malloc((30*2+10)*(30*2+10)*4);
     memset(color_display, 0, (30*2+10)*(30*2+10)*4);
     window_add_element(wnd_id, IMAGE, 50+255+20, wnd_width+50+(10*2+10)/2, 30*2+10, 30*2+10, &color_display, "color"); 
+
+    ser_set_handler((void*)&painter_input_handler, (void*)find_by_id(window_get_by_id(wnd_id), "canvas"), window_get_by_id(wnd_id));
 }
 
 void do_horizontal_brush(Element *canvas, uint32_t *pixels, uint32_t brush_size, uint32_t pos, uint32_t color){
 
+    if(pos > (canvas->width * canvas->height)){
+        return;
+	}
     /* Only paints pixels on the same line */
     uint32_t line = pos/canvas->width;
 
@@ -46,8 +64,9 @@ void paint_with_brush(Element *canvas, uint32_t brush_size, uint32_t x, uint32_t
 
     uint32_t pos = x + (y*canvas->width);
 
-    if(pos > (canvas->width * canvas->height))
+    if(pos > (canvas->width * canvas->height)){
         return;
+	}
 
     uint32_t *pixels = canvas->attr.canvas.space;
 
@@ -68,21 +87,35 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
     printf("", el, type, data, wnd);
 
     if(type == CANVAS_MSG){
+
+		uint32_t brush_size = find_by_id(wnd, "brush")->attr.slider.pos+1;
         uint32_t color = *(uint32_t*)find_by_id(wnd, "color")->attr.image.space;
 
         uint32_t x =  wnd_list.cursor.x - wnd->x - el->x, y = wnd_list.cursor.y - wnd->y - el->y;
-        paint_with_brush(el, 5, x, y, color); 
+        paint_with_brush(el, brush_size, x, y, color); 
         struct packet *pp = data;
+
+        painter_serial ps = {(uint16_t)x, (uint16_t)y, pp->delta_x, pp->delta_y};
+        ser_write_msg_fifo((char*)&ps, sizeof(ps), SERIAL_DRAW);
 
         if(pp->delta_x == 0 && pp->delta_y == 0)
             return false;
-
 
         /* None of them are 0 */
         uint32_t steps_x = abs(pp->delta_x);
         uint32_t steps_y = abs(pp->delta_y);
         bool upwards = (pp->delta_y > 0); 
         bool right = (pp->delta_x > 0); 
+
+		if(right)
+			steps_x = (x + steps_x > el->width) ? (el->width-x-1) : steps_x;
+		else
+			steps_x = (x < steps_x) ? x : steps_x;
+
+		if(upwards)
+			steps_y = (y < steps_y) ? y : steps_y;
+		else
+			steps_y = (y + steps_y > el->height) ? (el->height-y-1) : steps_y;
 
         for(; steps_x || steps_y; ){
                 if(steps_x){
@@ -96,31 +129,118 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
                     steps_y--;
                 }
             
-                paint_with_brush(el, 5, x, y, color); 
+                paint_with_brush(el, brush_size, x, y, color); 
         }
     }
     else if(type == SLIDER_MSG){
+        bool color_change = true;
+
         uint32_t *pixels = (uint32_t*)find_by_id(wnd, "color")->attr.image.space;
         uint32_t color = *pixels;
         if(!strcmp(el->identifier, "red")){
+            slider_serial ss = { el->attr.slider.pos, 0 }; 
             uint8_t red = (uint8_t)el->attr.slider.pos;
             color &= 0xFF00FFFF;
             color |= red<<16;
+            ser_write_msg_fifo((char*)&ss, sizeof(ss), SLIDER_SERIAL);
+
         }
         else if(!strcmp(el->identifier, "blue")){
+            slider_serial ss = { el->attr.slider.pos, 1 }; 
             uint8_t blue = (uint8_t)el->attr.slider.pos;
             color &= 0xFFFFFF00;
             color |= blue;
+            ser_write_msg_fifo((char*)&ss, sizeof(ss), SLIDER_SERIAL);
         }
-        else{
+        else if(!strcmp(el->identifier, "green")){
+            slider_serial ss = { el->attr.slider.pos, 2 }; 
             uint8_t green = (uint8_t)el->attr.slider.pos;
             color &= 0xFFFF00FF;
             color |= green<<8;
+            ser_write_msg_fifo((char*)&ss, sizeof(ss), SLIDER_SERIAL);
         }
-        
-        for(uint32_t i = 0; i<(30*2+10)*(30*2+10); i++)
-            pixels[i] = color;
-    }
+        else{
+            slider_serial ss = { el->attr.slider.pos, 3 }; 
+            ser_write_msg_fifo((char*)&ss, sizeof(ss), SLIDER_SERIAL);
+        }
 
+        if(color_change)
+            for(uint32_t i = 0; i<(30*2+10)*(30*2+10); i++)
+                pixels[i] = color;
+    }
+    else if(type == SERIAL_DRAW){
+        painter_serial *ps = data;
+
+		uint32_t brush_size = find_by_id(wnd, "brush")->attr.slider.pos+1;
+        uint32_t color = *(uint32_t*)find_by_id(wnd, "color")->attr.image.space;
+
+        uint32_t x =  ps->x, y = ps->y;
+        paint_with_brush(el, brush_size, x, y, color); 
+
+        if(ps->delta_x == 0 && ps->delta_y == 0)
+            return false;
+
+        /* None of them are 0 */
+        uint32_t steps_x = abs(ps->delta_x);
+        uint32_t steps_y = abs(ps->delta_y);
+        bool upwards = (ps->delta_y > 0); 
+        bool right = (ps->delta_x > 0); 
+
+		if(right)
+			steps_x = (x + steps_x > el->width) ? (el->width-x-1) : steps_x;
+		else
+			steps_x = (x < steps_x) ? x : steps_x;
+
+		if(upwards)
+			steps_y = (y < steps_y) ? y : steps_y;
+		else
+			steps_y = (y + steps_y > el->height) ? (el->height-y-1) : steps_y;
+
+        for(; steps_x || steps_y; ){
+                if(steps_x){
+                    if(right) x++;
+                    else x--;
+                    steps_x--;
+                }
+                if(steps_y){
+                    if(upwards) y--;
+                    else y++;
+                    steps_y--;
+                }
+            
+                paint_with_brush(el, brush_size, x, y, color); 
+        }
+    }
+    else if(type == SLIDER_SERIAL){
+        bool color_change = true;
+        slider_serial *ss = data;
+        uint32_t color = *(uint32_t*)find_by_id(wnd, "color")->attr.image.space;
+        if(ss->id == 0){
+            find_by_id(wnd, "red")->attr.slider.pos = ss->new_pos;
+            uint8_t red = (uint8_t)ss->new_pos;
+            color &= 0xFF00FFFF;
+            color |= red<<16;
+        }
+        else if(ss->id == 1){
+            find_by_id(wnd, "blue")->attr.slider.pos = ss->new_pos;
+            uint8_t blue = (uint8_t)ss->new_pos;
+            color &= 0xFFFFFF00;
+            color |= blue;
+        }
+        else if(ss->id == 2){
+            find_by_id(wnd, "green")->attr.slider.pos = ss->new_pos;
+            uint8_t green = (uint8_t)ss->new_pos;
+            color &= 0xFFFF00FF;
+            color |= green<<8;
+        }
+        else{
+            find_by_id(wnd, "brush")->attr.slider.pos = ss->new_pos;
+        }
+        uint32_t *pixels = find_by_id(wnd, "color")->attr.canvas.space;
+        if(color_change)
+            for(uint32_t i = 0; i<(30*2+10)*(30*2+10); i++)
+                pixels[i] = color;
+
+    }
     return false;
 }

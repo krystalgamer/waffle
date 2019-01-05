@@ -3,7 +3,7 @@ PROG=proj
 SRCS += proj.c vbe.c util.c 
 
 .PATH: ${.CURDIR}/interrupts
-SRCS += mouse.c kbc.c timer.c rtc.c keyboard.c serial_port.c queue.c
+SRCS += mouse.c kbc.c timer.c rtc.c keyboard.c serial_port.c queue.c kbc_ih.S rtc_ih.S
 
 .PATH: ${.CURDIR}/font
 SRCS += letters.c
@@ -28,6 +28,12 @@ SRCS += background_chooser.c
 
 .PATH: ${.CURDIR}/painter
 SRCS += painter.c
+
+.PATH: ${.CURDIR}/calculator
+SRCS += calculator.c
+
+.PATH: ${.CURDIR}/login
+SRCS += login.c
 
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 

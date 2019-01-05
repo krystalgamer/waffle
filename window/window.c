@@ -6,6 +6,15 @@
 #include "window_background.h"
 
 void desenhar_palavra();
+
+uint8_t *backgrounds[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
 WindowList wnd_list = { NULL, NULL,
     /* cursor */ 
     { 0, 0, 0, 0, NULL },
@@ -22,7 +31,7 @@ WindowList wnd_list = { NULL, NULL,
 extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
-static uint16_t window_frame_height = 0;
+uint16_t window_frame_height = 0;
 
 int init_internal_status(){
 
@@ -57,6 +66,13 @@ int init_internal_status(){
     /* Load the ChocoTab xpm */
     xpm_image_t img;
     uint8_t * sprite = xpm_load(ChocoTab_background, XPM_8_8_8_8, &img);
+    backgrounds[0] = sprite;
+    backgrounds[1] = xpm_load(bliss, XPM_8_8_8_8, &img);
+    backgrounds[2] = xpm_load(desert, XPM_8_8_8_8, &img);
+    backgrounds[3] = xpm_load(aqua, XPM_8_8_8_8, &img);
+    backgrounds[4] = xpm_load(stone, XPM_8_8_8_8, &img);
+    backgrounds[5] = xpm_load(tulips, XPM_8_8_8_8, &img);
+
     if (sprite == NULL){
         printf("(%s) error loading ChocoTab background xpm\n", __func__);
         return 1;
@@ -112,6 +128,37 @@ void element_deselect_all(Window *wnd){
 
         el = el->next;
     }
+}
+
+void window_scroll_handle(int8_t scroll){
+	if(scroll == 0)
+		return;
+	Window *wnd = wnd_list.first;
+
+	if(wnd == NULL)
+		return;
+
+	Element *cur_el = wnd->elements;
+	while(cur_el){
+		if(cur_el->type == LIST_VIEW){
+			if(cur_el->attr.list_view.scrollbar_selected){
+                uint32_t height_per_ele = cur_el->height/cur_el->attr.list_view.num_entries; 
+				/*Move the current scrollbar*/
+				if(scroll & BIT(3)){
+
+					int32_t movement = (~scroll+1)*height_per_ele;
+					cur_el->attr.list_view.scrollbar_y = ((uint32_t)movement > cur_el->attr.list_view.scrollbar_y ? 0 : cur_el->attr.list_view.scrollbar_y - movement);
+				}
+				else{
+					uint32_t movement = scroll * height_per_ele;
+					cur_el->attr.list_view.scrollbar_y = (movement + cur_el->attr.list_view.scrollbar_y + cur_el->attr.list_view.scrollbar_height > cur_el->height ? cur_el->height - cur_el->attr.list_view.scrollbar_height : movement + cur_el->attr.list_view.scrollbar_y);
+
+				}
+				
+			}
+		}
+		cur_el = cur_el->next;
+	}
 }
 
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp){
@@ -251,8 +298,9 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
 
 
             /* By default buttons dont require any special treatment */
-            if(cur_el->type == BUTTON && wnd->handler != NULL)
+            if(cur_el->type == BUTTON && wnd->handler != NULL){
                 wnd->handler(cur_el, BUTTON_MSG, NULL, wnd);
+			}
 
             element_deselect_others(wnd, cur_el);
 
@@ -584,6 +632,9 @@ bool pressed_three_buttons(Window *wnd){
 
                 }
                 else{
+                    if(wnd->handler(NULL, MAXIMIZE_MSG, NULL, wnd)){
+                        return true;
+                    }
                     wnd->height = wnd->orig_height;
                     wnd->width = wnd->orig_width;
                 }
@@ -663,6 +714,7 @@ void move_mouse(const struct packet *pp){
 
 void move_to_front(Window *wnd){
 
+
     if(wnd_list.first == wnd)
         return;
 
@@ -692,18 +744,90 @@ void print_list(){
 }
 
 extern uint8_t keymap[];
+
+#define ALT_MAKECODE 0x38
+#define F4_MAKECODE 0x3e
+#define TAB_MAKECODE 0x0f
+#define WINDOWS_MAKECODE 0x5b
+#define IS_BREAK(x) (uint8_t)(x>>7)
+
+bool alt_pressed = false;
+bool f4_pressed = false;
+bool tab_pressed = false;
+
 void window_kbd_handle(const uint8_t *scancode, uint32_t num){
 
     /* No scancode to be read */
     if(!num)
         return;
 
+	if(num != 1){
+
+		if(num != 2 || *scancode != 0xe0)
+			return;
+
+		uint8_t special_makecode = scancode[1]&0x7f;
+		if(special_makecode == WINDOWS_MAKECODE && !IS_BREAK(scancode[1])){
+			wnd_list.taskbar.menu.b_pressed = true;
+			deactivate_subs(wnd_list.taskbar.menu.context);
+		}
+		return;
+	}
+
+	uint8_t makecode = (*scancode)&0x7f;
+	/* Handle special key presses */
+	/* ALT */
+	if(makecode == ALT_MAKECODE){
+		alt_pressed = !IS_BREAK(*scancode);
+		return;
+	}
+	/* F4 */
+	else if(makecode == F4_MAKECODE){
+		if(f4_pressed){
+			/* F4 is being hold so ignore this */
+			if(!IS_BREAK(*scancode))
+				return;
+			f4_pressed = false;
+			return;
+		}
+
+		f4_pressed = !IS_BREAK(*scancode);
+		if(f4_pressed && alt_pressed){
+			delete_window(wnd_list.first);
+		}
+
+		return;
+	}
+	/* TAB */
+	else if(makecode == TAB_MAKECODE){
+		if(tab_pressed){
+			/* tab is being hold so ignore this */
+			if(!IS_BREAK(*scancode))
+				return;
+			tab_pressed = false;
+			return;
+		}
+
+		tab_pressed = !IS_BREAK(*scancode);
+		if(tab_pressed && alt_pressed){
+			if(wnd_list.first != NULL && wnd_list.first != wnd_list.last)
+				move_to_front(wnd_list.last);
+		}
+
+		return;
+	}
+
     Window *wnd = wnd_list.first;
 
+	if(wnd == NULL)
+		return;
+
+	
 
     /* TODO this souldnt be needed, just here for future reference */
     if(wnd->minimized)
         return;
+
 
     /* Call the handler if it returns true then use this */
     Element *cur_el = wnd->elements;
@@ -714,12 +838,13 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
                 kbd_msg msg = {num, {scancode[0], scancode[1], scancode[2]}};
 
                 if(wnd->handler == NULL){
-                    modify_text_box(cur_el, scancode, num);
+                    modify_text_box(cur_el, scancode, num, wnd);
                     break;
                 }
 
-                if(!wnd->handler(cur_el, KEYBOARD, &msg, wnd))
-                    modify_text_box(cur_el, scancode, num);
+                if(!wnd->handler(cur_el, KEYBOARD, &msg, wnd)){
+                    modify_text_box(cur_el, scancode, num, wnd);
+                }
                 break;
             }
         }
@@ -734,36 +859,29 @@ void window_mouse_handle(const struct packet *pp){
     uint32_t state = update_state(pp);
     static bool is_moving_window = false;
     static Window *moving_window = NULL;
+	static Window *pressed = NULL;
 
     if( state & L_PRESSED ){
 
         if(wnd_list.taskbar.menu.b_pressed){
-           call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height); 
+           if(call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height)){
+				wnd_list.taskbar.menu.b_pressed = false;
+				deactivate_subs(wnd_list.taskbar.menu.context);
+				return;
+		   }
         }
 
         /* Check for button presses on the taskbar */
         if(has_taskbar_button_been_pressed()){
             element_deselect_all(wnd_list.first);
+			move_mouse(pp);
             return;
         }
 
-        Window *pressed = pressed_window_taskbar();
-        if(pressed != NULL){
-            if(pressed->minimized == false){
-                if(pressed == wnd_list.first)
-                    pressed->minimized = true;
-                else{
-                    element_deselect_all(wnd_list.first);
-                    move_to_front(pressed);
-                }
-            }
-            else{
-                element_deselect_all(wnd_list.first);
-                pressed->minimized = false;
-                move_to_front(pressed);
-            }
+        pressed = pressed_window_taskbar();
+		if(pressed != NULL){
 
-        } 
+		}
         else if( !(state & L_KEPT) ){
 
             bool window_pressed = false;
@@ -834,7 +952,7 @@ void window_mouse_handle(const struct packet *pp){
         else{
 
             /* Left button is being helf, thus continue to move a window */
-            if(is_moving_window){
+			if(is_moving_window){
                 move_window(moving_window, pp);
                 return;
             }
@@ -845,6 +963,26 @@ void window_mouse_handle(const struct packet *pp){
             }
         }
     }
+	else{
+
+		if(pressed != NULL){
+			if(pressed->minimized == false){
+				if(pressed == wnd_list.first)
+					pressed->minimized = true;
+				else{
+					element_deselect_all(wnd_list.first);
+					move_to_front(pressed);
+				}
+			}
+			else{
+				element_deselect_all(wnd_list.first);
+				pressed->minimized = false;
+				move_to_front(pressed);
+			}
+			pressed = NULL;
+
+		} 
+	}
 
 
     is_moving_window = false;

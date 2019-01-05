@@ -108,6 +108,6 @@ typedef enum _mouse_status {
 
 
 /* Size of mouse packets */
-#define MOUSE_PACKET_SIZE 3
+static uint32_t MOUSE_PACKET_SIZE = 3;
 
 #endif
