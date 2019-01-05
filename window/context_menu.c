@@ -188,6 +188,7 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
         if(mouse_over_coords(x, y+i*(height/cur_menu->size), x+width, y+(i+1)*(height/cur_menu->size))){
             if(cur_menu->entries[i]->callback != NULL){
                 cur_menu->entries[i]->callback();
+				move_to_front(wnd_list.last);
             }
             return true;
         }

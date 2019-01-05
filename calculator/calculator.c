@@ -133,6 +133,10 @@ bool calculator_input_handler(Element *el, unsigned type, void *data, Window *wn
 	else if(type == FREE_MSG){
 		free(el->attr.data.space);
 	}
+	else if(type == MAXIMIZE_MSG){
+		wnd->maximized = false;
+		return true;
+	}
 
 	return false;
 }

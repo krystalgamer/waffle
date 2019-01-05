@@ -28,7 +28,7 @@ void create_painter(){
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50, 255, 30, NULL, "red"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30+5, 255, 30, NULL, "green"); 
     window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10, 255, 30, NULL, "blue"); 
-    window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*2+10*4, 50, 30, NULL, "brush"); 
+    window_add_element(wnd_id, SLIDER, 50, wnd_width+50+30*3+10+5, 50, 30, NULL, "brush"); 
 
 
     void *color_display = malloc((30*2+10)*(30*2+10)*4);
@@ -151,5 +151,9 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 		for(uint32_t i = 0; i<(30*2+10)*(30*2+10); i++)
 			pixels[i] = color;
     }
+	else if(type == MAXIMIZE_MSG){
+		wnd->maximized = true;
+		return true;
+	}
     return false;
 }

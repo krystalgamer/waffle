@@ -426,6 +426,12 @@ void window_scroll_handle(int8_t scroll);
  * @return the pressed window */
 Window *pressed_window_taskbar();
 
+
+/**
+ * @brief Moves a window to front
+ * @param wnd the window
+ */
+void move_to_front(Window *wnd);
 /** @} */
 
 
@@ -508,6 +514,25 @@ typedef enum{
  * @addtogroup element
  * @{
  */
+/**
+ * @brief Builds an element internally
+ * @param type of the element
+ * @param x x position
+ * @param y y position
+ * @param width width of the element
+ * @param height height of the element
+ * @param attr data of the element
+ * @param identifier identifier of the element
+ * @return pointer to the element
+ */
+Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier);
+
+/**
+ * @brief recalculates the list view elements
+ * @param element the list view
+ */
+void recalculate_list_view(Element *element);
+
 struct _list_view_attr{
     char **entries;
     uint32_t num_entries;

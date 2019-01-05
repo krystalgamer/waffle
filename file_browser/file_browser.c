@@ -6,6 +6,10 @@
 #include "../font/font.h"
 #include "interrupts/serial_port.h"
 #include "com_protocol.h"
+#include "vbe.h"
+
+extern WindowList wnd_list;
+extern uint16_t window_frame_height;
 
 /** @addtogroup file_browser
  *  @{
@@ -21,7 +25,9 @@
 bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *wnd);
 
 /** @} */
+
 uint32_t wnd_width = 800, wnd_height = 600;
+uint32_t lst_width = 500, lst_height = 500;
 
 void create_file_browser(){
 
@@ -31,7 +37,6 @@ void create_file_browser(){
     char **counter = malloc(sizeof(void*) * 100);
     getcwd(cwd,1024);
 
-    uint32_t lst_width = 500, lst_height = 500;
     uint32_t num_files = 0;
     DIR *dirp;
     struct dirent *dp;
@@ -172,7 +177,7 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
 
 		Element *text_el = find_by_id(wnd, "manolo");
         set_text(text_el, cwd);
-		text_el->x = wnd_width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
+		text_el->x = wnd->width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
 
 		for(unsigned i = 0; i<num_files; i++)
 			free(counter[i]);
@@ -181,6 +186,40 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
     }
 	else if(type == FREE_MSG){
 		free(el->attr.data.space);
+	}
+	else if(type == MAXIMIZE_MSG){
+		Element *lista = find_by_id(wnd, "pastas");
+		Element *text_el = find_by_id(wnd, "manolo");
+        Element *invalid = find_by_id(wnd, "homie");
+
+		if(wnd->maximized){
+				
+			wnd->x = 0;
+			wnd->y = wnd_list.taskbar.height+window_frame_height;
+			wnd->height = get_y_res()-wnd->y;
+			wnd->width = get_x_res();
+
+
+			lista->x = wnd->width/2 - (lst_width+100)/2;
+			lista->y = wnd->height/2 - (lst_height+100)/2;
+			lista->width = lst_width + 100;
+			lista->height = lst_height + 100;
+
+			text_el->x = wnd->width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
+			invalid->x = wnd->width/2 - strlen(invalid->attr.text.text)/2 * FONT_WIDTH;
+			invalid->y = lista->y+lista->height;
+
+		}
+		else{
+			lista->x = wnd_width/2 - lst_width/2;
+			lista->y = wnd_height/2 - lst_height/2;
+			lista->width = lst_width;
+			lista->height = lst_height;
+			text_el->x = wnd_width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
+			invalid->x = wnd_width/2 - strlen(invalid->attr.text.text)/2 * FONT_WIDTH;
+			invalid->y = lista->y+lista->height;
+		}
+		recalculate_list_view(lista);
 	}
 
     return false;

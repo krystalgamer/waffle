@@ -339,6 +339,10 @@ bool m_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
 		expecting = false;
 		find_by_id(wnd, "connected")->attr.text.active = false;
 	}
+	else if(type == MAXIMIZE_MSG){
+		wnd->maximized = false;
+		return  true;
+	}
 
     return false;
 }

@@ -372,3 +372,23 @@ void set_text(Element *el, char *new_text){
 
     el->attr.text.text = strdup(new_text);
 }
+
+void recalculate_list_view(Element *element){
+
+        if(element == NULL)
+            return;
+
+        if(element->type != LIST_VIEW)
+            return;
+
+        element->attr.list_view.scrollbar_active = (element->attr.list_view.num_entries > element->height/FONT_HEIGHT); 
+        element->attr.list_view.drawable_entries = (element->attr.list_view.scrollbar_active ? element->height/FONT_HEIGHT : element->attr.list_view.num_entries);
+
+        element->attr.list_view.max_chars = element->width/FONT_WIDTH;
+        element->attr.list_view.scrollbar_selected = false;
+        element->attr.list_view.scrollbar_y = 0;
+
+		uint32_t height_per_ele = element->height/element->attr.list_view.num_entries; 
+        element->attr.list_view.scrollbar_height = element->height-height_per_ele*(element->attr.list_view.num_entries-element->attr.list_view.drawable_entries);
+
+}

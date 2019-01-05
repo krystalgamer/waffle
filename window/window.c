@@ -92,6 +92,15 @@ void free_window() {
     /* TODO Free all allocated memory */
 }
 
+/**
+ * @addtogroup window
+ * @{
+ */
+/**
+ * @brief Deselect all elements expect the one
+ * @param wnd window containing the element
+ * @param ignore the element ot ignore
+ */
 void element_deselect_others(Window *wnd, Element *ignore){
 
     Element *el = wnd->elements;
@@ -110,6 +119,10 @@ void element_deselect_others(Window *wnd, Element *ignore){
     }
 }
 
+/**
+ * @brief Deselect all the elements
+ * @param wnd wnd containing the elements
+ */
 void element_deselect_all(Window *wnd){
 
     if(wnd == NULL)
@@ -127,6 +140,7 @@ void element_deselect_all(Window *wnd){
         el = el->next;
     }
 }
+/** @} */
 
 void window_scroll_handle(int8_t scroll){
 	if(scroll == 0)
@@ -259,7 +273,10 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
                 list_view_msg msg = { start_index+index_over };
 
                 /* Dont care about the return, there's nothing to do there */
-                wnd->handler(cur_el, LIST_VIEW_MSG, &msg, wnd);
+				if(wnd->handler){
+					wnd->handler(cur_el, LIST_VIEW_MSG, &msg, wnd);
+					cur_el->attr.list_view.scrollbar_selected = true;
+				}
                 return;
             }
             /* Check for scrollbar presses */
@@ -325,6 +342,15 @@ bool is_window_focused(const Window *wnd){
     return wnd == wnd_list.first;
 }
 
+
+/**
+ * @addtogroup window
+ * {@
+ */
+/**
+ * @brief adds  window to window list
+ * @param wnd the window to be added
+ */
 void add_window_to_list(Window *wnd){
     
     if(wnd_list.first == NULL && wnd_list.last == NULL){
@@ -337,6 +363,7 @@ void add_window_to_list(Window *wnd){
 
     wnd_list.last = wnd;
 }
+/** @} */
 
 uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const char *name, bool (*input_handler)(Element *el, unsigned, void*, Window *)){
     
@@ -648,8 +675,10 @@ bool pressed_three_buttons(Window *wnd){
 
                 if(wnd->maximized){
 
-                    if(wnd->handler == NULL)
+                    if(wnd->handler == NULL){
+						wnd->maximized = false;
                         return true;
+					}
 
                     /* If true then everything is handled */
                     if(wnd->handler(NULL, MAXIMIZE_MSG, NULL, wnd)){
@@ -745,6 +774,8 @@ void move_mouse(const struct packet *pp){
 
 void move_to_front(Window *wnd){
 
+	if(wnd == NULL)
+		return;
 
     if(wnd_list.first == wnd)
         return;
