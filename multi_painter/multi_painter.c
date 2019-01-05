@@ -4,21 +4,45 @@
 #include "../font/font.h"
 
 
+extern WindowList wnd_list;
+
+/** @addtogroup multi_painter
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 typedef struct painter_serial{
-    uint16_t x,y;
-    int16_t delta_x, delta_y;
+    uint16_t x; /**< x position */
+	uint16_t y; /**< y position */
+    int16_t delta_x; /**< delta_x */
+	int16_t delta_y; /**< delat y */
 }painter_serial;
 
 typedef struct slider_serial{
-    uint32_t new_pos;
-    uint32_t id;
+    uint32_t new_pos; /**< new position on the slider */
+    uint32_t id; /**< id of the slider */
 }slider_serial;
 
-extern WindowList wnd_list;
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool m_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd);
 
-static bool connected = false;
-static bool expecting = false;
+static bool connected = false; /**< whether the multi painter is connected */
+static bool expecting = false; /**< whether it's expecting a response */
+/** @} */
+
 void create_multi_painter(){
 
     uint32_t wnd_width = 500, wnd_height = 700;

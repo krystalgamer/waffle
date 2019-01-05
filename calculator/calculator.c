@@ -1,7 +1,19 @@
 #include <lcom/lcf.h>
 #include "../window/window.h"
 
+/** @addtogroup calculator
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool calculator_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+/** @} */
 
 void create_calculator(){
     uint32_t wnd_width = 300, wnd_height = 280;

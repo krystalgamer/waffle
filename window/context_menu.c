@@ -143,6 +143,14 @@ ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name){
     return NULL;
 }
 
+/** @addtogroup context_menu
+ *  @{
+ */
+/**
+ * @brief Gets a pointer of a menu by its id
+ * @param menu the menu containing
+ * @param ptr the ptr to be found
+ */
 uint32_t get_entry_id_by_ptr(ContextMenu *menu, ContextMenu *ptr){
     for(uint32_t i = 0; i < menu->size; i ++){
         if(menu->entries[i]->menu == ptr)
@@ -150,6 +158,7 @@ uint32_t get_entry_id_by_ptr(ContextMenu *menu, ContextMenu *ptr){
     }
     return -1;
 }
+/** @} */
 
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
     

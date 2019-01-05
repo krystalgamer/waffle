@@ -7,7 +7,20 @@
 #include "interrupts/serial_port.h"
 #include "com_protocol.h"
 
+/** @addtogroup file_browser
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+
+/** @} */
 uint32_t wnd_width = 800, wnd_height = 600;
 
 void create_file_browser(){

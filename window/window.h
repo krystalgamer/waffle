@@ -4,6 +4,12 @@
 #define SLIDER_WIDTH 5
 
 /**
+ * @defgroup element elements module
+ * @ingroup window 
+ * @{
+ */
+
+/**
  * @brief Enumeration containing all the types of elements
  */
 typedef enum {
@@ -97,8 +103,13 @@ typedef struct _element{
     struct _element *next; /**< Next element */
 
 }Element;
+/** @} */
 
-/* Fancy rectangle */
+/**
+ * @defgroup window window module
+ * Contains all window code
+ * @{
+ */
 typedef struct _window{
     uint32_t id; /**< id of the window */
     int16_t x; /**< x position of the window */
@@ -124,7 +135,13 @@ typedef struct _window{
     struct _window *prev; /**< previous window */
 	struct _window *next; /**< next window */
 }Window;
+/** @} */
 
+
+/**
+ * @addtogroup context_menu
+ * @{
+ */
 
 struct _context_menu;
 typedef struct{
@@ -141,7 +158,14 @@ typedef struct _context_menu{
     uint32_t sub_menu_index; /**< index of the active sub_menu */
     struct _context_menu *active_sub; /**< address of the active sub-menu */
 }ContextMenu;
+/** @} */
 
+/** @addtogroup window
+ *  @{
+ */
+/**
+ * @brief Manages all windows
+ */
 typedef struct _wnd_lst{
     Window *first; /**< first window of the list */
     Window *last; /**< last window of the list */
@@ -191,9 +215,16 @@ typedef struct _wnd_lst{
     uint32_t bckg_color; /**< background color */
 
 }WindowList;
+/** @} */
 
 #define BACKGROUND_COLOR 0x00008081
 
+
+
+/**
+ * @addtogroup window 
+ * @{
+ */
 
 /**
  * @brief draws all windows
@@ -275,7 +306,6 @@ bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf);
  * @param identifier identifier of the element
  * @return pointer to the element
  */
-Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier);
 
 /**
  * @brief Draws elements of a window
@@ -367,21 +397,6 @@ Element *find_by_id(Window *wnd, char *identifier);
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp);
 
 /**
- * @brief Changes list view elements
- * @param element the list view
- * @param entries the entries
- * @param num the number of entries
- */
-void set_list_view_elements(Element *element, char **entries, unsigned num);
-
-/**
- * @brief Set text of element
- * @param el text element
- * @param new_text the new text
- */
-void set_text(Element *el, char *new_text);
-
-/**
  * @brief gets window pointer by id
  * @param id id of the window
  * @return pointer to window, NULL if failed
@@ -405,6 +420,34 @@ void delete_window(Window *wnd);
  * @param scroll the ammount of scroll
  */
 void window_scroll_handle(int8_t scroll);
+
+/**
+ * @brief Checks if a window was pressed on the taskbar
+ * @return the pressed window */
+Window *pressed_window_taskbar();
+
+/** @} */
+
+
+/**
+ * @addtogroup element
+ * @{
+ */
+/**
+ * @brief Changes list view elements
+ * @param element the list view
+ * @param entries the entries
+ * @param num the number of entries
+ */
+void set_list_view_elements(Element *element, char **entries, unsigned num);
+
+/**
+ * @brief Set text of element
+ * @param el text element
+ * @param new_text the new text
+ */
+void set_text(Element *el, char *new_text);
+/** @} */
 
 static const char *cursor[] = {
 /* columns rows colors chars-per-pixel */
@@ -459,9 +502,12 @@ typedef enum{
 
 #define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
 #define MAX_NUM_WINDOWS 6
-Window *pressed_window_taskbar();
 
 
+/**
+ * @addtogroup element
+ * @{
+ */
 struct _list_view_attr{
     char **entries;
     uint32_t num_entries;
@@ -488,5 +534,6 @@ enum MESSAGE_TYPE{
 	FREE_MSG,
 	CLOSE_MSG
 };
+/** @} */
 
 #endif

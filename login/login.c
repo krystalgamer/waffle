@@ -5,7 +5,19 @@
 extern WindowList wnd_list;
 extern uint16_t window_frame_height;
 
+/** @addtogroup login
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+/** @} */
 
 /* Creates a new instance of terminus */
 unsigned create_login(){
