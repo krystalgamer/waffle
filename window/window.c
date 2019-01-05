@@ -453,7 +453,7 @@ void window_draw(){
 
     if(!anything_maximized){
         if(wnd_list.bckg_image)
-            draw_pixmap_direct_mode(wnd_list.background_sprite, 0,0, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT, 0, false);
+            draw_background(wnd_list.background_sprite, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT);
         else
             clear_buffer_four(wnd_list.bckg_color);
     }

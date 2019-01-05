@@ -305,4 +305,17 @@ void draw_pixmap_direct_mode(uint8_t * symbol, uint16_t x, uint16_t y, int width
     }
 }
 
+void draw_background(uint8_t * bckg, int width, int height) {
+
+    /* Iterate lines */
+    for(int i = 0; i < height; i++){
+        /* Y is out of bounds */
+        if(i >= get_y_res())
+            break;
+
+        /* Copy entire line */
+        memcpy(backbuffer + i * get_x_res() * bytes_per_pixel, bckg + i * width * bytes_per_pixel, width * bytes_per_pixel);
+    }
+}
+
 uint8_t get_bytes_per_pixel() { return bytes_per_pixel; }

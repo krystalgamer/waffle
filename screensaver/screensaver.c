@@ -77,7 +77,7 @@ void free_screensaver() {
 }
 
 void screensaver_draw() {
-    draw_pixmap_direct_mode(screensaver_back, 0,0, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT, 0, false);
+    draw_background(screensaver_back, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT);
 
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
