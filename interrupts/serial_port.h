@@ -135,10 +135,13 @@ typedef enum _ser_status {
 
 } ser_status;
 
-void ser_set_handler(void *hand, void *el, void *wnd);
+bool ser_set_handler(void *hand, void *el, void *wnd);
 
 #define SERIAL_DRAW 744
 #define SLIDER_SERIAL 745
+#define SERIAL_HELLO 746
+#define SERIAL_HELLO_RESPONSE 747
+#define SERIAL_GOODBYE 748
 
 #define FIFO_END_OF_MSG -1
 

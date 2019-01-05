@@ -35,6 +35,9 @@ SRCS += calculator.c
 .PATH: ${.CURDIR}/login
 SRCS += login.c
 
+.PATH: ${.CURDIR}/multi_painter
+SRCS += multi_painter.c
+
 CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}

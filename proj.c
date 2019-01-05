@@ -12,6 +12,7 @@
 #include "interrupts/timer_user.h"
 #include "interrupts/rtc.h"
 #include "interrupts/serial_port.h"
+#include "interrupts/queue.h"
 #include "com_protocol.h"
 #include "screensaver/screensaver.h"
 #include "window/window.h"
@@ -27,6 +28,7 @@ void window_scroll_handle(uint8_t scroll);
 bool set_scroll();
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
+extern queue *send_fifo; 
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -172,8 +174,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     mouse_ih();
                     if ((r = assemble_mouse_packet(mouse_packet))) {
                         parse_mouse_packet(mouse_packet, &pp);
-                        if(pp.mb)
-                            pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
 						if(r == 4)
 							window_scroll_handle((int8_t)mouse_packet[3]);
@@ -185,9 +185,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     if((++curFrame)%maxFrames == 0){
                         if (idle_time > SCREENSAVER_IDLE_TIME)
                             screensaver_draw();
-                        else
-                            window_draw();
-                        swap_buffers();
+                        else{
+							window_draw();
+						}
+						swap_buffers();
                     }
                     idle_time += 1;
                 }
@@ -206,6 +207,30 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
                 if (msg.m_notify.interrupts & uart_irq_set) {
                     ser_ih();
+					idle_time = 0;
+                }
+                break;
+            default:
+                return 1;
+                break; /* no other notifications expected: do nothing */
+            }
+        }
+    }
+
+	/* deal with uart messages */
+    while(!is_queue_empty(send_fifo)) {
+        /* Get a request message.  */
+        if( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) {
+            printf("driver_receive failed with: %d", r);
+            continue;
+        }
+
+        if (is_ipc_notify(ipc_status)) { /* received notification */
+            switch (_ENDPOINT_P(msg.m_source)) {
+                case HARDWARE: /* hardware interrupt notification */
+                if (msg.m_notify.interrupts & uart_irq_set) {
+                    ser_ih();
+					idle_time = 0;
                 }
                 break;
             default:

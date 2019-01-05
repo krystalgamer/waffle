@@ -617,6 +617,8 @@ removal:
 		el_walker = el_walker->next;
 		free(old);
 	}
+	if(wnd->handler)
+		wnd->handler(NULL, CLOSE_MSG, NULL, wnd);
     free(wnd);
     return;
 

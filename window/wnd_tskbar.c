@@ -5,6 +5,7 @@
 #include "../system_info/system_info.h"
 #include "../background_chooser/background_chooser.h"
 #include "../painter/painter.h"
+#include "../multi_painter/multi_painter.h"
 #include "../login/login.h"
 #include "../calculator/calculator.h"
 #include "../font/letters.h"
@@ -107,6 +108,10 @@ void so_para_a_nota(){
 }
 
 void leave_graphic(){
+	/* Free all windows */
+	while(wnd_list.first){
+		delete_window(wnd_list.first);
+	}
     pressed_the_secret_button = true;
 }
 
@@ -160,6 +165,6 @@ void init_taskbar_menu(){
     if(multiplayer_sub == NULL)
         return;
 
-    add_context_menu_entry(multiplayer_sub, "Painter", true, (void*)create_painter);
+    add_context_menu_entry(multiplayer_sub, "Painter", true, (void*)create_multi_painter);
     set_sub_menu(get_entry_by_name(menu, "Multiplayer"), multiplayer_sub); 
 }

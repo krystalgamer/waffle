@@ -65,6 +65,7 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
             break;
         case CHECKBOX:
             memcpy(&new_el->attr, attr, sizeof(struct _checkbox_attr));
+			new_el->width = new_el->height = FONT_HEIGHT;
             break;
         case TEXT:
             if(attr==NULL)

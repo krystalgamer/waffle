@@ -255,7 +255,8 @@ enum MESSAGE_TYPE{
     CHECKBOX_MSG,
     MAXIMIZE_MSG,
     CANVAS_MSG,
-	FREE_MSG
+	FREE_MSG,
+	CLOSE_MSG
 };
 
 Element *find_by_id(Window *wnd, char *identifier);
@@ -295,4 +296,5 @@ static const char *cursor[] = {
 "........BBB.",
 };
 
+void delete_window(Window *wnd);
 #endif
