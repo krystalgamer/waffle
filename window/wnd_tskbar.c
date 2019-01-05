@@ -5,6 +5,7 @@
 #include "../system_info/system_info.h"
 #include "../background_chooser/background_chooser.h"
 #include "../painter/painter.h"
+#include "../login/login.h"
 #include "../calculator/calculator.h"
 #include "../font/letters.h"
 #include "interrupts/rtc.h"
@@ -133,6 +134,7 @@ void init_taskbar_menu(){
     ContextMenu *menu = wnd_list.taskbar.menu.context;
     add_context_menu_entry(menu, "Applications", true, (void*)create_random_window);
     add_context_menu_entry(menu, "Notepad", true, (void*)create_terminus);
+    add_context_menu_entry(menu, "Login", true, (void*)create_login);
     add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
     add_context_menu_entry(menu, "System Information", true, (void*)create_system_info);

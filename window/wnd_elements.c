@@ -132,7 +132,6 @@ static void draw_canvas(const Window *wnd, const Element *element){
 
 static void draw_button(const Window *wnd, const Element *element){
 
-    /* TODO Draw text */
     uint16_t x = wnd->x + element->x, y = wnd->y + element->y;
     uint16_t xf = wnd->x + element->x + element->width, yf = wnd->y + element->y + element->height;
 
@@ -193,8 +192,34 @@ static void draw_text_box(const Window *wnd, const Element *element){
     lines = (lines > max_lines ? max_lines : lines);
     uint32_t char_per_line = wnd->width/FONT_WIDTH;
 
-    for(unsigned i = 0; i<lines; i++){
-        print_horizontal_word_len(&text[i*char_per_line], char_per_line, wnd->x + element->x , wnd->y + element->y + i*FONT_HEIGHT, element->attr.text_box.text_color);
+    uint32_t num = 0;
+    uint32_t iter = 0;
+    bool ignore_nl = true;
+    for(unsigned i = 0; i<text_len;){ 
+
+        if((iter*FONT_HEIGHT >= wnd->height) || ((iter+1)*FONT_HEIGHT >= wnd->height))
+            return;
+
+        ignore_nl = false;
+        if(strstr(text, "\n") == NULL)
+            num = (strlen(text) > char_per_line ? char_per_line : strlen(text));
+        else{
+
+             if(((uint32_t)strstr(text, "\n")-(uint32_t)text)+1 > char_per_line)
+                 num = char_per_line;
+             else{
+                 num = (uint32_t)strstr(text, "\n")-(uint32_t)text+1;
+                 ignore_nl = true;
+             }
+
+        }
+
+        //printf("%d %d %d %d\n", iter,i, num, text_len);
+        print_horizontal_word_len(text, num-(uint32_t)ignore_nl, wnd->x + element->x , wnd->y + element->y + iter*FONT_HEIGHT, element->attr.text_box.text_color);
+
+        text += num;
+        i += num;
+        iter++;
     }
 }
 
@@ -225,7 +250,7 @@ static void draw_checkbox(const Window *wnd, const Element *element){
 
 }
 
-void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
+void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num, Window * wnd){
 
     if(num == 1){
         /* Ignore breakcodes */
@@ -244,6 +269,37 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num){
         /* Enter was pressed*/
         else if(cur == 254) return;
 
+        char *text = element->attr.text_box.text; 
+        uint32_t text_len = strlen(text);
+
+        uint32_t char_per_line = wnd->width/FONT_WIDTH;
+
+        uint32_t num = 0;
+        uint32_t iter = 0;
+        bool ignore_nl = true;
+        for(unsigned i = 0; i<text_len;){ 
+
+            if((iter*FONT_HEIGHT >= wnd->height) || ((iter+1)*FONT_HEIGHT >= wnd->height))
+                return;
+
+            ignore_nl = false;
+            if(strstr(text, "\n") == NULL)
+                num = (strlen(text) > char_per_line ? char_per_line : strlen(text));
+            else{
+
+                 if(((uint32_t)strstr(text, "\n")-(uint32_t)text)+1 > char_per_line)
+                     num = char_per_line;
+                 else{
+                     num = (uint32_t)strstr(text, "\n")-(uint32_t)text+1;
+                     ignore_nl = true;
+                 }
+
+            }
+
+            text += num;
+            i += num;
+            iter++;
+        }
         /* Dont write more than necessary */
         if(len >= element->attr.text_box.text_size-1)
             return;

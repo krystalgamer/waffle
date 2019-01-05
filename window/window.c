@@ -6,6 +6,15 @@
 #include "window_background.h"
 
 void desenhar_palavra();
+
+uint8_t *backgrounds[] = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
 WindowList wnd_list = { NULL, NULL,
     /* cursor */ 
     { 0, 0, 0, 0, NULL },
@@ -22,7 +31,7 @@ WindowList wnd_list = { NULL, NULL,
 extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
-static uint16_t window_frame_height = 0;
+uint16_t window_frame_height = 0;
 
 int init_internal_status(){
 
@@ -57,6 +66,13 @@ int init_internal_status(){
     /* Load the ChocoTab xpm */
     xpm_image_t img;
     uint8_t * sprite = xpm_load(ChocoTab_background, XPM_8_8_8_8, &img);
+    backgrounds[0] = sprite;
+    backgrounds[1] = xpm_load(bliss, XPM_8_8_8_8, &img);
+    backgrounds[2] = xpm_load(desert, XPM_8_8_8_8, &img);
+    backgrounds[3] = xpm_load(aqua, XPM_8_8_8_8, &img);
+    backgrounds[4] = xpm_load(stone, XPM_8_8_8_8, &img);
+    backgrounds[5] = xpm_load(tulips, XPM_8_8_8_8, &img);
+
     if (sprite == NULL){
         printf("(%s) error loading ChocoTab background xpm\n", __func__);
         return 1;
@@ -616,6 +632,9 @@ bool pressed_three_buttons(Window *wnd){
 
                 }
                 else{
+                    if(wnd->handler(NULL, MAXIMIZE_MSG, NULL, wnd)){
+                        return true;
+                    }
                     wnd->height = wnd->orig_height;
                     wnd->width = wnd->orig_width;
                 }
@@ -819,12 +838,13 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
                 kbd_msg msg = {num, {scancode[0], scancode[1], scancode[2]}};
 
                 if(wnd->handler == NULL){
-                    modify_text_box(cur_el, scancode, num);
+                    modify_text_box(cur_el, scancode, num, wnd);
                     break;
                 }
 
-                if(!wnd->handler(cur_el, KEYBOARD, &msg, wnd))
-                    modify_text_box(cur_el, scancode, num);
+                if(!wnd->handler(cur_el, KEYBOARD, &msg, wnd)){
+                    modify_text_box(cur_el, scancode, num, wnd);
+                }
                 break;
             }
         }
