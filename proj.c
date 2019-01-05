@@ -1,12 +1,5 @@
 // IMPORTANT: you must include the following line in all your C files
 #include <lcom/lcf.h>
-#include <lib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <time.h>
-#include <minix/sysinfo.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include "interrupts/mouse.h"
 #include "interrupts/keyboard.h"
 #include "interrupts/timer_user.h"
@@ -16,16 +9,8 @@
 #include "com_protocol.h"
 #include "screensaver/screensaver.h"
 #include "window/window.h"
-#include "vbe.h"
 #include "font/letters.h"
-#include "messages.h"
-#include "terminus/terminus.h"
 
-void escrever_coiso();
-void rtc_int_handle_asm();
-void window_scroll_handle(uint8_t scroll);
-
-bool set_scroll();
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
 extern queue *send_fifo; 
@@ -59,7 +44,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     sys_enable_iop(SELF);
     /* Suprimir warnings */
-    if(argc == 0 && argv != NULL)
+    if(argc == 69 && argv != NULL)
         printf("yee\n");
 
     /* Initialize graphics mode */
@@ -72,7 +57,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
 
     /* Initialize the font */
-    if(initLetters() != OK) {
+    if(init_letters() != OK) {
         printf("(%s) Error initializing the font\n", __func__);
         vg_exit();
         return 1;

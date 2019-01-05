@@ -1,9 +1,6 @@
 #include <lcom/lcf.h>
 #include "window.h"
 
-
-/*TODO so ve alteracoes no estado de pressionado nao ve levantamentos*/
-
 static uint32_t state = 0; /* Initial state is all keys up */
 uint32_t update_state(const struct packet *pp){
 

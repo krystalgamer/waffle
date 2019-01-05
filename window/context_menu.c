@@ -95,9 +95,9 @@ void draw_context_menu(ContextMenu *menu, uint32_t x, uint32_t y){
             pj_draw_rectangle(x, y+i*height/menu->size, width+CONTEXT_EXTRA_SPACE, height/menu->size, 0x00000080);
 
         uint32_t color = (mouse_over_option ? 0x00FFFFFF : 0);
-        printHorizontalWord(menu->entries[i]->text, x+3, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
+        print_horizontal_word(menu->entries[i]->text, x+3, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
         if(menu->entries[i]->menu){
-            printHorizontalWord(">", x+width, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
+            print_horizontal_word(">", x+width, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
 
         } 
         

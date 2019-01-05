@@ -170,7 +170,6 @@ static void draw_list_view(const Window *wnd, const Element *element){
 	if(element->attr.list_view.num_entries == 0)
 		return;
 		
-    /* TODO dont use constants */
     uint32_t height_per_ele = element->height/element->attr.list_view.num_entries; 
 
     uint32_t start_index = element->attr.list_view.scrollbar_y/height_per_ele;
@@ -180,7 +179,6 @@ static void draw_list_view(const Window *wnd, const Element *element){
         /* Prevents crashes :) */
         if(start_index+i >= element->attr.list_view.num_entries)
             break;
-	
 
         print_horizontal_word_len(element->attr.list_view.entries[start_index+i], element->attr.list_view.max_chars, wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, (mouse_over_coords(wnd->x+element->x, wnd->y+element->y+i*FONT_HEIGHT, wnd->x+element->x+element->width,wnd->y+element->y+i*FONT_HEIGHT + FONT_HEIGHT ) && wnd_list.first == wnd ? 0x000000FF : 0xFFFFFFFF));
 
@@ -249,7 +247,7 @@ static void draw_checkbox(const Window *wnd, const Element *element){
 
 
     if(element->attr.checkbox.enabled)
-        printHorizontalWord("X", wnd->x+element->x+FONT_HEIGHT/2-FONT_WIDTH/2, wnd->y+element->y, 0xFFFFFFFF);
+        print_horizontal_word("X", wnd->x+element->x+FONT_HEIGHT/2-FONT_WIDTH/2, wnd->y+element->y, 0xFFFFFFFF);
 
 
     uint32_t num_chars = (wnd->width-element->x)/FONT_WIDTH;

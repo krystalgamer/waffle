@@ -5,8 +5,6 @@
 #include "window.h"
 #include "window_background.h"
 
-void desenhar_palavra();
-
 uint8_t *backgrounds[] = {
     NULL,
     NULL,
@@ -458,8 +456,6 @@ void window_draw(){
             clear_buffer_four(wnd_list.bckg_color);
     }
 
-    desenhar_palavra();
-
     Window *cur_wnd = wnd_list.last;
     while(cur_wnd){
 
@@ -481,7 +477,7 @@ void window_draw(){
             
             char *text = cur_wnd->attr.frame_text;
             pj_draw_rectangle(cur_wnd->x, cur_wnd->y - window_frame_height, cur_wnd->width, window_frame_height, 0x005A5A5A);
-            printHorizontalWord(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0);
+            print_horizontal_word(text, cur_wnd->x + (cur_wnd->width/2) - strlen(text)*FONT_WIDTH/2, cur_wnd->y - window_frame_height, 0);
 
             /* TODO arranjar mehlor qu e7 */
             uint32_t button_pad = window_frame_height/3;
@@ -1048,8 +1044,4 @@ void escrever_coiso(uint8_t tecla){
 
     if(palavraSize <= 25)
         palavra[palavraSize] = 0;
-}
-
-void desenhar_palavra(){
-        printHorizontalWord(palavra, 0, 300, 0);
 }

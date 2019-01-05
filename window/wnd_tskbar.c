@@ -31,7 +31,7 @@ int draw_taskbar_clock() {
     uint32_t bg_pos = get_x_res()-wnd_list.taskbar.clock.width;
     pj_draw_rectangle(bg_pos, 0, wnd_list.taskbar.clock.width, wnd_list.taskbar.height, wnd_list.taskbar.clock.background_color);
     /* Print the string */
-    return printHorizontalWord(clock, bg_pos + wnd_list.taskbar.clock.width/2 - N_CLOCK_SYMBOLS*FONT_WIDTH/2, 0 , wnd_list.taskbar.clock.symbol_color);
+    return print_horizontal_word(clock, bg_pos + wnd_list.taskbar.clock.width/2 - N_CLOCK_SYMBOLS*FONT_WIDTH/2, 0 , wnd_list.taskbar.clock.symbol_color);
 }
 
 void draw_taskbar(){
@@ -48,7 +48,7 @@ void draw_taskbar(){
             wnd_list.taskbar.menu.b_overlay_color : wnd_list.taskbar.menu.b_color); 
 
     
-    printHorizontalWord(wnd_list.taskbar.menu.b_text, wnd_list.taskbar.menu.b_width/2 - strlen(wnd_list.taskbar.menu.b_text)*FONT_WIDTH/2, 0, 0);
+    print_horizontal_word(wnd_list.taskbar.menu.b_text, wnd_list.taskbar.menu.b_width/2 - strlen(wnd_list.taskbar.menu.b_text)*FONT_WIDTH/2, 0, 0);
 
     /* Draw the windows */
     /* TODO remove manual pad */
@@ -68,7 +68,7 @@ void draw_taskbar(){
             pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x003A3A3A : 0x005A5A5A));
         else
             pj_draw_rectangle(x, 0, default_window_tskbar_width, wnd_list.taskbar.height, (mouse_over ? 0x00AAAAAA : 0x008A8A8A));
-        printHorizontalWord(cur_wnd->attr.frame_text, x+default_window_tskbar_width/2-strlen(cur_wnd->attr.frame_text)*FONT_WIDTH/2, 0, 0);
+        print_horizontal_word(cur_wnd->attr.frame_text, x+default_window_tskbar_width/2-strlen(cur_wnd->attr.frame_text)*FONT_WIDTH/2, 0, 0);
 
     }
 

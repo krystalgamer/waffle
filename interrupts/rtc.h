@@ -243,4 +243,8 @@ int rtc_set_alarm_hour(uint8_t hour);
  */
 void rtc_int_handler();
 
+/**
+ * @brief RTC interrup handler in assembly
+ */
+void rtc_int_handle_asm();
 #endif

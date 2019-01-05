@@ -110,4 +110,10 @@ typedef enum _mouse_status {
 /* Size of mouse packets */
 static uint32_t MOUSE_PACKET_SIZE = 3;
 
+
+/**
+ * @brief Enables scroll
+ * @return If it succeded
+ */
+bool set_scroll();
 #endif

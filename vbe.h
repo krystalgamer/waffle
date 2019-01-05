@@ -117,7 +117,6 @@ void draw_pixmap_on(const char *pixmap, uint16_t x, uint16_t y, int width, int h
 /**
  * @brief Swaps the mapped memory to the specified buffer
  * 
- * @param buffer Buffer to swap with
  */
 void swap_buffers();
 
@@ -156,22 +155,82 @@ void *retry_lm_alloc(size_t size, mmap_t *mmap);
 int pj_draw_rectangle(int16_t x, int16_t y, uint16_t width, uint16_t height, uint32_t color);
 
 /* Methods to return information from the vbe_mode_info_t struct */
+
+/**
+ * @brief Returns the number of bits per pixel
+ * @return the number of bits per pixel
+ */
 uint8_t get_bits_per_pixel();
+
+/**
+ * @brief Gets x res of screen 
+ * @return x res
+ */
 uint16_t get_x_res();
+
+/**
+ * @brief Gets y res of screen 
+ * @return y res
+ */
 uint16_t get_y_res();
+
+/**
+ * @brief Gets the memory model 
+ * @return memory model
+ */
 uint8_t get_memory_model();
+
+/**
+ * @brief Gets red mask size
+ * @return red mask size
+ */
 uint8_t get_red_mask_size();
+
+/**
+ * @brief Gets red field position
+ * @return red field position
+ */
 uint8_t get_red_field_position();
+
+/**
+ * @brief Gets blue mask size
+ * @return blue mask size
+ */
 uint8_t get_blue_mask_size();
+
+/**
+ * @brief Gets blue field position
+ * @return blue field position
+ */
 uint8_t get_blue_field_position();
+
+/**
+ * @brief Gets green mask size
+ * @return green mask size
+ */
 uint8_t get_green_mask_size();
+
+/**
+ * @brief Gets green field position
+ * @return green field positon
+ */
 uint8_t get_green_field_position();
+
+/**
+ * @brief Gets reserved mask size
+ * @return reserved mask size
+ */
 uint8_t get_rsvd_mask_size();
+
+/**
+ * @brief Gets reserved field position
+ * @return reserved field position
+ */
 uint8_t get_rsvd_field_position();
 
-/*
- * Enumeration that contains possible error codes
- * for the function to ease development and debugging
+/**
+ * @brief Enumeration that contains possible error codes for the function to ease development and debugging
+ *
  */
 typedef enum _vbe_status {
 	VBE_OK = OK,
@@ -211,9 +270,40 @@ void draw_pixmap_direct_mode(uint8_t * symbol, uint16_t x, uint16_t y, int width
  */
 uint8_t get_bytes_per_pixel();
 
+/** 
+ * @brief Clears the backbuffer with a 32-bit color 
+ * @param color The color
+ */
 void clear_buffer_four(uint32_t color);
+
+/**
+ * @brief Draws an horizontal line starting at x and y
+ * @param x x pos
+ * @param y y pos
+ * @param len lenght of the line
+ * @param color lenght of the line
+ *
+ * @return Error code if any when drawing
+ */
 int pj_draw_hline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);
+
+/**
+ * @brief Draws a vertical line starting at x and y
+ * @param x x pos
+ * @param y y pos
+ * @param len lenght of the line
+ * @param color lenght of the line
+ *
+ * @return Error code if any when drawing 
+ */
 int pj_draw_vline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);
+
+/**
+ * @brief Draws a background to the backbuffer
+ * @param bckg The buffer containing the background
+ * @param width The width of the background 
+ * @param height The height of the background 
+ */
 void draw_background(uint8_t * bckg, int width, int height);
 
 #endif
