@@ -6,7 +6,20 @@ extern WindowList wnd_list;
 extern uint16_t window_frame_height;
 extern uint8_t keymap[];
 
+/** @addtogroup notepad
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+
+/** @} */
 
 /* Creates a new instance of terminus */
 unsigned create_terminus(){
@@ -19,13 +32,6 @@ unsigned create_terminus(){
     return wnd_id;
 }
 
-/* The input handler */
-
-bool terminus_kbd_handler(Element* UNUSED(el), kbd_msg *UNUSED(msg)){
-    
-
-    return false;
-}
 
 bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 

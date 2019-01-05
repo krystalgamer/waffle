@@ -5,7 +5,22 @@
 
 extern WindowList wnd_list;
 extern uint8_t *backgrounds[];
+
+/** @addtogroup background_chooser
+ * @{
+ */
+
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool background_chooser_handler(Element *el, unsigned type, void *data, Window *wnd);
+
+/** @} */
 
 uint32_t colors[] = {
     BACKGROUND_COLOR,

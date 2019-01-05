@@ -276,83 +276,135 @@ bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf);
  * @return pointer to the element
  */
 Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier);
+
+/**
+ * @brief Draws elements of a window
+ * @param wnd the window containing the elements
+ */
 void draw_elements(const Window *wnd);
 
-static const struct _button_attr DEFAULT_BUTTON_ATTR = { "TEST", 0x007A7A7A, 0x00BABABA};
-static const struct _text_box_attr DEFAULT_TEXT_BOX_ATTR = { NULL, 50, 0, 0xFFFFFFFF, true };
-
-#define L_BUTTON 4 
-#define M_BUTTON 2 
-#define R_BUTTON 1 
-
-typedef enum{
-    L_DEAD = 1,
-    L_PRESSED = 2,
-    L_KEPT = 4,
-
-    M_DEAD = 8,
-    M_PRESSED = 16,
-    M_KEPT = 32,
-
-    R_DEAD = 64,
-    R_PRESSED = 128,
-    R_KEPT = 256
-
-}Event;
-
+/**
+ * @brief updates state of the internal machine
+ * @param pp mouse input
+ * @return status change
+ */
 uint32_t update_state(const struct packet *pp);
 
+/**
+ * @brief Draws the taskbar
+ */
 void draw_taskbar();
+
+/**
+ * @brief Checks if the taskbar button has been pressed
+ * @return true if pressed
+ */
 bool has_taskbar_button_been_pressed();
+
+/**
+ * @brief Inits the taskbar menu
+ */
 void init_taskbar_menu();
-void free_window();
-void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
-ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
-bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
 
-int draw_taskbar_clock();
-#define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
-#define MAX_NUM_WINDOWS 6
-Window *pressed_window_taskbar();
-
-
-struct _list_view_attr{
-    char **entries;
-    uint32_t num_entries;
-};
-
-void so_para_a_nota();
+/**
+ * @brief Modifies text of textbox
+ * @param element textbox element
+ * @param scancode the keyboard scancode
+ * @param num number of elements
+ * @param wnd the window
+ */
 void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num, Window *wnd);
 
-typedef struct _kbd_msg{
-    uint32_t num;
-    uint8_t scancode[3];
-}kbd_msg;
+/**
+ * @brief frees a window
+ */
+void free_window();
 
-typedef struct _list_view_msg{
-    uint32_t index;
-}list_view_msg;
+/**
+ * @brief Set a menu as a sub menu
+ * @param entry the  submenu entries
+ * @param menu the menu to be set as a submenu
+ */
+void set_sub_menu(ContextEntries *entry, ContextMenu *menu);
 
-enum MESSAGE_TYPE{
-    KEYBOARD,
-    MOUSE,
-    LIST_VIEW_MSG,
-    BUTTON_MSG,
-    SLIDER_MSG,
-    CHECKBOX_MSG,
-    MAXIMIZE_MSG,
-    CANVAS_MSG,
-	FREE_MSG,
-	CLOSE_MSG
-};
+/**
+ * @brief Gets entry by name
+ * @param menu the menu
+ * @param name the name to be searched
+ * @return the entry if found, NULL otherwise
+ */
+ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
 
+/**
+ * @brief Calls callback of menu entry
+ * @param menu menu that was pressed
+ * @param x position pressed
+ * @param y position pressed
+ * @return false if anything should be done
+ */
+bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
+
+/**
+ * @brief Draws the taskbar
+ * @return 0 if success
+ */
+int draw_taskbar_clock();
+
+/**
+ * @brief Finds element by id
+ * @param wnd Window containing the element
+ * @param identifier identifier of the element
+ * @return element if found, NULL otherwise
+ */
 Element *find_by_id(Window *wnd, char *identifier);
+
+/**
+ * @brief Handles interaction of mouse with element
+ * @param wnd window containing the elements
+ * @param pressed whether the button was pressed or held
+ * @param pp the mouse packet
+ */
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp);
+
+/**
+ * @brief Changes list view elements
+ * @param element the list view
+ * @param entries the entries
+ * @param num the number of entries
+ */
 void set_list_view_elements(Element *element, char **entries, unsigned num);
+
+/**
+ * @brief Set text of element
+ * @param el text element
+ * @param new_text the new text
+ */
 void set_text(Element *el, char *new_text);
+
+/**
+ * @brief gets window pointer by id
+ * @param id id of the window
+ * @return pointer to window, NULL if failed
+ */
 Window *window_get_by_id(uint32_t id);
+
+/**
+ * @brief deactivates all sub menus
+ * @param menu the menu containing submenu
+ */
 void deactivate_subs(ContextMenu *menu);
 
+/**
+ * @brief Deletes window
+ * @param wnd the window
+ */
+void delete_window(Window *wnd);
+
+/**
+ * @brief Sends scroll input to the window
+ * @param scroll the ammount of scroll
+ */
+void window_scroll_handle(int8_t scroll);
 
 static const char *cursor[] = {
 /* columns rows colors chars-per-pixel */
@@ -383,6 +435,58 @@ static const char *cursor[] = {
 "........BBB.",
 };
 
-void delete_window(Window *wnd);
-void window_scroll_handle(int8_t scroll);
+static const struct _button_attr DEFAULT_BUTTON_ATTR = { "TEST", 0x007A7A7A, 0x00BABABA};
+static const struct _text_box_attr DEFAULT_TEXT_BOX_ATTR = { NULL, 50, 0, 0xFFFFFFFF, true };
+
+#define L_BUTTON 4 
+#define M_BUTTON 2 
+#define R_BUTTON 1 
+
+typedef enum{
+    L_DEAD = 1,
+    L_PRESSED = 2,
+    L_KEPT = 4,
+
+    M_DEAD = 8,
+    M_PRESSED = 16,
+    M_KEPT = 32,
+
+    R_DEAD = 64,
+    R_PRESSED = 128,
+    R_KEPT = 256
+
+}Event;
+
+#define N_CLOCK_SYMBOLS 8 /* Number of symbols in clock, hh:mm:ss */
+#define MAX_NUM_WINDOWS 6
+Window *pressed_window_taskbar();
+
+
+struct _list_view_attr{
+    char **entries;
+    uint32_t num_entries;
+};
+
+typedef struct _kbd_msg{
+    uint32_t num;
+    uint8_t scancode[3];
+}kbd_msg;
+
+typedef struct _list_view_msg{
+    uint32_t index;
+}list_view_msg;
+
+enum MESSAGE_TYPE{
+    KEYBOARD,
+    MOUSE,
+    LIST_VIEW_MSG,
+    BUTTON_MSG,
+    SLIDER_MSG,
+    CHECKBOX_MSG,
+    MAXIMIZE_MSG,
+    CANVAS_MSG,
+	FREE_MSG,
+	CLOSE_MSG
+};
+
 #endif
