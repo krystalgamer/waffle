@@ -3,7 +3,7 @@
 
 #define SCREENSAVER_NUMBER_OF_ELEMENTS 6 /* Number of elements in the screensaver */
 #define SCREENSAVER_IDLE_TIME 180 /* Time to start screensaver in interrupts */
-#define SCREENSAVER_ELE_SPEED 10 /* Speed of the screensaver elements */
+#define SCREENSAVER_ELE_SPEED 12 /* Speed of the screensaver elements */
 
 /* 
  * Struct representing an element in the screensaver
@@ -59,8 +59,7 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
  * @param y Y position of ele top left corner
  * @return Return a pointer to an element colliding with ele, NULL if no collisions
  */
-ScreensaverEle * element_at_position(ScreensaverEle * ele, int16_t x, int16_t y);
-
+ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y, int * x_offset, int * y_offset);
 /**
  * @brief Verifies if a given pixel of an element is transparent or not
  * Assumes the coordinates at pixel_x, pixel_y are not transparent
