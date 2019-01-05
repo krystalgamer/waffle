@@ -584,6 +584,39 @@ removal:
 
     if(wnd->attr.frame_text != NULL)
         free(wnd->attr.frame_text);
+
+	/* Free its elements */
+	Element *el_walker = wnd->elements;
+	while(el_walker){
+		
+		if(el_walker->type == CANVAS)
+			free(el_walker->attr.canvas.space);
+		else if(el_walker->type == IMAGE)
+			free(el_walker->attr.image.space);
+		else if(el_walker->type == DATA){
+			if(wnd->handler)
+				wnd->handler(el_walker, FREE_MSG, NULL, wnd);
+		}
+		else if(el_walker->type == TEXT_BOX){
+			free(el_walker->attr.text_box.text);
+		}
+		else if(el_walker->type == TEXT){
+			free(el_walker->attr.text.text);
+		}
+		else if(el_walker->type == BUTTON){
+			free(el_walker->attr.button.text);
+		}
+		else if(el_walker->type == LIST_VIEW){
+			for(unsigned i = 0; i<el_walker->attr.list_view.num_entries; i++){
+				free(el_walker->attr.list_view.entries[i]);
+			}
+			free(el_walker->attr.list_view.entries);
+		}
+
+		Element *old = el_walker;
+		el_walker = el_walker->next;
+		free(old);
+	}
     free(wnd);
     return;
 

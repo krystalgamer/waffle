@@ -66,6 +66,9 @@ void create_file_browser(){
 
     set_text(find_by_id(window_get_by_id(wnd_id), "manolo"), cwd);
 
+	/* Free allocated */
+	for(unsigned i = 0;i<num_files; i++)
+		free(counter[i]);
 	
 	void *ptr = malloc(1024);
 	strcpy(ptr, cwd);
@@ -138,7 +141,6 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
                 if(!strcmp(cwd, "/") && !strcmp(dp->d_name, ".."))
                     continue;
                 counter[num_files++] = strdup(dp->d_name);
-                /* TODO REMOVE THIS */
                 if(num_files >= el->height)
                     break;
             }
@@ -159,10 +161,14 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
         set_text(text_el, cwd);
 		text_el->x = wnd_width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
 
-
+		for(unsigned i = 0; i<num_files; i++)
+			free(counter[i]);
     }
     else if(type == BUTTON_MSG){
     }
+	else if(type == FREE_MSG){
+		free(el->attr.data.space);
+	}
 
     return false;
 }

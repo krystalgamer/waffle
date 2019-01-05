@@ -39,10 +39,10 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
 
         case BUTTON:
             memcpy(&new_el->attr, (attr == NULL ? &DEFAULT_BUTTON_ATTR : attr), sizeof(struct _button_attr)); 
+			new_el->attr.button.text = strdup(new_el->attr.button.text);
             break;
         case TEXT_BOX:
             memcpy(&new_el->attr, (attr == NULL ? &DEFAULT_TEXT_BOX_ATTR : attr), sizeof(struct _text_box_attr));
-            /* TODO dont assume stuff */
             new_el->attr.text_box.text = malloc(new_el->attr.text_box.text_size);
             memset(new_el->attr.text_box.text, 0, new_el->attr.text_box.text_size);
             break;
@@ -50,6 +50,9 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
             if(attr == NULL)
                 break;
             memcpy(&new_el->attr, attr, sizeof(struct _list_view_attr));
+			if(new_el->attr.list_view.num_entries == 0)
+				break;
+
             new_el->attr.list_view.scrollbar_active = (new_el->attr.list_view.num_entries > new_el->height/FONT_HEIGHT); 
             new_el->attr.list_view.drawable_entries = (new_el->attr.list_view.scrollbar_active ? new_el->height/FONT_HEIGHT : new_el->attr.list_view.num_entries);
 
@@ -66,8 +69,8 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
         case TEXT:
             if(attr==NULL)
                 break;
-            /* TODO DUPLICATE */
             memcpy(&new_el->attr, attr, sizeof(struct _text_attr));
+			new_el->attr.text.text = strdup(new_el->attr.text.text);
             break;
 		case DATA:
 			memcpy(&new_el->attr.data.space, attr, 4);
@@ -163,6 +166,9 @@ static void draw_list_view(const Window *wnd, const Element *element){
         pj_draw_rectangle(wnd->x+element->x+element->width, wnd->y+element->y+element->attr.list_view.scrollbar_y, FONT_WIDTH, element->attr.list_view.scrollbar_height, 0xFFFFFFFF);
     }
 
+	if(element->attr.list_view.num_entries == 0)
+		return;
+		
     /* TODO dont use constants */
     uint32_t height_per_ele = element->height/element->attr.list_view.num_entries; 
 
@@ -329,18 +335,11 @@ Element *find_by_id(Window *wnd, char *identifier){
 
 void set_list_view_elements(Element *element, char **entries, unsigned num){
 
-        if(element == NULL){
-            printf("Passaste nulo oh filho\n");
+        if(element == NULL)
             return;
-        }
 
-        if(element->type != LIST_VIEW){
-            printf("NAO PASSASTE UMA LSITA FILHO DA PUTA\n");
+        if(element->type != LIST_VIEW)
             return;
-        }
-
-        /* TODO THis leaks memory, jsoe do futuro, no build_element garante que as strings sao duplicadas para 
-         * as poderes libertar, beijocas, fode-te */
 
         char **new_entries = malloc(sizeof(char*)*num);
         if(new_entries == NULL)
@@ -350,6 +349,7 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
             new_entries[i] = strdup(entries[i]);
 
         element->attr.list_view.num_entries = num;
+		free(element->attr.list_view.entries);
         element->attr.list_view.entries = new_entries;
     
         element->attr.list_view.scrollbar_active = (element->attr.list_view.num_entries > element->height/FONT_HEIGHT); 
@@ -368,8 +368,6 @@ void set_list_view_elements(Element *element, char **entries, unsigned num){
 
 void set_text(Element *el, char *new_text){
 
-    
-    /* TODO THIS LEAKS MEMORY, BEWARE */
     if(el->type != TEXT)
         return;
 

@@ -254,7 +254,8 @@ enum MESSAGE_TYPE{
     SLIDER_MSG,
     CHECKBOX_MSG,
     MAXIMIZE_MSG,
-    CANVAS_MSG
+    CANVAS_MSG,
+	FREE_MSG
 };
 
 Element *find_by_id(Window *wnd, char *identifier);
