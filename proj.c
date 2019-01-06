@@ -87,6 +87,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     uint32_t mouse_irq_set = BIT(bitNum);
 
 
+    mouse_enable_dr();
 	/* Activates scroll wheel */
 	set_scroll();
 

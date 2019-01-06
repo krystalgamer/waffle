@@ -2,6 +2,11 @@
 #define KEYBOARD_H
 
 /**
+ * @defgroup keyboard keyboard module
+ * @ingroup kbc 
+ * @{
+ */
+/**
  * @brief Subscribes and enables keyboard interrupts
  * 
  * Disables the Minix IH so as to avoid conflicts.
@@ -96,5 +101,6 @@ typedef enum _keyboard_status {
 /* First byte of a two byte scancode */
 #define FIRST_B_OF_2B_CODE 0xE0 
 
+/** @} */
 #endif
 

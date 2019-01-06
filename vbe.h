@@ -1,6 +1,10 @@
 #ifndef VBE_H
 #define VBE_H
 
+/**
+ * @defgroup vbe vbe module
+ * @{
+ */
 /* BIOS Services */
 #define VIDEO_CARD_SRV 0x10
 #define PC_CONF_SRV 0x11
@@ -305,5 +309,7 @@ int pj_draw_vline(uint16_t x, uint16_t y, uint16_t len, uint32_t color);
  * @param height The height of the background 
  */
 void draw_background(uint8_t * bckg, int width, int height);
+
+/** @} */
 
 #endif

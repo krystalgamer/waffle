@@ -102,10 +102,13 @@ bool has_taskbar_button_been_pressed(){
     return wnd_list.taskbar.menu.b_pressed;
 }
 
-void so_para_a_nota(){
-    wnd_list.taskbar.menu.b_pressed = true;
-}
-
+/**
+ * @addtogroup taskbar
+ * @{
+ */
+/**
+ * @brief Leaves the graphic mode
+ */
 void leave_graphic(){
 	/* Free all windows */
 	while(wnd_list.first){
@@ -114,6 +117,9 @@ void leave_graphic(){
     pressed_the_secret_button = true;
 }
 
+/**
+ * @brief Creates a random window
+ */
 void create_random_window(){
     
     char randomName[5];
@@ -121,6 +127,7 @@ void create_random_window(){
         randomName[i] = rand()%57 + 65;
     create_window(400+rand()%100, 300+rand()%100, 0x0AAAAAA, randomName, NULL);
 }
+/** @} */
 
 void init_taskbar_menu(){
 

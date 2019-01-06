@@ -7,6 +7,11 @@
 #include "i8042.h"
 
 /**
+ * @defgroup mouse mouse module
+ * @ingroup kbc
+ * @{
+ */
+/**
  * @brief Subscribes and enables mouse interrupts
  * 
  * Disables the Minix IH so as to avoid conflicts.
@@ -116,4 +121,6 @@ static uint32_t MOUSE_PACKET_SIZE = 3;
  * @return If it succeded
  */
 bool set_scroll();
+
+/** @} */
 #endif

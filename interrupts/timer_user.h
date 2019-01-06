@@ -7,6 +7,10 @@
 
 #include <lcom/lcf.h>
 
+/**
+ * @defgroup timer timer module
+ * @{
+ */
 /*
  * Enumeration that contains possible error codes
  * for the function to ease development and debugging
@@ -132,4 +136,5 @@ void set_internal_frequency_counter(uint32_t freq);
         return TIMER_INB_FAILED; \
     }
 
+/** @} */
 #endif

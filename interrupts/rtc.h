@@ -1,6 +1,10 @@
 #ifndef RTC_H
 #define RTC_H
 
+/**
+ * @defgroup rtc rtc module
+ * @{
+ */
 #define BIT(n) (0x01<<(n))
 
 #define RTC_IRQ 8
@@ -247,5 +251,7 @@ void rtc_int_handler();
  * @brief RTC interrup handler in assembly
  */
 void rtc_int_handle_asm();
+
+/** @} */
 
 #endif

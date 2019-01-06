@@ -308,10 +308,24 @@ bool mouse_over_coords(uint16_t x, uint16_t y, uint16_t xf, uint16_t yf);
  */
 
 /**
+ * @} */
+
+/**
+ * @addtogroup element
+ * @{
+ */
+
+/**
  * @brief Draws elements of a window
  * @param wnd the window containing the elements
  */
 void draw_elements(const Window *wnd);
+/** @} */
+
+/**
+ * @addtogroup window
+ * @{
+ */
 
 /**
  * @brief updates state of the internal machine
@@ -320,6 +334,13 @@ void draw_elements(const Window *wnd);
  */
 uint32_t update_state(const struct packet *pp);
 
+/** @} */
+
+/**
+ * @defgroup taskbar taskbar module
+ * @ingroup window
+ * @{
+ */
 /**
  * @brief Draws the taskbar
  */
@@ -335,6 +356,19 @@ bool has_taskbar_button_been_pressed();
  * @brief Inits the taskbar menu
  */
 void init_taskbar_menu();
+
+/**
+ * @brief Draws the taskbar
+ * @return 0 if success
+ */
+int draw_taskbar_clock();
+
+/**
+ * @brief Checks if a window was pressed on the taskbar
+ * @return the pressed window */
+Window *pressed_window_taskbar();
+
+/** @} */
 
 /**
  * @brief Modifies text of textbox
@@ -373,12 +407,6 @@ ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name);
  * @return false if anything should be done
  */
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y);
-
-/**
- * @brief Draws the taskbar
- * @return 0 if success
- */
-int draw_taskbar_clock();
 
 /**
  * @brief Finds element by id
@@ -420,11 +448,6 @@ void delete_window(Window *wnd);
  * @param scroll the ammount of scroll
  */
 void window_scroll_handle(int8_t scroll);
-
-/**
- * @brief Checks if a window was pressed on the taskbar
- * @return the pressed window */
-Window *pressed_window_taskbar();
 
 
 /**

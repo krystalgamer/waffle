@@ -1,6 +1,10 @@
 #ifndef _LCOM_I8042_H_
 #define _LCOM_I8042_H_
 
+/**
+ * @defgroup i8042 i8042 module
+ * @{
+ */
 /* Create mask of specified bit */
 #define BIT(n) (0x01<<(n))
 
@@ -79,4 +83,5 @@
 #define MOUSE_NACK                  0xFE
 #define MOUSE_ACK_ERROR             0xFC
 
+/** @} */
 #endif /* _LCOM_I8042_H */
