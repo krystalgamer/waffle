@@ -38,11 +38,12 @@ uint16_t window_frame_height = 0;
 
 #define DESKTOP_CHAR_NUM 7
 #define DESKTOP_ITEM_SIZE (DESKTOP_CHAR_NUM*FONT_WIDTH+5)
+#define INVALID_SELECTED_ENTRY (0xffffffff)
 
 char *desktop_entries[512];
 uint32_t num_entries = 0;
 uint32_t max_num_entries = 0;
-uint32_t selected_entry = 0xFFFFFFFF;
+uint32_t selected_entry = INVALID_SELECTED_ENTRY;
 uint32_t drawable_entries = 0;
 uint32_t vertical_draws = 0;
 uint8_t *folder_xpm = NULL;
@@ -101,11 +102,11 @@ void check_pressed_desktop_entry(){
 			return;
 		}
 	}
-	selected_entry = 0xFFFFFFFF;
+	selected_entry = INVALID_SELECTED_ENTRY;
 }
 
 void delete_desktop_entry(){
-	if(selected_entry == 0xFFFFFFFF)
+	if(selected_entry == INVALID_SELECTED_ENTRY)
 		return;
 
 	desktop_entries[selected_entry] = NULL;
@@ -123,14 +124,14 @@ void trade_desktop_entries(){
 	uint32_t i = wnd_list.cursor.x/DESKTOP_ITEM_SIZE*vertical_draws + (wnd_list.cursor.y - wnd_list.taskbar.height)/DESKTOP_ITEM_SIZE;
 	/* Ignore drops outside the available ones */
 	if(i >= num_entries || i == selected_entry){
-		selected_entry = 0xFFFFFFFF;
+		selected_entry = INVALID_SELECTED_ENTRY;
 		return;
 	}
 
 	char *tmp = desktop_entries[selected_entry];
 	desktop_entries[selected_entry] = desktop_entries[i];
 	desktop_entries[i] = tmp;
-	selected_entry = 0xFFFFFFFF;
+	selected_entry = INVALID_SELECTED_ENTRY;
 
 }
 
@@ -953,9 +954,9 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
 			}
 
 			del_pressed = true;
-			if(selected_entry != 0xFFFFFFFF){
+			if(selected_entry != INVALID_SELECTED_ENTRY){
 				delete_desktop_entry();
-				selected_entry = 0xFFFFFFFF;
+				selected_entry = INVALID_SELECTED_ENTRY;
 			}
 
 		}
@@ -1052,7 +1053,7 @@ void window_mouse_handle(const struct packet *pp){
 
     if( state & L_PRESSED ){
 		uint32_t old_selected_entry = selected_entry;
-		selected_entry = 0xFFFFFFFF;
+		selected_entry = INVALID_SELECTED_ENTRY;
 		should_trade = false;
 
         if(wnd_list.taskbar.menu.b_pressed){
@@ -1141,7 +1142,7 @@ void window_mouse_handle(const struct packet *pp){
 				check_pressed_desktop_entry();
 
 				/*Check double click*/
-				if(old_selected_entry != 0xFFFFFFFF && old_selected_entry == selected_entry){
+				if(old_selected_entry != INVALID_SELECTED_ENTRY && old_selected_entry == selected_entry){
 					char path[255] = "/home/lcom/";
 					strcat(path, desktop_entries[selected_entry]);
 					create_file_browser_special(path);
@@ -1161,11 +1162,12 @@ void window_mouse_handle(const struct packet *pp){
 				/*restore*/
 				selected_entry = old_selected_entry;
 
-				if(selected_entry != 0xFFFFFFF){
+				if(selected_entry != INVALID_SELECTED_ENTRY){
 					should_trade = true;
 				}
-				else if(wnd_list.first)
+				else if(wnd_list.first){
                     mouse_element_interaction(wnd_list.first, false, pp);
+				}
             }
         }
     }
