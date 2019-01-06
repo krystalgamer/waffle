@@ -18,7 +18,7 @@ static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
 static int currentElements = 0;
 
 int initialize_screensaver() {
-	/* Check if already was initialized */
+    /* Check if already was initialized */
     static bool hasInit = false;
     if (hasInit)
         return OK;
@@ -77,126 +77,146 @@ void free_screensaver() {
 }
 
 void screensaver_draw() {
+
     draw_background(screensaver_back, SCREENSAVER_BACK_WIDTH, SCREENSAVER_BACK_HEIGHT);
 
-    for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
-        ScreensaverEle * scr_ele = screensaver_elements[i];
+    bool objects_collided = false;
 
-        /* Check borders at current position */
-        if (scr_ele->x < 0) scr_ele->x = 0;
-        else if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
-        if (scr_ele->y < 0) scr_ele->y = 0;
-        else if (scr_ele->y + scr_ele->height > get_y_res()) scr_ele->y = get_y_res() - scr_ele->height;
+    // TODO FIX WHEN MORE THAN 2 OBJECTS COLLIDE
+    
+    /* Update positions until objects do not collide */
+    do {
+        objects_collided = false;
+        for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
+            ScreensaverEle * scr_ele = screensaver_elements[i];
 
-        /* Calculate new position */
-        int16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
-        int16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
+            /* Do not move an object that already was moved successfully */
+            if (scr_ele->final_pos) continue;
 
-        /* Check borders at new position */
-        if (new_x <= 0) {
-        	scr_ele->x_move *= -1;
-        	new_x = 0;
-        }
-        if (new_x + (scr_ele->width) >= get_x_res()) {
-        	scr_ele->x_move *= -1;
-        	new_x = get_x_res() - scr_ele->width;        	
-        }
-        if (new_y <= 0) {
-        	scr_ele->y_move *= -1;
-        	new_y = 0;
-        }
-        if (new_y + (scr_ele->height) >= get_y_res()) {
-        	scr_ele->y_move *= -1;
-        	new_y = get_y_res() - scr_ele->height;        	
-        }
+            /* Check borders at current position */
+            if (scr_ele->x < 0) scr_ele->x = 0;
+            else if (scr_ele->x + scr_ele->width > get_x_res()) scr_ele->x = get_x_res() - scr_ele->width;
+            if (scr_ele->y < 0) scr_ele->y = 0;
+            else if (scr_ele->y + scr_ele->height > get_y_res()) scr_ele->y = get_y_res() - scr_ele->height;
 
+            /* Calculate new position */
+            int16_t new_x = scr_ele->x + scr_ele->x_move * SCREENSAVER_ELE_SPEED;
+            int16_t new_y = scr_ele->y + scr_ele->y_move * SCREENSAVER_ELE_SPEED;
 
-        /* Update position */
-        scr_ele->next_x = new_x;
-        scr_ele->next_y = new_y;
+            /* Check borders at new position */
+            if (new_x <= 0) {
+                scr_ele->x_move *= -1;
+                new_x = 0;
+            }
+            if (new_x + (scr_ele->width) >= get_x_res()) {
+                scr_ele->x_move *= -1;
+                new_x = get_x_res() - scr_ele->width;           
+            }
+            if (new_y <= 0) {
+                scr_ele->y_move *= -1;
+                new_y = 0;
+            }
+            if (new_y + (scr_ele->height) >= get_y_res()) {
+                scr_ele->y_move *= -1;
+                new_y = get_y_res() - scr_ele->height;      
+            }
 
-        /* Check if collides at new position */
-        int x_offset = 0, y_offset = 0;
-        ScreensaverEle * collidingEle = check_collision_at_position(scr_ele, new_x, new_y, &x_offset, &y_offset);        
-        if (collidingEle != NULL) {
+            /* Update position */
+            scr_ele->next_x = new_x;
+            scr_ele->next_y = new_y;
 
-            /* Switch orientations between colliding elements */
-            int temp_x_move = collidingEle->x_move;
-            int temp_y_move = collidingEle->y_move;
-            collidingEle->x_move = scr_ele->x_move;
-            collidingEle->y_move = scr_ele->y_move;
-            scr_ele->x_move = temp_x_move;
-            scr_ele->y_move = temp_y_move;
+            ScreensaverEle * collidingEle = check_collision_at_position(scr_ele, scr_ele->next_x, scr_ele->next_y);        
+            if (collidingEle != NULL && (scr_ele->x_move != collidingEle->x_move || scr_ele->y_move != collidingEle->y_move )) {
 
+                objects_collided = true;
 
-            /* TODO maybe check how much can move instead of checking offset / 2 */
+                //if (collision_id != collidingEle->id) {
+                //if (!(scr_ele->collided && collidingEle->collided)) {
+                //if (!scr_ele->collided) {
+                    /* Switch orientations between colliding elements */
+                    int temp_x_move = collidingEle->x_move;
+                    int temp_y_move = collidingEle->y_move;
+                    collidingEle->x_move = scr_ele->x_move;
+                    collidingEle->y_move = scr_ele->y_move;
+                    scr_ele->x_move = temp_x_move;
+                    scr_ele->y_move = temp_y_move;
+                    //collidingEle->final_pos = true;
+                    //collidingEle->collided = true;
+                    //scr_ele->collided = true;
+                    //scr_ele->final_pos = false;
 
-            /* TODO decide if should use x offset or y offset based on movement direction */
+                    //collision_id = collidingEle->id;
+                //}
 
-            /* Movement needed in each direction */
-            int ele_x_move = 0, colliding_x_move = 0, ele_y_move = 0, colliding_y_move = 0;
-            ele_x_move = (x_offset % 2 == 0 ? x_offset / 2 : x_offset / 2 + 1);
-            colliding_x_move = x_offset / 2;
-            ele_y_move = (y_offset % 2 == 0 ? y_offset / 2 : y_offset / 2 + 1);
-            colliding_y_move = y_offset / 2;
+                /* Do I need collided flags */
+                /* Only update position by x and y move? */
 
-            ele_x_move *= scr_ele->x_move;
-            ele_y_move *= scr_ele->y_move;
-            colliding_x_move *= collidingEle->x_move;
-            colliding_y_move *= collidingEle->y_move;
+                fix_position(scr_ele);
 
-            /* HORIZONTAL */
-            /* If cant move to left */
-            //if ((scr_ele->x + ele_x_move) < 0)
-            //    collidingEle->x += x_offset * collidingEle->x_move;
-
-            /* If cant move to right */
-            //else if ((collidingEle->x + colliding_x_move) > (get_x_res() - collidingEle->width))
-            //    scr_ele->x += x_offset * scr_ele->x_move;
-
-            /* Can move both objects */
-            //else {
-            //    scr_ele->x += ele_x_move;
-             //   collidingEle->x += colliding_x_move;
-            //}
-
-            /* VERTICAL */
-            /* If cant move upward */
-            //if ((scr_ele->y + ele_y_move) < 0)
-            //    collidingEle->y += y_offset * collidingEle->y_move;
-
-            /* If cant move downward */
-            //else if ((collidingEle->y + colliding_y_move) > (get_y_res() - collidingEle->height))
-            //    scr_ele->y += y_offset * scr_ele->y_move;
-
-            /* Can move both objects */
-            //else {
-             //   scr_ele->y += ele_y_move;
-            //   collidingEle->y += colliding_y_move;
-            //}
-
-            if ((scr_ele->x + ele_x_move < 0) || (scr_ele->x + ele_x_move > get_x_res() - scr_ele->width)) {
-                collidingEle->x += x_offset * collidingEle->x_move;
             }
             else {
-                scr_ele->x += x_offset * scr_ele->x_move;
+                scr_ele->final_pos = true;
             }
 
         }
-    }
+    } while (objects_collided);
 
     /* Draw all screensaver elements */
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
         ScreensaverEle * scr_ele = screensaver_elements[i];
-        draw_pixmap_direct_mode(scr_ele->sprite, scr_ele->next_x, scr_ele->next_y, scr_ele->width, scr_ele->height, 0, false);
+        scr_ele->collided = false;
+        scr_ele->final_pos = false;
         scr_ele->x = scr_ele->next_x;
         scr_ele->y = scr_ele->next_y;
+        draw_pixmap_direct_mode(scr_ele->sprite, scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
     }
+    //tickdelay(micros_to_ticks(200000));
+}
+
+void fix_position(ScreensaverEle * ele) {   
+    ScreensaverEle * collidingEle = check_collision_at_position(ele, ele->next_x, ele->next_y);
+
+    do {
+        ele->next_x += ele->x_move;
+        ele->next_y += ele->y_move;
+
+        if (ele->next_x < 0 || (ele->next_x - ele->width) > get_x_res() || ele->next_y < 0 || (ele->next_y - ele->height) > get_y_res()) {
+            printf("fixing collider\n");
+            fix_position(collidingEle);
+            printf("Fixed\n");
+        }
+
+/*
+        if (ele->next_x < 0) {
+            ele->next_x = 0;
+            collidingEle->next_x += (ele->x_move * -1);
+        }
+
+        if ((ele->next_x - ele->width) > get_x_res()) {
+            ele->next_x = get_x_res() - ele->width;
+            collidingEle->next_x += (ele->x_move * -1);
+        }
+
+        if (ele->next_y < 0) {
+            ele->next_y = 0;
+            collidingEle->next_y += (ele->y_move * -1);
+        }
+
+        if ((ele->next_y - ele->height) > get_y_res()) {
+            ele->next_y = get_y_res() - ele->height;
+            collidingEle->next_y += (ele->y_move * -1);
+        }
+        */
+
+        collidingEle = check_collision_at_position(ele, ele->next_x, ele->next_y);
+
+    } while(collidingEle != NULL);
+
 }
 
 int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t * sprite) {
 
-	static uint8_t nextID = 0;
+    static uint8_t nextID = 0;
 
     /* Check if maximum amount of elements has been reached */
     if (currentElements >= SCREENSAVER_NUMBER_OF_ELEMENTS)
@@ -210,11 +230,11 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     /* Initialize element fields */
     new_element->id = (++nextID);
     new_element->x = x;
-    new_element->y = y;
-    new_element->next_x = x;
-    new_element->next_y = y;    
+    new_element->y = y;  
     new_element->width = width;
     new_element->height = height;
+    new_element->collided = false;
+    new_element->final_pos = false;
 
     /* Assure direction is not 0 */
     int vert_dir = rand() % 3 - 1;
@@ -231,9 +251,9 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     return 0;
 }
 
-ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y, int * x_offset, int * y_offset) {
+ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y) {
 
-	/* Check all elements in the screensaver */
+    /* Check all elements in the screensaver */
     for (int count = 0; count < SCREENSAVER_NUMBER_OF_ELEMENTS; count++) {
         ScreensaverEle * curr_ele = screensaver_elements[count];
 
@@ -242,55 +262,24 @@ ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x
 
         /* If sprites square boxes do not intercept, elements cant collide */
         if ( new_x + ele->width < curr_ele->x || curr_ele->x + curr_ele->width < new_x || new_y + ele->height < curr_ele->y || curr_ele->y + curr_ele->height < new_y)
-        	continue;
+            continue;
 
-        bool found_collision = false;
-
-        int max_x_offset = 0, max_y_offset = 0;
+        //bool found_collision = false;
 
         /* For all pixels in the current element */
         for(int i = 0; i < curr_ele->height; i++){
-            int curr_x_offset = 0;
-        	for(int j = 0; j < curr_ele->width; j++){
-        		uint32_t pixel_color;
-        		memcpy(&pixel_color, curr_ele->sprite + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
-        		if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
-        			continue;
-
-        		/* Pixel is not transparent, must check if it is colliding */
-        		if (pixel_collides(ele, new_x, new_y, curr_ele->next_x+j, curr_ele->next_y+i))
-                {
-                    found_collision = true;
-                    curr_x_offset++;
-                }
-        	}
-
-            if (curr_x_offset > max_x_offset)
-                max_x_offset = curr_x_offset;
-        }
-
-        /*
-        for(int j = 0; j < curr_ele->width; j++){
-            int curr_y_offset = 0;
-            for(int i = 0; i < curr_ele->height; i++){
+            for(int j = 0; j < curr_ele->width; j++){
                 uint32_t pixel_color;
                 memcpy(&pixel_color, curr_ele->sprite + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
                 if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
                     continue;
 
+                /* Pixel is not transparent, must check if it is colliding */
                 if (pixel_collides(ele, new_x, new_y, curr_ele->next_x+j, curr_ele->next_y+i))
-                    curr_y_offset++;
+                {
+                    return curr_ele;
+                }
             }
-
-            if (curr_y_offset > max_y_offset)
-                max_y_offset = curr_y_offset;
-        }
-        */
-
-        if (found_collision) {
-            *x_offset = max_x_offset;
-            *y_offset = max_y_offset;
-            return curr_ele;
         }
     }
     return NULL;
@@ -299,16 +288,16 @@ ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x
 bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y) {
 
     /* Calculate relative positions */
-	int16_t relative_x = pixel_x - new_x;
-	int16_t relative_y = pixel_y - new_y;
+    int16_t relative_x = pixel_x - new_x;
+    int16_t relative_y = pixel_y - new_y;
 
     /* Check if out of bounds */
-	if (relative_x >= element->width || relative_y >= element->height || relative_x < 0 || relative_y < 0)
-		return false;
+    if (relative_x >= element->width || relative_y >= element->height || relative_x < 0 || relative_y < 0)
+        return false;
 
     /* Read pixel color */
-	uint32_t pixel_color;
-	memcpy(&pixel_color, element->sprite + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
+    uint32_t pixel_color;
+    memcpy(&pixel_color, element->sprite + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
 
-	return pixel_color != TRANSPARENCY_COLOR_8_8_8_8;
+    return pixel_color != TRANSPARENCY_COLOR_8_8_8_8;
 }

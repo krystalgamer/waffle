@@ -38,11 +38,23 @@ typedef enum _timer_status{
 
 } timer_status;
 
-/*resets the interrupt counter*/
+/**
+ * @brief Resets the timer interrupt counter
+ */ 
 void timer_reset_int_counter();
 
+/**
+ * @brief Get the timer interrupt counter
+ *
+ * @return Returns the timer interrupt counter 
+ */ 
 unsigned int get_timer_int_counter();
 
+/**
+ * @brief Changes the internal frequency of the timer
+ *
+ * @param freq New value for the internal frequency
+ */ 
 void set_internal_frequency_counter(uint32_t freq);
 
 /*

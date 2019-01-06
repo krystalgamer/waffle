@@ -17,7 +17,7 @@ queue_ele *new_ele(char val){
 	return new;
 }
 
-int is_queue_empty(queue *q){
+bool is_queue_empty(queue *q){
 	return (q->front == NULL);
 }
 

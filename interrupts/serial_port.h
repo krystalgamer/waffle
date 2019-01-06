@@ -1,6 +1,12 @@
 #ifndef SERIAL_PORT_H
 #define SERIAL_PORT_H
 
+/**
+ * @defgroup serial_port serial port module
+ * Contains all the code related to the serial port
+ * @{
+ */
+
 /* COM1 */
 #define COM1_IRQ 4
 #define COM1_BASE_ADDR 0x3F8
@@ -88,30 +94,180 @@
 #define FCR_INT_TRIGGER_LVL_8 BIT(7)
 #define FCR_INT_TRIGGER_LVL_14 (BIT(7) | BIT(6))
 
-
+/**
+ * @brief Subscribes and enables uart interrupts
+ * 
+ * Disables the Minix IH so as to avoid conflicts.
+ * 
+ * @param bit_no address of memory to be initialized with the
+ *        bit number to be set in the mask returned upon an interrupt
+ * @return Return 0 upon success and non-zero otherwise
+ */
 int (ser_subscribe_int)(uint8_t *bit_no);
+
+/**
+ * @brief Unsubscribes uart interrupts
+ * 
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int (ser_unsubscribe_int)();
+
+/**
+ * @brief Reads data from a Uart register
+ * 
+ * @param reg Register to read data from
+ * @param register_content Pointer to variable to store read data
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_read_register(uint8_t reg, uint8_t * register_content);
+
+/**
+ * @brief Configures the Serial Port to work with given settings
+ * 
+ * @param bits_per_char Number of bits per char used
+ * @param stop_bits Number of stop bits to use
+ * @param parity Parity to use
+ * @param bit_rate Bit rate to configure
+ * @param received_data Bool representing if should enable Received Data interrupts
+ * @param transmitter_empty Bool representing if should enable Transmitter Empty interrupts
+ * @param line_status Bool representing if should enable Line Status interrupts
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_configure_settings(uint8_t bits_per_char, uint8_t stop_bits, uint8_t parity, uint16_t bit_rate, bool received_data, bool transmitter_empty, bool line_status);
+
+/**
+ * @brief Ãctivate the specified interrupts of the serial port
+
+ * @param received_data Bool representing if should enable Received Data interrupts
+ * @param transmitter_empty Bool representing if should enable Transmitter Empty interrupts
+ * @param line_status Bool representing if should enable Line Status interrupts
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_activate_interrupts(bool received_data, bool transmitter_empty, bool line_status);
+
+/**
+ * @brief Deactivate all the interrupts of the serial port
+ 
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_deactivate_interrupts();
+
+/**
+ * @brief Enable FIFOs with specified trigger level
+ *
+ * @param trigger_lvl Trigger level to use when communicating 
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_enable_fifo(uint8_t trigger_lvl);
+
+/**
+ * @brief Disable FIFOs
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_disable_fifo();
+
+/**
+ * @brief Empty the fifo queues variables
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_empty_fifo_queues();
+
+/**
+ * @brief Attempts to read an ACK byte from the RBR
+ *
+ * @return Returns the value read
+ */ 
 uint8_t ser_read_ack();
+
+/**
+ * @brief Flushes the Receiver Buffer 
+ */ 
 void ser_flush_rbr();
+
+/**
+ * @brief Writes a character to transmit
+ *
+ * @param chr Char to send
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_write_char(uint8_t chr);
+
+/**
+ * @brief Writes a message using the defined protocol Header and Trailer
+ *
+ * @param msg Message to send
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_write_msg_ht(uint8_t msg);
+
+/**
+ * @brief Checks what the received message status is and handles accordingly
+ *
+ * @return Returns the message status
+ */ 
 uint8_t ser_msg_status();
+
+/**
+ * @brief Serial Port interrupt handler
+ *
+ * Handles serial port interrupts
+ */ 
 void ser_ih();
+
+/**
+ * @brief Frees the memory allocated for the fifo queues
+ */ 
 void free_fifo_queues();
+
+/**
+ * @brief Handles an interrupt for a message using Header and Trailer
+ */ 
 void ser_handle_data_interrupt_msg_ht();
+
+/**
+ * @brief Fills the send fifo with characters from the send queue
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_fill_send_fifo();
+
+/**
+ * @brief Fills the receiver queue with characters from the receiver fifo
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */ 
 int ser_fill_rcv_fifo();
+
+/**
+ * @brief Prints the receiver queue information on screen
+ * 
+ * Removes the printed information from the queue
+ */ 
 void print_rcv_fifo();
+
+/**
+ * @brief Writes a message using FIFOs
+ * 
+ * @param msg Pointer to the message to send
+ * @param msg_size Size of message to send
+ * @param type Type of message to send
+ */ 
 void ser_write_msg_fifo(char * msg, uint32_t msg_size, uint32_t type);
+
+/**
+ * @brief Sends a terminal command to another ChocoTab instance
+ *
+ * @param cmd Command to send
+ * @return Return 0 upon success and non-zero otherwise
+ */
 int ser_send_terminal_cmd(uint8_t cmd);
 
+/*
+ * Enumeration that contains possible error codes
+ * for the functions to ease development and debugging
+ */
 typedef enum _ser_status {
 	SER_OK = OK,
 	SER_NULL_PTR,
@@ -144,5 +300,7 @@ bool ser_set_handler(void *hand, void *el, void *wnd);
 #define SERIAL_GOODBYE 748
 
 #define FIFO_END_OF_MSG -1
+
+/** @} */
 
 #endif

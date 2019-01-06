@@ -247,4 +247,5 @@ void rtc_int_handler();
  * @brief RTC interrup handler in assembly
  */
 void rtc_int_handle_asm();
+
 #endif

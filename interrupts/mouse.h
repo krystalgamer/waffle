@@ -20,7 +20,7 @@ int (mouse_subscribe_int)(uint8_t *bit_no);
 /**
  * @brief Unsubscribes mouse interrupts
  * 
- * @return Return 0 upon success and non-zero othewise
+ * @return Return 0 upon success and non-zero otherwise
  */ 
 int (mouse_unsubscribe_int)();
 
