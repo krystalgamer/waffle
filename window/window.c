@@ -104,6 +104,17 @@ void check_pressed_desktop_entry(){
 	selected_entry = 0xFFFFFFFF;
 }
 
+void delete_desktop_entry(){
+	if(selected_entry == 0xFFFFFFFF)
+		return;
+
+	desktop_entries[selected_entry] = NULL;
+	if(num_entries-selected_entry-1)
+		memcpy(&desktop_entries[selected_entry], &desktop_entries[selected_entry+1], (num_entries-selected_entry-1)*4);
+	num_entries--;
+	drawable_entries = (num_entries > max_num_entries) ? max_num_entries : num_entries;
+}
+
 void trade_desktop_entries(){
 	/* dont do nothing if mouse is not in desktop area */
 	if(wnd_list.cursor.y < wnd_list.taskbar.height)
@@ -909,11 +920,13 @@ extern uint8_t keymap[];
 #define F4_MAKECODE 0x3e
 #define TAB_MAKECODE 0x0f
 #define WINDOWS_MAKECODE 0x5b
+#define DELETE_MAKECODE 0x53
 #define IS_BREAK(x) (uint8_t)(x>>7)
 
 bool alt_pressed = false;
 bool f4_pressed = false;
 bool tab_pressed = false;
+bool del_pressed = false;
 
 void window_kbd_handle(const uint8_t *scancode, uint32_t num){
 
@@ -930,6 +943,21 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
 		if(special_makecode == WINDOWS_MAKECODE && !IS_BREAK(scancode[1])){
 			wnd_list.taskbar.menu.b_pressed = true;
 			deactivate_subs(wnd_list.taskbar.menu.context);
+		}
+		else if(special_makecode == DELETE_MAKECODE){
+			if(del_pressed){
+				if(!IS_BREAK(scancode[1]))
+					return;
+				del_pressed = false;
+				return;
+			}
+
+			del_pressed = true;
+			if(selected_entry != 0xFFFFFFFF){
+				delete_desktop_entry();
+				selected_entry = 0xFFFFFFFF;
+			}
+
 		}
 		return;
 	}
