@@ -40,19 +40,22 @@ uint16_t window_frame_height = 0;
 #define DESKTOP_ITEM_SIZE (DESKTOP_CHAR_NUM*FONT_WIDTH+5)
 #define INVALID_SELECTED_ENTRY (0xffffffff)
 
-char *desktop_entries[512];
+struct desktop_ee desktop_entries[512];
 uint32_t num_entries = 0;
 uint32_t max_num_entries = 0;
 uint32_t selected_entry = INVALID_SELECTED_ENTRY;
 uint32_t drawable_entries = 0;
 uint32_t vertical_draws = 0;
 uint8_t *folder_xpm = NULL;
+uint8_t *file_xpm = NULL;
 
 void init_desktop_entries(){
 
     DIR *dirp;
     struct dirent *dp;
     dirp = opendir("/home/lcom");
+    num_entries = 0;
+    selected_entry = INVALID_SELECTED_ENTRY;
 	max_num_entries = get_x_res() * get_y_res() / (DESKTOP_ITEM_SIZE * DESKTOP_ITEM_SIZE);
 
     while (dirp) {
@@ -64,7 +67,13 @@ void init_desktop_entries(){
 			if(num_entries >= max_num_entries)
 				break;
 
-            desktop_entries[num_entries++] = strdup(dp->d_name);
+            char tmp[512];
+            strcpy(tmp, "/home/lcom/");
+            strcat(tmp, dp->d_name);
+            struct stat path_stat;
+	        stat(tmp, &path_stat);
+            desktop_entries[num_entries].folder = S_ISDIR(path_stat.st_mode);
+            desktop_entries[num_entries++].name = strdup(dp->d_name);
         } else {
             if(errno != 0){
                 closedir(dirp);
@@ -87,8 +96,8 @@ void draw_dekstop_entries(){
 		uint32_t x = (i/vertical_draws)*DESKTOP_ITEM_SIZE;
 		uint32_t y = wnd_list.taskbar.height+(i%vertical_draws)*DESKTOP_ITEM_SIZE;
 
-		draw_pixmap_direct_mode(folder_xpm, x,y, DESKTOP_ITEM_SIZE, DESKTOP_ITEM_SIZE, 0, false);
-		print_horizontal_word_len(desktop_entries[i], DESKTOP_CHAR_NUM, x, y + DESKTOP_ITEM_SIZE-FONT_HEIGHT, (i == selected_entry ? 0xFF : 0xFFFFFFFF));
+		draw_pixmap_direct_mode((desktop_entries[i].folder ? folder_xpm : file_xpm), x,y, DESKTOP_ITEM_SIZE, DESKTOP_ITEM_SIZE, 0, false);
+		print_horizontal_word_len(desktop_entries[i].name, DESKTOP_CHAR_NUM, x, y + DESKTOP_ITEM_SIZE-FONT_HEIGHT, (i == selected_entry ? 0xFF : 0xFFFFFFFF));
 	}
 }
 
@@ -109,9 +118,11 @@ void delete_desktop_entry(){
 	if(selected_entry == INVALID_SELECTED_ENTRY)
 		return;
 
-	desktop_entries[selected_entry] = NULL;
+    free(desktop_entries[selected_entry].name) ;
+	desktop_entries[selected_entry].name = NULL;
+
 	if(num_entries-selected_entry-1)
-		memcpy(&desktop_entries[selected_entry], &desktop_entries[selected_entry+1], (num_entries-selected_entry-1)*4);
+		memcpy(&desktop_entries[selected_entry], &desktop_entries[selected_entry+1], (num_entries-selected_entry-1)*sizeof(struct desktop_ee));
 	num_entries--;
 	drawable_entries = (num_entries > max_num_entries) ? max_num_entries : num_entries;
 }
@@ -128,9 +139,12 @@ void trade_desktop_entries(){
 		return;
 	}
 
-	char *tmp = desktop_entries[selected_entry];
-	desktop_entries[selected_entry] = desktop_entries[i];
-	desktop_entries[i] = tmp;
+	char *tmp = desktop_entries[selected_entry].name;
+	bool tipo = desktop_entries[selected_entry].folder;
+	desktop_entries[selected_entry].name = desktop_entries[i].name;
+	desktop_entries[selected_entry].folder = desktop_entries[i].folder;
+	desktop_entries[i].name = tmp;
+	desktop_entries[i].folder = tipo;
 	selected_entry = INVALID_SELECTED_ENTRY;
 
 }
@@ -190,6 +204,7 @@ int init_internal_status(){
 	memset(desktop_entries, 0, 512*sizeof(char*));
 	init_desktop_entries();
     folder_xpm = xpm_load(folder, XPM_8_8_8_8, &img);
+    file_xpm = xpm_load(file, XPM_8_8_8_8, &img);
     return 0;
 
 }
@@ -1146,7 +1161,7 @@ void window_mouse_handle(const struct packet *pp){
 				/*Check double click*/
 				if(old_selected_entry != INVALID_SELECTED_ENTRY && old_selected_entry == selected_entry){
 					char path[255] = "/home/lcom/";
-					strcat(path, desktop_entries[selected_entry]);
+					strcat(path, desktop_entries[selected_entry].name);
 					create_file_browser_special(path);
 				}
             }
