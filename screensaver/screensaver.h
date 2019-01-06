@@ -27,7 +27,9 @@ typedef struct _screensaver_ele {
 	bool collided; /**<  bool representing if this element collided recently */
 	bool final_pos; /**<  bool representing if object already reached a new position */
 
-	uint8_t * sprite; /**<  sprite pixmap */
+	uint8_t curr_frame;
+	uint8_t n_frames;
+	uint8_t **sprite; /**<  sprite pixmap */
 }ScreensaverEle;
 
 /**
@@ -57,10 +59,10 @@ void screensaver_draw();
  * @param width Width of element in pixels
  * @param height Height of element in pixels
  * @param sprite Sprite array of element
+ * @param n_frames number of frames of new element
  * @return Return 0 upon success and non-zero otherwise
  */
-int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t * sprite);
-
+int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_frames);
 /**
  * @brief Verifies if there is an element colliding at given coordinates
  *

@@ -12,7 +12,8 @@
 
 #include "util.h"
 
-static uint8_t *waffle, *bacon, *orange_juice, *screensaver_back;
+static uint8_t * waffle[8], *bacon[1], *orange_juice[1];
+static uint8_t *screensaver_back;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
 static int currentElements = 0;
@@ -26,25 +27,60 @@ int initialize_screensaver() {
     /* Get bytes per pixel from vbe */
     bytes_per_pixel = get_bytes_per_pixel();
 
-    /* Load the waffle xpm */
+    /* Load the waffle xpms */
     xpm_image_t img;
-    uint8_t * sprite = xpm_load(waffle_xpm, XPM_8_8_8_8, &img);
+    uint8_t * sprite = xpm_load(waffle_xpm_1, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    waffle = sprite;
+    waffle[0] = sprite;
+
+    sprite = xpm_load(waffle_xpm_2, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[1] = sprite;
+
+    sprite = xpm_load(waffle_xpm_3, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[2] = sprite;
+
+    sprite = xpm_load(waffle_xpm_4, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[3] = sprite;
+
+    sprite = xpm_load(waffle_xpm_5, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[4] = sprite;
+
+    sprite = xpm_load(waffle_xpm_6, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[5] = sprite;
+
+    sprite = xpm_load(waffle_xpm_7, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[6] = sprite;
+
+    sprite = xpm_load(waffle_xpm_8, XPM_8_8_8_8, &img);
+    if (sprite == NULL)
+        return 1;
+    waffle[7] = sprite;
 
 
     /* Load the bacon xpm */
     sprite = xpm_load(bacon_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    bacon = sprite;
+    bacon[0] = sprite;
     
     /* Load the orange juice xpm */
     sprite = xpm_load(orange_juice_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    orange_juice = sprite;
+    orange_juice[0] = sprite;
     
     /* Load the screensaver background xpm */
     sprite = xpm_load(breakfast_background_xpm, XPM_8_8_8_8, &img);
@@ -54,10 +90,10 @@ int initialize_screensaver() {
 
     /* Add elements to screensaver */
     //add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon);
-    add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice);
-    add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(0, 500, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice);
+    add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon, BACON_N_FRAMES);
+    add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
+    add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
+    add_element_to_screensaver(0, 500, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
 
     hasInit = true;
 
@@ -236,9 +272,11 @@ void screensaver_draw() {
         ScreensaverEle * scr_ele = screensaver_elements[i];
         scr_ele->collided = false;
         scr_ele->final_pos = false;
-        draw_pixmap_direct_mode(scr_ele->sprite, scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
+        draw_pixmap_direct_mode(scr_ele->sprite[scr_ele->curr_frame % scr_ele->n_frames], scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
+        scr_ele->curr_frame++;
+        //scr_ele->curr_frame = (scr_ele->curr_frame + 1) % scr_ele->n_frames;
     }
-    //tickdelay(micros_to_ticks(200000));
+    //tickdelay(micros_to_ticks(100000));
 }
 
 void fix_position(ScreensaverEle * ele) {   
@@ -286,7 +324,7 @@ void fix_position(ScreensaverEle * ele) {
 
 }
 
-int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t * sprite) {
+int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_frames) {
 
     static uint8_t nextID = 0;
 
@@ -307,6 +345,8 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     new_element->height = height;
     new_element->collided = false;
     new_element->final_pos = false;
+    new_element->curr_frame = 0;
+    new_element->n_frames = n_frames;
 
     /* Assure direction is not 0 */
     int vert_dir = rand() % 10 + 1;

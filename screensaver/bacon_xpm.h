@@ -3,6 +3,7 @@
 
 #define BACON_XPM_WIDTH 200
 #define BACON_XPM_HEIGHT 163
+#define BACON_N_FRAMES 1
 
 static const char * bacon_xpm[] = {
 "200 163 19 1",

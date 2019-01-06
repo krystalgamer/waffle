@@ -3,6 +3,7 @@
 
 #define ORANGE_JUICE_XPM_WIDTH 115
 #define ORANGE_JUICE_XPM_HEIGHT 201
+#define ORANGE_JUICE_N_FRAMES 1
 
 static const char * orange_juice_xpm[] = {
 "115 201 19 1",
