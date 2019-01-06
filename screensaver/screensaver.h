@@ -2,7 +2,7 @@
 #define SCREENSAVER_H
 
 #define SCREENSAVER_NUMBER_OF_ELEMENTS 4 /* Number of elements in the screensaver */
-#define SCREENSAVER_IDLE_TIME 180 /* Time to start screensaver in interrupts */
+#define SCREENSAVER_IDLE_TIME 300 /* Time to start screensaver in interrupts */
 #define SCREENSAVER_ELE_SPEED 12 /* Speed of the screensaver elements */
 
 
@@ -27,8 +27,8 @@ typedef struct _screensaver_ele {
 	bool collided; /**<  bool representing if this element collided recently */
 	bool final_pos; /**<  bool representing if object already reached a new position */
 
-	uint8_t curr_frame;
-	uint8_t n_frames;
+	uint8_t curr_frame; /**< current frame of this element */
+	uint8_t n_sprites; /**< number of sprites this element has */
 	uint8_t **sprite; /**<  sprite pixmap */
 }ScreensaverEle;
 
@@ -62,7 +62,7 @@ void screensaver_draw();
  * @param n_frames number of frames of new element
  * @return Return 0 upon success and non-zero otherwise
  */
-int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_frames);
+int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_sprites);
 /**
  * @brief Verifies if there is an element colliding at given coordinates
  *

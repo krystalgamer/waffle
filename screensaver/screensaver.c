@@ -7,12 +7,12 @@
 
 #include "waffle_xpm.h"
 #include "orange_juice_xpm.h"
-#include "bacon_xpm.h"
+#include "egg_xpm.h"
 #include "screensaver_background.h"
 
 #include "util.h"
 
-static uint8_t * waffle[8], *bacon[1], *orange_juice[1];
+static uint8_t * waffle[8], *egg[1], *orange_juice[1];
 static uint8_t *screensaver_back;
 static uint8_t bytes_per_pixel;
 static ScreensaverEle * screensaver_elements[SCREENSAVER_NUMBER_OF_ELEMENTS];
@@ -70,11 +70,11 @@ int initialize_screensaver() {
     waffle[7] = sprite;
 
 
-    /* Load the bacon xpm */
-    sprite = xpm_load(bacon_xpm, XPM_8_8_8_8, &img);
+    /* Load the egg xpm */
+    sprite = xpm_load(egg_xpm, XPM_8_8_8_8, &img);
     if (sprite == NULL)
         return 1;
-    bacon[0] = sprite;
+    egg[0] = sprite;
     
     /* Load the orange juice xpm */
     sprite = xpm_load(orange_juice_xpm, XPM_8_8_8_8, &img);
@@ -90,10 +90,10 @@ int initialize_screensaver() {
 
     /* Add elements to screensaver */
     //add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
-    add_element_to_screensaver(500, 200, BACON_XPM_WIDTH, BACON_XPM_HEIGHT, bacon, BACON_N_FRAMES);
+    add_element_to_screensaver(500, 200, EGG_XPM_WIDTH, EGG_XPM_HEIGHT, egg, EGG_N_FRAMES);
     add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
     add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
-    add_element_to_screensaver(0, 500, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
+    add_element_to_screensaver(1000, 0, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
 
     hasInit = true;
 
@@ -102,7 +102,7 @@ int initialize_screensaver() {
 
 void free_screensaver() {
     free(waffle);
-    free(bacon);
+    free(egg);
     free(orange_juice);
     free(screensaver_back);
 
@@ -272,9 +272,8 @@ void screensaver_draw() {
         ScreensaverEle * scr_ele = screensaver_elements[i];
         scr_ele->collided = false;
         scr_ele->final_pos = false;
-        draw_pixmap_direct_mode(scr_ele->sprite[scr_ele->curr_frame % scr_ele->n_frames], scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
+        draw_pixmap_direct_mode(scr_ele->sprite[scr_ele->curr_frame % scr_ele->n_sprites], scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
         scr_ele->curr_frame++;
-        //scr_ele->curr_frame = (scr_ele->curr_frame + 1) % scr_ele->n_frames;
     }
     //tickdelay(micros_to_ticks(100000));
 }
@@ -324,7 +323,7 @@ void fix_position(ScreensaverEle * ele) {
 
 }
 
-int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_frames) {
+int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_sprites) {
 
     static uint8_t nextID = 0;
 
@@ -346,7 +345,7 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     new_element->collided = false;
     new_element->final_pos = false;
     new_element->curr_frame = 0;
-    new_element->n_frames = n_frames;
+    new_element->n_sprites = n_sprites;
 
     /* Assure direction is not 0 */
     int vert_dir = rand() % 10 + 1;
@@ -380,7 +379,7 @@ ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x
         for(int i = 0; i < curr_ele->height; i++){
             for(int j = 0; j < curr_ele->width; j++){
                 uint32_t pixel_color;
-                memcpy(&pixel_color, curr_ele->sprite[curr_ele->curr_frame % curr_ele->n_frames] + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
+                memcpy(&pixel_color, curr_ele->sprite[curr_ele->curr_frame % curr_ele->n_sprites] + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
                 if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
                     continue;
 
@@ -407,7 +406,7 @@ bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int1
 
     /* Read pixel color */
     uint32_t pixel_color;
-    memcpy(&pixel_color, element->sprite[element->curr_frame % element->n_frames] + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
+    memcpy(&pixel_color, element->sprite[element->curr_frame % element->n_sprites] + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
 
     return pixel_color != TRANSPARENCY_COLOR_8_8_8_8;
 }
