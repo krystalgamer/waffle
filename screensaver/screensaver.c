@@ -380,7 +380,7 @@ ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x
         for(int i = 0; i < curr_ele->height; i++){
             for(int j = 0; j < curr_ele->width; j++){
                 uint32_t pixel_color;
-                memcpy(&pixel_color, curr_ele->sprite + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
+                memcpy(&pixel_color, curr_ele->sprite[curr_ele->curr_frame % curr_ele->n_frames] + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
                 if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
                     continue;
 
@@ -407,7 +407,7 @@ bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int1
 
     /* Read pixel color */
     uint32_t pixel_color;
-    memcpy(&pixel_color, element->sprite + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
+    memcpy(&pixel_color, element->sprite[element->curr_frame % element->n_frames] + (relative_y * element->width + relative_x) * bytes_per_pixel, bytes_per_pixel);
 
     return pixel_color != TRANSPARENCY_COLOR_8_8_8_8;
 }
