@@ -781,6 +781,7 @@ bool pressed_three_buttons(Window *wnd){
             uint32_t maximize_x = wnd->x + wnd->width - (button_l+pad_between)*2 + pad_between/2;
             uint32_t maximize_y =  wnd->y - window_frame_height + button_pad/2;
             if(mouse_over_coords(maximize_x, maximize_y, maximize_x + button_l, maximize_y + button_l)){
+				move_to_front(wnd);
                 wnd->maximized = !wnd->maximized;
 
                 if(wnd->maximized){
@@ -1099,7 +1100,6 @@ void window_mouse_handle(const struct packet *pp){
                          * of elements*/
                         
                         if(pressed_three_buttons(cur_wnd)){
-							move_to_front(cur_wnd);
                             return;
 						}
 
