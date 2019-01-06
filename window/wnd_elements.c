@@ -53,6 +53,12 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
 			if(new_el->attr.list_view.num_entries == 0)
 				break;
 
+			char **old_entries = new_el->attr.list_view.entries;
+			char **new_entries = malloc(sizeof(char*)*new_el->attr.list_view.num_entries);
+			for(unsigned i = 0; i<new_el->attr.list_view.num_entries; i++)
+				new_entries[i] = strdup(old_entries[i]);
+
+			new_el->attr.list_view.entries = new_entries;
             new_el->attr.list_view.scrollbar_active = (new_el->attr.list_view.num_entries > new_el->height/FONT_HEIGHT); 
             new_el->attr.list_view.drawable_entries = (new_el->attr.list_view.scrollbar_active ? new_el->height/FONT_HEIGHT : new_el->attr.list_view.num_entries);
 

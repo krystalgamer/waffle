@@ -4,6 +4,11 @@
 #include "util.h"
 #include "window.h"
 #include "window_background.h"
+#include <sys/stat.h>
+#include <dirent.h>
+#include <errno.h>
+#include "../font/letters.h"
+#include "../file_browser/file_browser.h"
 
 uint8_t *backgrounds[] = {
     NULL,
@@ -30,6 +35,94 @@ extern bool pressed_the_secret_button;
 
 /* TODO find a better alternative */
 uint16_t window_frame_height = 0;
+
+#define DESKTOP_CHAR_NUM 7
+#define DESKTOP_ITEM_SIZE (DESKTOP_CHAR_NUM*FONT_WIDTH+5)
+
+char *desktop_entries[512];
+uint32_t num_entries = 0;
+uint32_t max_num_entries = 0;
+uint32_t selected_entry = 0xFFFFFFFF;
+uint32_t drawable_entries = 0;
+uint32_t vertical_draws = 0;
+uint8_t *folder_xpm = NULL;
+
+void init_desktop_entries(){
+
+    DIR *dirp;
+    struct dirent *dp;
+    dirp = opendir("/home/lcom");
+	max_num_entries = get_x_res() * get_y_res() / (DESKTOP_ITEM_SIZE * DESKTOP_ITEM_SIZE);
+
+    while (dirp) {
+        errno = 0;
+        if ((dp = readdir(dirp)) != NULL) {
+            /* Ignore cur dir */
+            if(!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, "..") )
+                continue;
+			if(num_entries >= max_num_entries)
+				break;
+
+            desktop_entries[num_entries++] = strdup(dp->d_name);
+        } else {
+            if(errno != 0){
+                closedir(dirp);
+                return;
+            }
+            break;
+        }
+    }
+ 
+	drawable_entries = (num_entries > max_num_entries) ? max_num_entries : num_entries;
+	vertical_draws = (get_y_res()-wnd_list.taskbar.height)/DESKTOP_ITEM_SIZE;
+
+    closedir(dirp);
+
+}
+
+void draw_dekstop_entries(){
+
+	for(unsigned i = 0; i < drawable_entries; i++){
+		uint32_t x = (i/vertical_draws)*DESKTOP_ITEM_SIZE;
+		uint32_t y = wnd_list.taskbar.height+(i%vertical_draws)*DESKTOP_ITEM_SIZE;
+
+		draw_pixmap_direct_mode(folder_xpm, x,y, DESKTOP_ITEM_SIZE, DESKTOP_ITEM_SIZE, 0, false);
+		print_horizontal_word_len(desktop_entries[i], DESKTOP_CHAR_NUM, x, y + DESKTOP_ITEM_SIZE-FONT_HEIGHT, (i == selected_entry ? 0xFF : 0xFFFFFFFF));
+	}
+}
+
+void check_pressed_desktop_entry(){
+
+	for(unsigned i = 0; i < drawable_entries; i++){
+		uint32_t x = (i/vertical_draws)*DESKTOP_ITEM_SIZE;
+		uint32_t y = wnd_list.taskbar.height+(i%vertical_draws)*DESKTOP_ITEM_SIZE;
+		if(mouse_over_coords(x,y, x+DESKTOP_ITEM_SIZE, y+DESKTOP_ITEM_SIZE)){
+			selected_entry = i;
+			return;
+		}
+	}
+	selected_entry = 0xFFFFFFFF;
+}
+
+void trade_desktop_entries(){
+	/* dont do nothing if mouse is not in desktop area */
+	if(wnd_list.cursor.y < wnd_list.taskbar.height)
+		return;
+
+	uint32_t i = wnd_list.cursor.x/DESKTOP_ITEM_SIZE*vertical_draws + (wnd_list.cursor.y - wnd_list.taskbar.height)/DESKTOP_ITEM_SIZE;
+	/* Ignore drops outside the available ones */
+	if(i >= num_entries || i == selected_entry){
+		selected_entry = 0xFFFFFFFF;
+		return;
+	}
+
+	char *tmp = desktop_entries[selected_entry];
+	desktop_entries[selected_entry] = desktop_entries[i];
+	desktop_entries[i] = tmp;
+	selected_entry = 0xFFFFFFFF;
+
+}
+
 
 int init_internal_status(){
 
@@ -82,6 +175,9 @@ int init_internal_status(){
     wnd_list.bckg_height = img.height;
     wnd_list.bckg_image = true;
 
+	memset(desktop_entries, 0, 512*sizeof(char*));
+	init_desktop_entries();
+    folder_xpm = xpm_load(folder, XPM_8_8_8_8, &img);
     return 0;
 
 }
@@ -172,6 +268,7 @@ void window_scroll_handle(int8_t scroll){
 		cur_el = cur_el->next;
 	}
 }
+
 
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp){
     Element *cur_el = wnd->elements;
@@ -481,6 +578,7 @@ void window_draw(){
             draw_background(wnd_list.background_sprite, CHOCO_TAB_WIDTH, CHOCO_TAB_HEIGHT);
         else
             clear_buffer_four(wnd_list.bckg_color);
+		draw_dekstop_entries();
     }
 
     Window *cur_wnd = wnd_list.last;
@@ -922,8 +1020,12 @@ void window_mouse_handle(const struct packet *pp){
     static bool is_moving_window = false;
     static Window *moving_window = NULL;
 	static Window *pressed = NULL;
+	static bool should_trade = false;
 
     if( state & L_PRESSED ){
+		uint32_t old_selected_entry = selected_entry;
+		selected_entry = 0xFFFFFFFF;
+		should_trade = false;
 
         if(wnd_list.taskbar.menu.b_pressed){
            if(call_entry_callback(wnd_list.taskbar.menu.context, 0, wnd_list.taskbar.height)){
@@ -1008,42 +1110,61 @@ void window_mouse_handle(const struct packet *pp){
             /* If the desktop was pressed then deselect all elements of the first window */
             if(!window_pressed){
                 element_deselect_all(wnd_list.first);
+				check_pressed_desktop_entry();
+
+				/*Check double click*/
+				if(old_selected_entry != 0xFFFFFFFF && old_selected_entry == selected_entry){
+					char path[255] = "/home/lcom/";
+					strcat(path, desktop_entries[selected_entry]);
+					create_file_browser_special(path);
+				}
             }
 
         }
         else{
 
-            /* Left button is being helf, thus continue to move a window */
+            /* Left button is being held, thus continue to move a window */
 			if(is_moving_window){
                 move_window(moving_window, pp);
                 return;
             }
             /* moving scroll bar probably */
             else{
-                if(wnd_list.first)
+				/*restore*/
+				selected_entry = old_selected_entry;
+
+				if(selected_entry != 0xFFFFFFF){
+					should_trade = true;
+				}
+				else if(wnd_list.first)
                     mouse_element_interaction(wnd_list.first, false, pp);
             }
         }
     }
 	else{
 
-		if(pressed != NULL){
-			if(pressed->minimized == false){
-				if(pressed == wnd_list.first)
-					pressed->minimized = true;
+        if( !(state & L_KEPT) ){
+			if(pressed != NULL){
+				if(pressed->minimized == false){
+					if(pressed == wnd_list.first)
+						pressed->minimized = true;
+					else{
+						element_deselect_all(wnd_list.first);
+						move_to_front(pressed);
+					}
+				}
 				else{
 					element_deselect_all(wnd_list.first);
+					pressed->minimized = false;
 					move_to_front(pressed);
 				}
-			}
-			else{
-				element_deselect_all(wnd_list.first);
-				pressed->minimized = false;
-				move_to_front(pressed);
-			}
-			pressed = NULL;
+				pressed = NULL;
 
-		} 
+			} 
+			else if(selected_entry != 0xFFFFFFFF && should_trade == true){
+				trade_desktop_entries();
+			}
+		}
 	}
 
 

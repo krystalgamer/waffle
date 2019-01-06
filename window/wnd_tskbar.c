@@ -51,7 +51,6 @@ void draw_taskbar(){
     print_horizontal_word(wnd_list.taskbar.menu.b_text, wnd_list.taskbar.menu.b_width/2 - strlen(wnd_list.taskbar.menu.b_text)*FONT_WIDTH/2, 0, 0);
 
     /* Draw the windows */
-    /* TODO remove manual pad */
     uint32_t window_tskbar_pad = 20;
     uint32_t default_window_tskbar_width = (get_x_res() - (wnd_list.taskbar.menu.b_width - wnd_list.taskbar.clock.width) - window_tskbar_pad*MAX_NUM_WINDOWS)/MAX_NUM_WINDOWS;
 
