@@ -82,10 +82,12 @@ void screensaver_draw() {
 
     bool objects_collided = false;
 
+    uint32_t i =0;
     // TODO FIX WHEN MORE THAN 2 OBJECTS COLLIDE
     
     /* Update positions until objects do not collide */
     do {
+	    i++;
         objects_collided = false;
         for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
             ScreensaverEle * scr_ele = screensaver_elements[i];
@@ -159,7 +161,7 @@ void screensaver_draw() {
             }
 
         }
-    } while (objects_collided);
+    } while (objects_collided && i <  30);
 
     /* Draw all screensaver elements */
     for (int i = 0; i < SCREENSAVER_NUMBER_OF_ELEMENTS; i++) {
@@ -174,9 +176,13 @@ void screensaver_draw() {
 }
 
 void fix_position(ScreensaverEle * ele) {   
+    if(ele == NULL)
+        return;
     ScreensaverEle * collidingEle = check_collision_at_position(ele, ele->next_x, ele->next_y);
 
+    uint32_t i = 0;
     do {
+        i++;
         ele->next_x += ele->x_move;
         ele->next_y += ele->y_move;
 
@@ -210,7 +216,7 @@ void fix_position(ScreensaverEle * ele) {
 
         collidingEle = check_collision_at_position(ele, ele->next_x, ele->next_y);
 
-    } while(collidingEle != NULL);
+    } while(collidingEle != NULL && i <30);
 
 }
 
