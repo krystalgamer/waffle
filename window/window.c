@@ -469,7 +469,7 @@ bool is_window_focused(const Window *wnd){
 
 /**
  * @addtogroup window
- * {@
+ * @{
  */
 /**
  * @brief adds  window to window list

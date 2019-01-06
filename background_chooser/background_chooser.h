@@ -1,6 +1,6 @@
 /**
  * @defgroup background_chooser background_chooser module
- * Contains all the notepad code
+ * Contains all the background code
  * @{
  */
 

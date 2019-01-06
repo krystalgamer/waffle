@@ -637,7 +637,6 @@ int ser_fill_rcv_fifo(){
 			return SER_READ_REG_ERR;
 		}
 
-		printf("%x recebi\n", receiver_buff);
         rcv_buf[rcv_index] = receiver_buff;
         if(rcv_index == 11){
            if(handler){

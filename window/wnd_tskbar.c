@@ -9,6 +9,7 @@
 #include "../login/login.h"
 #include "../calculator/calculator.h"
 #include "../font/letters.h"
+#include "../guess_painter/guess_painter.h"
 #include "interrupts/rtc.h"
 #include "vbe.h"
 #include "context_menu.h"
@@ -152,6 +153,7 @@ void init_taskbar_menu(){
     add_context_menu_entry(menu, "Multiplayer", false, NULL);
     add_context_menu_entry(menu, "Painter", true, (void*)create_painter);
     add_context_menu_entry(menu, "Calculator", true, (void*)create_calculator);
+    add_context_menu_entry(menu, "Guess paint", true, (void*)create_guess_painter);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 
     ContextMenu *settings_sub = create_context_menu(5);

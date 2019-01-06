@@ -299,6 +299,11 @@ bool ser_set_handler(void *hand, void *el, void *wnd);
 #define SERIAL_HELLO_RESPONSE 747
 #define SERIAL_GOODBYE 748
 
+#define SERIAL_GUESS_DRAW 749
+#define SLIDER_GUESS_SERIAL 750
+#define SERIAL_GUESS_HELLO 751
+#define SERIAL_HELLO_GUESS_RESPONSE 752
+#define SERIAL_GUESS_GOODBYE 753
 #define FIFO_END_OF_MSG -1
 
 /** @} */

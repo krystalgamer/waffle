@@ -106,9 +106,13 @@ typedef struct _element{
 /** @} */
 
 /**
- * @defgroup window window module
- * Contains all window code
+ * @defgroup window penis com sasbor module
+ * All windows are here
  * @{
+ */
+
+/**
+ * @brief The window structure
  */
 typedef struct _window{
     uint32_t id; /**< id of the window */
@@ -160,8 +164,9 @@ typedef struct _context_menu{
 }ContextMenu;
 /** @} */
 
-/** @addtogroup window
- *  @{
+/** 
+ * @addtogroup window
+ * @{
  */
 /**
  * @brief Manages all windows
@@ -369,6 +374,11 @@ int draw_taskbar_clock();
 Window *pressed_window_taskbar();
 
 /** @} */
+
+/**
+ * @addtogroup window
+ * @{
+ */
 
 /**
  * @brief Modifies text of textbox
