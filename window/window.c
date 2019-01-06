@@ -1098,8 +1098,10 @@ void window_mouse_handle(const struct packet *pp){
                         /* Dont need to check for window_pressed here since it already handles the deselection
                          * of elements*/
                         
-                        if(pressed_three_buttons(cur_wnd))
+                        if(pressed_three_buttons(cur_wnd)){
+							move_to_front(cur_wnd);
                             return;
+						}
 
                         moving_window = cur_wnd;
 
