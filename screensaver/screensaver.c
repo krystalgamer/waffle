@@ -92,10 +92,10 @@ int initialize_screensaver() {
     //add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
     add_element_to_screensaver(500, 200, EGG_XPM_WIDTH, EGG_XPM_HEIGHT, egg, EGG_N_FRAMES);
     screensaver_elements[0]->x_move = -22;
-    screensaver_elements[0]->x_move = 21;
+    screensaver_elements[0]->y_move = 21;
     add_element_to_screensaver(690, 200, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
     screensaver_elements[1]->x_move = 22;
-    screensaver_elements[1]->x_move = -21;
+    screensaver_elements[1]->y_move = -21;
     //add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
     //add_element_to_screensaver(1000, 0, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
 
