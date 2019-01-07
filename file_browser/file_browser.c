@@ -6,6 +6,7 @@
 #include "../font/font.h"
 #include "interrupts/serial_port.h"
 #include "com_protocol.h"
+#include "../image_render/image_render.h"
 #include "vbe.h"
 
 extern WindowList wnd_list;
@@ -105,8 +106,10 @@ void create_file_browser_special(char *cwd){
 
 	struct stat path_stat;
 	stat(cwd, &path_stat);
-	if(!(S_ISDIR(path_stat.st_mode)))
-		return;
+	if(!(S_ISDIR(path_stat.st_mode))){
+        create_image_render(cwd);
+        return;
+    }
 
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x00B86B77, "File browser", &file_browser_input_handler);
 
@@ -210,6 +213,7 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
             struct stat path_stat;
             stat(cwd, &path_stat);
             if(!(S_ISDIR(path_stat.st_mode))){
+                create_image_render(cwd);
                 /*Not a directory*/
                 cwd[before_index] = 0;
                 find_by_id(wnd, "homie")->attr.text.active = true;

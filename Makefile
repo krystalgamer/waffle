@@ -44,6 +44,9 @@ SRCS += guess_painter.c
 .PATH: ${.CURDIR}/example
 SRCS += example.c
 
+.PATH: ${.CURDIR}/image_render
+SRCS += image_render.c
+
 CPPFLAGS += -pedantic -D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}

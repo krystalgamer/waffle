@@ -1,6 +1,6 @@
 /**
  * @defgroup login login module
- * Contains all the file multiplayer painter code
+ * Contains all the login code
  * @{
  */
 
