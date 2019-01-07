@@ -83,13 +83,6 @@ ScreensaverEle * check_collision_at_new_position(ScreensaverEle * ele);
  */
 bool pixel_collides(ScreensaverEle * element, int16_t pixel_x, int16_t pixel_y);
 
-/**
- * @brief Updates an object position until it no longer collides with anything
- *
- * @param ele Screensaver element to fix position
- */
-void fix_position(ScreensaverEle * ele);
-
 /** @} */
 
 #endif

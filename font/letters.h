@@ -74,6 +74,7 @@ int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, 
  * @return Return 0 upon success and non-zero otherwise
  */
 int print_vertical_word_len(char * word, uint32_t len, uint16_t x, uint16_t y, uint32_t color);
+
 /** @} */
 
 #endif

@@ -10,7 +10,6 @@
  * @{
  */
 
-
 /**
  * @brief Element of the queue, with a pointer to the next element and a pointer to the stored value
  */
@@ -20,7 +19,7 @@ typedef struct _queue_ele {
 } queue_ele;
 
 /**
- * @brief Object to store the front of the queue
+ * @brief Queue object
  */
 typedef struct	{
 	queue_ele *front;

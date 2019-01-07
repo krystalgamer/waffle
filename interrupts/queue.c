@@ -7,11 +7,13 @@ queue *init_queue(){
 }
 
 queue_ele *new_ele(char val){
-	char *content;
 	queue_ele *new = (queue_ele *)malloc(sizeof(queue_ele));
-	new->next = NULL;
+
+	char *content;
 	content = (char *)malloc(sizeof(val));
 	*content = val;
+
+	new->next = NULL;
 	new->val = content;
 
 	return new;
@@ -29,7 +31,7 @@ int queue_push(queue *q, char val){
 	/* Create new node */
 	queue_ele *new = new_ele(val);
 
-	/* Handle when f is empty */
+	/* Handle when q is empty */
 	if(is_queue_empty(q))
 		q->front = new;
 
@@ -45,6 +47,7 @@ int queue_push(queue *q, char val){
 }
 
 int queue_pop(queue *q){
+
 	/* Check null pointers */
 	if (q == NULL || q->front == NULL)
 		return 1;
@@ -52,6 +55,9 @@ int queue_pop(queue *q){
 	/* Remove the element at front */
 	queue_ele *temp = q->front;
 	q->front = q->front->next;
+
+	/* Free allocated memory */
+	free(temp->val);
 	free(temp);
 	return 0;
 }
@@ -67,20 +73,17 @@ char queue_top(queue *q){
 
 int del_queue(queue *q){
 
-	/* Queue already empty */
-	if(q == NULL) return 1;
+	/* Empty the queue */
+	empty_queue(q);
 
-	/* Pop all elements */
-	while(!is_queue_empty(q))
-		queue_pop(q);
-
-	/* Point queue to NULL */
-	q = NULL;
+	/* Free memory allocated for the queue */
+	free(q);
 
 	return 0;
 }
 
 int empty_queue(queue *q) {
+
 	/* Queue already empty */
 	if(q == NULL) return 1;
 

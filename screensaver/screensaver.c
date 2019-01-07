@@ -273,50 +273,6 @@ void screensaver_draw() {
     }
 }
 
-void fix_position(ScreensaverEle * ele) {   
-    if(ele == NULL)
-        return;
-    ScreensaverEle * collidingEle = check_collision_at_new_position(ele);
-
-    uint32_t i = 0;
-    do {
-        i++;
-        ele->next_x += ele->x_move;
-        ele->next_y += ele->y_move;
-
-        if (ele->next_x < 0 || (ele->next_x - ele->width) > get_x_res() || ele->next_y < 0 || (ele->next_y - ele->height) > get_y_res()) {
-            printf("fixing collider\n");
-            fix_position(collidingEle);
-            printf("Fixed\n");
-        }
-
-/*
-        if (ele->next_x < 0) {
-            ele->next_x = 0;
-            collidingEle->next_x += (ele->x_move * -1);
-        }
-
-        if ((ele->next_x - ele->width) > get_x_res()) {
-            ele->next_x = get_x_res() - ele->width;
-            collidingEle->next_x += (ele->x_move * -1);
-        }
-
-        if (ele->next_y < 0) {
-            ele->next_y = 0;
-            collidingEle->next_y += (ele->y_move * -1);
-        }
-
-        if ((ele->next_y - ele->height) > get_y_res()) {
-            ele->next_y = get_y_res() - ele->height;
-            collidingEle->next_y += (ele->y_move * -1);
-        }
-        */
-
-        collidingEle = check_collision_at_new_position(ele);
-
-    } while(collidingEle != NULL && i <30);
-
-}
 
 int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_sprites) {
 

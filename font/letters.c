@@ -32,7 +32,6 @@ int init_letters() {
         }
     }
 
-    /*switcharoo que o mario se enganou*/
     char tmp[FONT_WIDTH*FONT_HEIGHT*4];
     memcpy(tmp, &font_sprites[('.'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
 
