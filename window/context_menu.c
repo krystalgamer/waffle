@@ -168,7 +168,7 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
     /* Verifies if anything is being pressed */
     ContextMenu *cur_menu = menu;
     while(cur_menu->active_sub){
-        x += (menu->longer_entry + 5)*FONT_WIDTH + CONTEXT_EXTRA_SPACE;
+        x += (cur_menu->longer_entry + 5)*FONT_WIDTH + CONTEXT_EXTRA_SPACE;
         y += get_entry_id_by_ptr(cur_menu, cur_menu->active_sub)*(FONT_HEIGHT + CONTEXT_OPTION_HEIGHT);
         cur_menu = cur_menu->active_sub;
     }

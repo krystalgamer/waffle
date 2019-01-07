@@ -146,37 +146,40 @@ void init_taskbar_menu(){
         return;
 
     ContextMenu *menu = wnd_list.taskbar.menu.context;
-    add_context_menu_entry(menu, "Applications", true, (void*)create_random_window);
+    add_context_menu_entry(menu, "Random application", true, (void*)create_random_window);
     add_context_menu_entry(menu, "Notepad", true, (void*)create_terminus);
-    add_context_menu_entry(menu, "Login", true, (void*)create_login);
     add_context_menu_entry(menu, "File Browser", true, (void*)create_file_browser);
     add_context_menu_entry(menu, "Settings", false, NULL);
-    add_context_menu_entry(menu, "System Information", true, (void*)create_system_info);
-    add_context_menu_entry(menu, "Multiplayer", false, NULL);
-    add_context_menu_entry(menu, "Painter", true, (void*)create_painter);
+    add_context_menu_entry(menu, "Entertainment", false, NULL);
+
+
     add_context_menu_entry(menu, "Calculator", true, (void*)create_calculator);
-    add_context_menu_entry(menu, "Guess paint", true, (void*)create_guess_painter);
-    add_context_menu_entry(menu, "Example app", true, (void*)create_example_application);
-    add_context_menu_entry(menu, "Chat", true, (void*)create_chatter);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 
     ContextMenu *settings_sub = create_context_menu(5);
     if(settings_sub == NULL)
         return;
-
-    
     add_context_menu_entry(settings_sub, "Desktop Background", true, (void*)create_background_chooser);
-    add_context_menu_entry(settings_sub, "System", true, NULL);
-    add_context_menu_entry(settings_sub, "Startup", true, NULL);
-    add_context_menu_entry(settings_sub, "Data Server", true, NULL);
-
+    add_context_menu_entry(settings_sub, "System Information", true, (void*)create_system_info);
     ContextEntries *settings = get_entry_by_name(menu, "Settings");
     set_sub_menu(settings, settings_sub);
+
+    ContextMenu *entertainment_sub = create_context_menu(5);
+    if(entertainment_sub == NULL)
+        return;
+    add_context_menu_entry(entertainment_sub, "Painter", true, (void*)create_painter);
+    add_context_menu_entry(entertainment_sub, "Login", true, (void*)create_login);
+    add_context_menu_entry(entertainment_sub, "Example app", true, (void*)create_example_application);
+    add_context_menu_entry(entertainment_sub, "Multiplayer", false, NULL);
+    ContextEntries *entertainment = get_entry_by_name(menu, "Entertainment");
+    set_sub_menu(entertainment, entertainment_sub);
 
     ContextMenu *multiplayer_sub = create_context_menu(5);
     if(multiplayer_sub == NULL)
         return;
 
-    add_context_menu_entry(multiplayer_sub, "Painter", true, (void*)create_multi_painter);
-    set_sub_menu(get_entry_by_name(menu, "Multiplayer"), multiplayer_sub); 
+    add_context_menu_entry(multiplayer_sub, "Multi Painter", true, (void*)create_multi_painter);
+    add_context_menu_entry(multiplayer_sub, "Guess Painter", true, (void*)create_guess_painter);
+    add_context_menu_entry(multiplayer_sub, "Chat", true, (void*)create_chatter);
+    set_sub_menu(get_entry_by_name(entertainment_sub, "Multiplayer"), multiplayer_sub); 
 }

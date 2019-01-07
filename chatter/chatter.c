@@ -42,7 +42,6 @@ void create_chatter(){
 }
 
 bool chatter_input_handle(Element *el, unsigned type, void *data, Window *wnd){
-    printf("", el, type, data, wnd);
 
     if(type == KEYBOARD){
         kbd_msg *msg = data;
