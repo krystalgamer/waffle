@@ -678,7 +678,7 @@ void delete_window(Window *wnd){
 
             /* Assertion to guarantee good development */
             if(wnd_list.last != wnd){
-                printf("Real shit homie, you fucked up\n");
+                printf("Error 1 in delete_window\n");
                 return;
             }
             /* No elements */
@@ -686,7 +686,7 @@ void delete_window(Window *wnd){
             goto removal;
         }
         else if(wnd_list.last == wnd){
-            printf("Rip in pieces, your code is broken homie\n");
+            printf("Error 2 in delete_window\n");
             return;
         }
 
@@ -704,7 +704,7 @@ void delete_window(Window *wnd){
     }
 
     if(wnd->prev == NULL || wnd->next == NULL){
-        printf("Homie you just sent me an orphan window, kys faggot\n"); 
+        printf("Error 3 in delete_window\n"); 
         return;
     }
 

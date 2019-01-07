@@ -113,5 +113,7 @@ typedef enum _kbc_status {
  * @return number of available to be read
  */
 uint32_t opcode_available(uint8_t *scancodes);
+
 /** @} */
+
 #endif

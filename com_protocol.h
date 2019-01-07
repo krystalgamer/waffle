@@ -34,6 +34,10 @@ typedef enum _valid_msg {
 	PWD
 } valid_msg;
 
+/*
+ * Enumeration that contains possible error codes
+ * for the functions to ease development and debugging
+ */
 typedef enum _cp_status {
 	CP_OK = OK,
 

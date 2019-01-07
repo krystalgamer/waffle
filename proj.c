@@ -45,12 +45,13 @@ int (proj_main_loop)(int argc, char *argv[]) {
     sys_enable_iop(SELF);
     /* Suprimir warnings */
     if(argc == 69 && argv != NULL)
-        printf("yee\n");
+        printf("Started\n");
 
     /* Initialize graphics mode */
 
     srand(time(NULL));
 
+    /* Initialize video mode */
     if(vg_init(R1152x864_DIRECT) == NULL){
         printf("(%s) vg_init failed..quitting\n", __func__);
         return 1;
@@ -87,8 +88,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     uint32_t mouse_irq_set = BIT(bitNum);
 
 
+    /* Enable data reporting on the mouse*/
     mouse_enable_dr();
-	/* Activates scroll wheel */
+
+	/* Activate the scroll wheel */
 	set_scroll();
 
     /* Subscribe Keyboard Interrupts */
@@ -128,13 +131,14 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int maxFrames = 2;
     int curFrame = 1;
 
+    /* Initialize the internal status of the windows */
     if (init_internal_status() != OK) {
         printf("(%s) error initializing internal status\n");
         vg_exit();
         return 1;
     }
 
-
+    /* Subscribe RTC Interrupts */
     uint32_t idle_time = 0; // time in interrupts
     if(rtc_subscribe_int(&bitNum) != OK){
         printf("Goddamit i could not enable interrupts for the rtc\n");
@@ -142,6 +146,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
     uint32_t rtc_irq_set = BIT(bitNum);
 
+    /* Enable RTC Update interrupts */
     rtc_enable_update_int();
     rtc_int_handle_asm();
 

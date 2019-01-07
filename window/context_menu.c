@@ -36,7 +36,7 @@ bool add_context_menu_entry(ContextMenu *menu, const char *text, bool is_callbac
 
     menu->entries[size] = alloc_struct(sizeof(ContextEntries));
     if(menu->entries[size] == NULL){
-        printf("Could not allocate memory for this menu, I'm done I'm gonna kms James\n");
+        printf("Could not allocate memory for this menu\n");
         return false;
     }
 
@@ -72,13 +72,13 @@ void draw_context_menu(ContextMenu *menu, uint32_t x, uint32_t y){
         return;
 
     if(menu->longer_entry == 0){
-        printf("Alguem se esqueceu de aumentar a longer entry\n");
+        printf("Forgot to increase longer entry\n");
         return;
     }
 
     /* TODO allow context menu rendering to the left */
     if((menu->longer_entry*FONT_WIDTH + CONTEXT_EXTRA_SPACE + x) > get_x_res()){
-        printf("NAO CONSIGO DESENHAR PARA A ESQUERDA OK?\n");
+        printf("Can not draw to the left\n");
         return;
     }
 

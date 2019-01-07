@@ -335,7 +335,6 @@ uint8_t ser_read_ack() {
 		/* If read value is recognized, return it */
 		if (temp == CP_ACK || temp == CP_NACK) return temp;
 
-        printf("LOL %d\n", temp);
 		/* Read value is not recognized */
 		return CP_ERROR;
 
@@ -409,7 +408,6 @@ uint8_t ser_msg_status() {
 		/* Valid header */
 		if (rbr_content == CP_HEADER) {
 
-            printf("INICIO\n");
 			current_msg[0] = rbr_content;
 			curr_msg_size++;
 			return CP_MSG_NOT_READY;
@@ -423,7 +421,6 @@ uint8_t ser_msg_status() {
 
 	/* Second byte of msg */
 	else if (curr_msg_size == 1) {
-        printf("MEIO %d\n", rbr_content);
 		current_msg[1] = rbr_content;
 		curr_msg_size++;
 		return CP_MSG_NOT_READY;
@@ -432,7 +429,6 @@ uint8_t ser_msg_status() {
 
 	/* Third byte of msg */
 	else if (curr_msg_size == 2) {
-        printf("FIM\n");
 
 		/* Valid trailer */
 		if (rbr_content == CP_TRAILER) {
@@ -485,7 +481,6 @@ void ser_handle_data_interrupt_msg_ht() {
 
 	if (msg_status == CP_MSG_READY) {
 		//ser_write_char(CP_ACK);
-        printf("Bom dia\n");
 
 		if (current_msg[1] == LS) {
 			/* Enable fifos */
@@ -499,9 +494,7 @@ void ser_handle_data_interrupt_msg_ht() {
             //ser_write_msg_fifo(msg, sizeof(msg));
 		}
 		else if (current_msg[1] == PWD) {
-            printf("QUEIJO\n");
 		    tickdelay(micros_to_ticks(1000000));
-            printf("MANTEIGA\n");
 			/* Enable fifos */
 			if (ser_enable_fifo(CP_TRIGGER_LVL) != OK) {
 				printf("(%s) error disabling fifo\n", __func__);
