@@ -684,14 +684,11 @@ void ser_ih() {
 
 		/* Handle Line Status interrupts */
 		case IIR_LINE_STATUS_INT:
-			
-            printf("line status\n");
 			ser_handle_line_status_interrupt_msg_ht();
 			break;
 
 		/* Handle Character Timeout interrupts */
 		case IIR_CHARACTER_TIMEOUT_INT:
-			printf("timeout\n");
 			ser_fill_rcv_fifo();
 			break;
 	}

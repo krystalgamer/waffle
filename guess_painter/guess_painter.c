@@ -6,6 +6,7 @@
 
 extern WindowList wnd_list;
 
+extern uint8_t keymap[];
 /** @addtogroup multi_painter
  *  @{
  */
@@ -29,6 +30,11 @@ typedef struct slider_serial{
     uint32_t id; /**< id of the slider */
 }slider_serial;
 
+typedef struct guess_hello{
+    uint32_t word; 
+    uint32_t unused; /**< id of the slider */
+}guess_hello;
+
 /**
  * @brief Handle the input
  * @param el the input element
@@ -43,6 +49,17 @@ static bool connected = false; /**< whether the multi painter is connected */
 static bool expecting = false; /**< whether it's expecting a response */
 static bool drawing = false;
 /** @} */
+
+static char *words[] ={
+    "dog",
+    "house",
+    "banana",
+    "tree",
+    "school",
+    "japan"
+};
+static uint32_t num_words = sizeof(words)/sizeof(char*);
+static uint32_t cur_word = 0;
 
 void create_guess_painter(){
 
@@ -77,6 +94,9 @@ void create_guess_painter(){
 
     struct _text_box_attr attr = {NULL, 200/FONT_WIDTH, 0xFFFFFFFF, 0, true};
     window_add_element(wnd_id, TEXT_BOX, 150, wnd_width+50+30*3+10+5, 200, 30, &attr, "creator");
+
+    struct _text_attr word = { "test", 0, false};
+    window_add_element(wnd_id, TEXT, 150+200, wnd_width+50+30*3+10+5, 0, 0, &word, "word");
 }
 
 static void do_horizontal_brush(Element *canvas, uint32_t *pixels, uint32_t brush_size, uint32_t pos, uint32_t color){
@@ -176,8 +196,10 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
         }
     }
     else if(type == SLIDER_MSG){
-		if(connected == false || drawing == false)
+		if(connected == false || drawing == false){
+            el->attr.slider.pos = *(uint32_t*)data;
 			return false;
+        }
 
         bool color_change = true;
         uint32_t *pixels = (uint32_t*)find_by_id(wnd, "color")->attr.image.space;
@@ -320,19 +342,29 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
 		/* Not the host */
 		if(!find_by_id(wnd, "host")->attr.checkbox.enabled)
 			return false;
-		static uint8_t hello[8] = {0,0,0,0,0,0,0,0};
-        ser_write_msg_fifo((char*)hello, 8, SERIAL_HELLO_GUESS_RESPONSE);
+        cur_word = rand()%num_words;
+        guess_hello hello = {cur_word, 0};
+
+        ser_write_msg_fifo((char*)&hello, 8, SERIAL_HELLO_GUESS_RESPONSE);
 		connected = true;
 		find_by_id(wnd, "connected")->attr.text.active = true;
 		find_by_id(wnd, "red")->attr.slider.pos = 0;
 		find_by_id(wnd, "blue")->attr.slider.pos = 0;
 		find_by_id(wnd, "green")->attr.slider.pos = 0;
 		find_by_id(wnd, "brush")->attr.slider.pos = 0;
+
+        set_text(find_by_id(wnd, "word"), words[cur_word]);
+		find_by_id(wnd, "word")->attr.text.active = true;
+
 		memset(find_by_id(wnd, "color")->attr.image.space, 0, (30*2+10)*(30*2+10)*4);
 		memset(find_by_id(wnd, "canvas")->attr.canvas.space, 0xFF, (500)*(500)*4);
         drawing = true;
 	}
 	else if(type == SERIAL_HELLO_GUESS_RESPONSE){
+
+        guess_hello *hello = data;
+        cur_word = hello->word;
+
 		connected = expecting;
 		find_by_id(wnd, "connected")->attr.text.active = connected;
 		find_by_id(wnd, "red")->attr.slider.pos = 0;
@@ -348,38 +380,58 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
 		expecting = false;
         drawing = false;
 		find_by_id(wnd, "connected")->attr.text.active = false;
+		find_by_id(wnd, "word")->attr.text.active = false;
 	}
 	else if(type == MAXIMIZE_MSG){
 		wnd->maximized = false;
 		return  true;
 	}
+    else if(type == SERIAL_CORRECT_GUESS){
+        guess_hello *hello = data;
+        cur_word = hello->word;
+        find_by_id(wnd, "word")->attr.text.active = false;
+        drawing = false; 
+        memset(find_by_id(wnd, "canvas")->attr.canvas.space, 0xFF, (500)*(500)*4);
+    }
     else if(type == KEYBOARD){
+        if(drawing)
+            return true;
         kbd_msg *msg = data;
         if(msg->num != 1)
             return true;
         /* Ignore breakcodes */
-        if(scancode[0] >> 7)
+        if(msg->scancode[0] >> 7)
             return true;
 
-        uint8_t cur = keymap[scancode[0]];
-        uint32_t len = strlen(element->attr.text_box.text);
+        uint8_t cur = keymap[msg->scancode[0]];
+        uint32_t len = strlen(el->attr.text_box.text);
         /* Backspace was pressed */
         if(cur == 255){
             if(!len) return true;
 
-            element->attr.text_box.text[--len] = 0;
+            el->attr.text_box.text[--len] = 0;
             return true;
         }
         /* Enter was pressed*/
-        else if(cur == 254) return;
-
-        char *text = element->attr.text_box.text; 
+        else if(cur == 254){
+            if(!strcmp(el->attr.text_box.text, words[cur_word])){
+                cur_word = rand()%num_words;
+                set_text(find_by_id(wnd, "word"), words[cur_word]);
+                find_by_id(wnd, "word")->attr.text.active = true;
+                guess_hello hello = {cur_word, 0};
+                ser_write_msg_fifo((char*)&hello, 8, SERIAL_CORRECT_GUESS);
+                memset(find_by_id(wnd, "canvas")->attr.canvas.space, 0xFF, (500)*(500)*4);
+                drawing = true;
+            }
+            memset(el->attr.text_box.text, 0, el->attr.text_box.text_size);
+            return true;
+        }
 
         /* Dont write more than necessary */
-        if(len >= element->attr.text_box.text_size-1)
+        if(len >= el->attr.text_box.text_size-1)
             return true;
 
-        element->attr.text_box.text[len++] = cur;
+        el->attr.text_box.text[len++] = cur;
         return true;
     }
 

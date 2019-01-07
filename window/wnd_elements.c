@@ -239,7 +239,6 @@ static void draw_radio_button(const Window *wnd, const Element *element){
 }
 
 static void draw_text(const Window *wnd, const Element *element){
-    /* TODO DONT MAKE THIS HERE */
 
     if(!element->attr.text.active)
         return;

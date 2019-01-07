@@ -352,7 +352,7 @@ void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *p
             /* Slider was moved */
             if(selected->attr.slider.pos != old_pos){
                 if(wnd->handler)
-                    wnd->handler(selected, SLIDER_MSG, NULL, wnd);
+                    wnd->handler(selected, SLIDER_MSG, &old_pos, wnd);
             }
         }
 
