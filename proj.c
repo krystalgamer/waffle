@@ -133,7 +133,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     /* Initialize the internal status of the windows */
     if (init_internal_status() != OK) {
-        printf("(%s) error initializing internal status\n");
+        printf("(%s) error initializing internal status\n", __func__);
         vg_exit();
         return 1;
     }

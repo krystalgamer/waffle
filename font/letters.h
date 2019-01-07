@@ -51,7 +51,7 @@ int print_horizontal_word(char * word, uint16_t x, uint16_t y, uint32_t color);
 int print_vertical_word(char * word, uint16_t x, uint16_t y, uint32_t color);
 
 /**
- * @brief Prints a word to the screen vertically
+ * @brief Prints a word to the screen horizontally
  *
  * @param word Array of characters to print on screen
  * @param len the number of characters to draw
@@ -63,6 +63,17 @@ int print_vertical_word(char * word, uint16_t x, uint16_t y, uint32_t color);
 int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, uint32_t color);
 
 
+/**
+ * @brief Prints a word to the screen vertically
+ *
+ * @param word Array of characters to print on screen
+ * @param len the number of characters to draw
+ * @param x X position of upper left corner
+ * @param y Y position of upper left corner 
+ * @param color to draw word
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int print_vertical_word_len(char * word, uint32_t len, uint16_t x, uint16_t y, uint32_t color);
 /** @} */
 
 #endif

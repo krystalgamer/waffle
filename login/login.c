@@ -4,6 +4,7 @@
 
 extern WindowList wnd_list;
 extern uint16_t window_frame_height;
+extern uint8_t keymap[];
 
 /** @addtogroup login
  *  @{
@@ -31,31 +32,33 @@ unsigned create_login(){
 
     struct _text_box_attr attr = {NULL, num_chars, 0xFFFFFFFF, 0, true};
     window_add_element(wnd_id, TEXT_BOX, 400/2 - button_width/2, 100, button_width, 30, &attr, "login");
-    struct _text_attr attr_b = {"Login", 0, true};
+    struct _text_attr attr_b = {"Login", 0, true, false};
     window_add_element(wnd_id, TEXT, 400/2 - button_width/2, 70, button_width, 30, &attr_b, NULL);
 
     struct _text_box_attr attr_a = {NULL, num_chars, 0xFFFFFFFF, 0, true};
     window_add_element(wnd_id, TEXT_BOX, 400/2 - button_width/2, 200, button_width, 30, &attr_a, "password");
-    struct _text_attr attr_c = {"Password", 0, true};
+    struct _text_attr attr_c = {"Password", 0, true, false};
     window_add_element(wnd_id, TEXT, 400/2 - button_width/2, 170, button_width, 30, &attr_c, NULL);
 
-    static struct _text_attr attr_d = {"Successful!", 0x0000ff00, false};
-    static struct _text_attr attr_e = {"Failed!", 0x00ff0000, false};
+    static struct _text_attr attr_d = {"Successful!", 0x0000ff00, false, false};
+    static struct _text_attr attr_e = {"Failed!", 0x00ff0000, false, false};
 
     window_add_element(wnd_id, TEXT, 200 - strlen(attr_d.text)/2 *FONT_WIDTH , 250, 0, FONT_HEIGHT, &attr_d, "correct");
     window_add_element(wnd_id, TEXT, 200 - strlen(attr_e.text)/2 * FONT_WIDTH , 250, 0, FONT_HEIGHT, &attr_e, "failed");
+    char *text = malloc(num_chars);
+    memset(text, 0, num_chars);
+    window_add_element(wnd_id, DATA, 0,0,0,0, &text, "real_password");
     return wnd_id;
 }
 
 bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 
-    printf("", el, type, data, wnd);
     if(type == MAXIMIZE_MSG){
         wnd->maximized = false;
         return true;
     }
     else if(type == BUTTON_MSG){
-        if(!strcmp(find_by_id(wnd, "login")->attr.text_box.text, "manel") && !strcmp(find_by_id(wnd, "password")->attr.text_box.text, "password")){
+        if(!strcmp(find_by_id(wnd, "login")->attr.text_box.text, "manel") && !strcmp(find_by_id(wnd, "real_password")->attr.data.space, "password")){
             find_by_id(wnd, "correct")->attr.text.active = true;
             find_by_id(wnd, "failed")->attr.text.active = false;
         }
@@ -64,5 +67,43 @@ bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd){
             find_by_id(wnd, "failed")->attr.text.active = true;
         }
     }
+    else if(type == KEYBOARD){
+
+        if(!strcmp(el->identifier, "login"))
+            return false;
+        kbd_msg *msg = data;
+        if(msg->num != 1)
+            return true;
+        /* Ignore breakcodes */
+        if(msg->scancode[0] >> 7)
+            return true;
+
+        uint8_t cur = keymap[msg->scancode[0]];
+        uint32_t len = strlen(el->attr.text_box.text);
+        /* Backspace was pressed */
+        if(cur == 255){
+            if(!len) return true;
+
+            char *password = find_by_id(wnd, "real_password")->attr.data.space;
+            el->attr.text_box.text[--len] = 0;
+            password[len] = 0;
+            return true;
+        }
+        /* Enter was pressed*/
+        else if(cur == 254)
+            return true;
+        
+
+        /* Dont write more than necessary */
+        if(len >= el->attr.text_box.text_size-1)
+            return true;
+
+        char *password = find_by_id(wnd, "real_password")->attr.data.space;
+        password[len] = cur;
+        el->attr.text_box.text[len++] = '*';
+        return true;
+    }
+    else if(type == FREE_MSG)
+        free(find_by_id(wnd, "real_password")->attr.data.space);
     return false;
 }

@@ -89,13 +89,13 @@ void create_guess_painter(){
     struct _button_attr button = {"Connect", 0x007A7A7A, 0x005A5A5A};
     window_add_element(wnd_id, BUTTON, 200, wnd_width+20, 100, FONT_HEIGHT, &button, NULL);
 
-    struct _text_attr text = { "Connected", 0, false};
+    struct _text_attr text = { "Connected", 0, false, false};
     window_add_element(wnd_id, TEXT, 350, wnd_width+20, 0, 0, (void*)&text, "connected");
 
     struct _text_box_attr attr = {NULL, 200/FONT_WIDTH, 0xFFFFFFFF, 0, true};
     window_add_element(wnd_id, TEXT_BOX, 150, wnd_width+50+30*3+10+5, 200, 30, &attr, "creator");
 
-    struct _text_attr word = { "test", 0, false};
+    struct _text_attr word = { "test", 0, false, false};
     window_add_element(wnd_id, TEXT, 150+200, wnd_width+50+30*3+10+5, 0, 0, &word, "word");
 }
 
@@ -145,7 +145,6 @@ static void paint_with_brush(Element *canvas, uint32_t brush_size, uint32_t x, u
 }
 
 bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
-    printf("", el, type, data, wnd);
 
     if(type == CANVAS_MSG){
 		if(connected == false || drawing == false)

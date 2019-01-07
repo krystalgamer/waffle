@@ -159,7 +159,6 @@ static void draw_button(const Window *wnd, const Element *element){
 }
 
 static void draw_slider(const Window *wnd, const Element *element){
-    printf("", wnd, element);
 
     pj_draw_hline(wnd->x + element->x, wnd->y+element->y+element->height/2, element->width, 0);
     pj_draw_rectangle(wnd->x + element->x + element->attr.slider.pos, wnd->y+element->y, SLIDER_WIDTH, element->height,  0xFFFFFFFF);
@@ -242,9 +241,16 @@ static void draw_text(const Window *wnd, const Element *element){
 
     if(!element->attr.text.active)
         return;
-    uint32_t num_chars = (wnd->width-element->x)/FONT_WIDTH;
+    uint32_t num_chars = 0;
+    if(element->attr.text.vertical)
+        num_chars = (wnd->width-element->y)/FONT_HEIGHT;
+    else
+        num_chars =(wnd->width-element->x)/FONT_WIDTH;
 
-    print_horizontal_word_len(element->attr.text.text, num_chars, wnd->x+element->x, wnd->y+element->y, element->attr.text.color);
+    if(element->attr.text.vertical)
+        print_vertical_word_len(element->attr.text.text, num_chars, wnd->x+element->x, wnd->y+element->y, element->attr.text.color);
+    else
+        print_horizontal_word_len(element->attr.text.text, num_chars, wnd->x+element->x, wnd->y+element->y, element->attr.text.color);
 }
 
 static void draw_checkbox(const Window *wnd, const Element *element){

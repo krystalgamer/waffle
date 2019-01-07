@@ -77,10 +77,10 @@ void create_file_browser(){
 
     window_add_element(wnd_id, BUTTON, wnd_width/2-lst_width/2 + 90, wnd_height/2-lst_height/2 + lst_height + 40, 200, 200, NULL, NULL);
 
-    struct _text_attr text = { "COCO", 0xFFFFFFFF, true};
+    struct _text_attr text = { "COCO", 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, wnd_width/2-strlen(cwd)/2*FONT_WIDTH, 0, 0, 0, (void*)&text, "manolo");
 
-    struct _text_attr text_sexy = { "This is not a directory", 0xFFFFFFFF, false};
+    struct _text_attr text_sexy = { "This is not a directory", 0xFFFFFFFF, false, false};
     window_add_element(wnd_id, TEXT, wnd_width/2-strlen("This is not a directory")/2 * FONT_WIDTH, wnd_height/2 + lst_height/2, 0, 0, (void*)&text_sexy, "homie");
 
     set_text(find_by_id(window_get_by_id(wnd_id), "manolo"), cwd);
@@ -148,10 +148,10 @@ void create_file_browser_special(char *cwd){
 
     window_add_element(wnd_id, BUTTON, wnd_width/2-lst_width/2 + 90, wnd_height/2-lst_height/2 + lst_height + 40, 200, 200, NULL, NULL);
 
-    struct _text_attr text = { "COCO", 0xFFFFFFFF, true};
+    struct _text_attr text = { "COCO", 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, wnd_width/2-strlen(cwd)/2*FONT_WIDTH, 0, 0, 0, (void*)&text, "manolo");
 
-    struct _text_attr text_sexy = { "This is not a directory", 0xFFFFFFFF, false};
+    struct _text_attr text_sexy = { "This is not a directory", 0xFFFFFFFF, false, false};
     window_add_element(wnd_id, TEXT, wnd_width/2-strlen("This is not a directory")/2 * FONT_WIDTH, wnd_height/2 + lst_height/2, 0, 0, (void*)&text_sexy, "homie");
 
 	char tmp[1024];

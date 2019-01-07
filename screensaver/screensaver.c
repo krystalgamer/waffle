@@ -91,9 +91,13 @@ int initialize_screensaver() {
     /* Add elements to screensaver */
     //add_element_to_screensaver(200, 200, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle);
     add_element_to_screensaver(500, 200, EGG_XPM_WIDTH, EGG_XPM_HEIGHT, egg, EGG_N_FRAMES);
-    add_element_to_screensaver(800, 100, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
-    add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
-    add_element_to_screensaver(1000, 0, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
+    screensaver_elements[0]->x_move = -22;
+    screensaver_elements[0]->x_move = 21;
+    add_element_to_screensaver(690, 200, ORANGE_JUICE_XPM_WIDTH, ORANGE_JUICE_XPM_HEIGHT, orange_juice, ORANGE_JUICE_N_FRAMES);
+    screensaver_elements[1]->x_move = 22;
+    screensaver_elements[1]->x_move = -21;
+    //add_element_to_screensaver(500, 600, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
+    //add_element_to_screensaver(1000, 0, WAFFLE_XPM_WIDTH, WAFFLE_XPM_HEIGHT, waffle, WAFFLE_N_FRAMES);
 
     hasInit = true;
 
@@ -182,6 +186,8 @@ void screensaver_draw() {
 
                 bool colliding_neg_move_x = collidingEle->x_move < 0;
                 bool colliding_neg_move_y = collidingEle->y_move < 0;
+
+                printf("%d %d %d %d\n", scr_ele->x_move, scr_ele->y_move, collidingEle->x_move, collidingEle->y_move);
 
                 if(scr_neg_move_x == colliding_neg_move_x){
 

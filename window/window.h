@@ -79,6 +79,7 @@ typedef struct _element{
             char *text; /**< Text */
             uint32_t color; /**< Color of text */
             bool active; /**< Whether the text is visible */
+            bool vertical; /**< Whether the text is visible */
         }text;
 
         struct _image_attr{
@@ -106,7 +107,7 @@ typedef struct _element{
 /** @} */
 
 /**
- * @defgroup window penis com sasbor module
+ * @defgroup window window module
  * All windows are here
  * @{
  */

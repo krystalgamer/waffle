@@ -71,7 +71,7 @@ void create_multi_painter(){
     struct _button_attr button = {"Connect", 0x007A7A7A, 0x005A5A5A};
     window_add_element(wnd_id, BUTTON, 200, wnd_width+20, 100, FONT_HEIGHT, &button, NULL);
 
-    struct _text_attr text = { "Connected", 0, false};
+    struct _text_attr text = { "Connected", 0, false, false};
     window_add_element(wnd_id, TEXT, 350, wnd_width+20, 0, 0, (void*)&text, "connected");
 
 }
@@ -122,7 +122,6 @@ void paint_with_brush(Element *canvas, uint32_t brush_size, uint32_t x, uint32_t
 }
 
 bool m_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
-    printf("", el, type, data, wnd);
 
     if(type == CANVAS_MSG){
 		if(connected == false)

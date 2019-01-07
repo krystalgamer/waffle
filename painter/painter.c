@@ -82,7 +82,6 @@ static void paint_with_brush(Element *canvas, uint32_t brush_size, uint32_t x, u
 }
 
 bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
-    printf("", el, type, data, wnd);
 
     if(type == CANVAS_MSG){
 

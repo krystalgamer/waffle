@@ -112,3 +112,18 @@ int print_vertical_word(char * word, uint16_t x, uint16_t y, uint32_t color) {
     }
     return OK;
 }
+
+int print_vertical_word_len(char * word, uint32_t len, uint16_t x, uint16_t y, uint32_t color) {
+    
+    /* Print each symbol of the word in the correct position */
+    for(int i = 0; word[i] && len; i++){
+        if(word[i] == 32)//skip spaces
+            continue;
+        if (print_symbol(word[i], x, y + i*FONT_HEIGHT, color) != OK){
+            printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
+            return 1;
+        }
+        len--;
+    }
+    return OK;
+}

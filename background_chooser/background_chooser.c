@@ -81,11 +81,11 @@ void create_background_chooser(){
     window_add_element(wnd_id, SLIDER, wnd_width/2 - 255/2, 50, 255, 50, NULL, "green"); 
     window_add_element(wnd_id, SLIDER, wnd_width/2 - 255/2, 100, 255, 50, NULL, "blue"); 
 
-    struct _text_attr red_text = { "Red", 0xFFFFFFFF, true};
+    struct _text_attr red_text = { "Red", 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, wnd_width/2 - 255/2 - 4*FONT_WIDTH, 0+50/2-FONT_HEIGHT/2, 255, 50, &red_text, NULL);
-    struct _text_attr blue_text = { "Blue", 0xFFFFFFFF, true};
+    struct _text_attr blue_text = { "Blue", 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, wnd_width/2 - 255/2 - 5*FONT_WIDTH, 50+50/2-FONT_HEIGHT/2, 255, 50, &blue_text, NULL); 
-    struct _text_attr green_text = { "Green", 0xFFFFFFFF, true};
+    struct _text_attr green_text = { "Green", 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, wnd_width/2 - 255/2 - 6*FONT_WIDTH, 100+50/2-FONT_HEIGHT/2, 255, 50, &green_text, NULL); 
 
     struct _checkbox_attr checkbox = {"Background Image", wnd_list.bckg_image};
@@ -95,7 +95,6 @@ void create_background_chooser(){
 
 bool background_chooser_handler(Element *el, unsigned type, void *data, Window *wnd){
 
-    printf("", el, wnd, type, data);
     if(type == LIST_VIEW_MSG){
 
         list_view_msg *msg = data;

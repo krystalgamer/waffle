@@ -77,7 +77,7 @@ void create_calculator(){
 	char *texto = malloc(50);
 	memset(texto, 0, 50);
 	
-    struct _text_attr text = { texto, 0xFFFFFFFF, true};
+    struct _text_attr text = { texto, 0xFFFFFFFF, true, false};
     window_add_element(wnd_id, TEXT, 0, 240, 0, 0, (void*)&text, "text");
 
 
@@ -86,9 +86,8 @@ void create_calculator(){
     window_add_element(wnd_id, DATA, 0, 120, 0, 0, (void*)&op, "op");
 }
 
-bool calculator_input_handler(Element *el, unsigned type, void *data, Window *wnd){
+bool calculator_input_handler(Element *el, unsigned type, void *UNUSED(data), Window *wnd){
 	
-	printf("", el, type, data, wnd);
 	if(type == BUTTON_MSG){
 
 		if(!strcmp(el->identifier, "x") || !strcmp(el->identifier, "+") || !strcmp(el->identifier, "-") || !strcmp(el->identifier, "/") || !strcmp(el->identifier, "=")){

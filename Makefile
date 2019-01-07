@@ -41,7 +41,10 @@ SRCS += multi_painter.c
 .PATH: ${.CURDIR}/guess_painter
 SRCS += guess_painter.c
 
-CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
+.PATH: ${.CURDIR}/example
+SRCS += example.c
+
+CPPFLAGS += -pedantic -D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}
 LDADD += -llcf 
