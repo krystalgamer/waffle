@@ -18,30 +18,34 @@ uint8_t calculate_size_in_bytes(uint8_t bits) {
 
 void *alloc_struct(uint32_t size){
 
+    /* Allocate memory */
     void *tmp = malloc(size);
     if(tmp == NULL)
         return NULL;
 
+    /* Set memory allocated to 0 */
     memset(tmp, 0, size);
     return tmp;
 }
 
 int (util_get_LSB)(uint16_t val, uint8_t *lsb) {
     
+    /* Check null pointer */
     if(lsb == NULL)
         return 1;
 
-    // Downcasting discards MSB
+    /* Downcasting discards MSB */
     *lsb = (uint8_t)val;
     return OK;
 }
 
 int (util_get_MSB)(uint16_t val, uint8_t *msb) {
     
+    /* Check null pointer */
     if(msb == NULL)
         return 1;
 
-    // Shift the MSB to the LSB and downcast to remove the new MSB
+    /* Shift the MSB to the LSB and downcast to remove the new MSB */
     *msb = (uint8_t) (val>>8);
     return OK;
 }

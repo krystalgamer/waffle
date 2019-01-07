@@ -1,9 +1,18 @@
 #include <lcom/lcf.h>
 #include "window.h"
 
+/**
+ * @defgroup state_machine state_machine module
+ * @ingroup window
+ * @{
+ */
 
-/*TODO so ve alteracoes no estado de pressionado nao ve levantamentos*/
 
+/**
+ * @brief updates the state machine of the mouse
+ * @param pp The mouse packet
+ * @return the mouse state
+ */
 static uint32_t state = 0; /* Initial state is all keys up */
 uint32_t update_state(const struct packet *pp){
 
@@ -23,3 +32,5 @@ uint32_t update_state(const struct packet *pp){
 
     return event;
 }
+
+/** @} */

@@ -2,6 +2,11 @@
 #include "i8254.h"
 #include "util.h"
 
+/**
+ * @addtogroup timer
+ * @{
+ */
+
 /* Hook id to be used when subscribing a timer interrupt */
 int timer_hook_id = 1;
 
@@ -9,6 +14,12 @@ int timer_hook_id = 1;
 static unsigned int timer_int_counter = 0;
 static uint32_t internal_freq = 60;/* Default */
 
+/**
+ * @brief sets the timer frequency
+ * @param timer the timer number
+ * @param freq the frequency
+ * @return 0 on success
+ */
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
 
     CHECK_TIMER_RANGE(timer);
@@ -76,6 +87,11 @@ int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
     return TIMER_OK;
 }
 
+/**
+ * @brief Subscribes timer interrupts
+ * @param bit_no the bit number of interrup
+ * @return 0 on sucess
+ */
 int (timer_subscribe_int)(uint8_t *bit_no) {
     
     /* Check null pointer */
@@ -97,6 +113,10 @@ int (timer_subscribe_int)(uint8_t *bit_no) {
     return TIMER_OK;
 }
 
+/**
+ * @brief Unsubscribes interrupts
+ * @return 0 on success
+ * */
 int (timer_unsubscribe_int)() {
     
     /* Since we use the IRQ_REENABLE policy, we do not have to use sys_irqdisable */
@@ -116,10 +136,19 @@ int (timer_unsubscribe_int)() {
  * values are used, which can cause an overflow. Thus, by limiting the counter to 0-59,
  * we guarantee it works for any period of time
  */
+/**
+ * @brief Timer interrup handler
+ */
 void (timer_int_handler)() {
     timer_int_counter = (timer_int_counter+1) % internal_freq;
 }
 
+/**
+ * @brief Gets the timer configuration
+ * @param timer The timer
+ * @param st the varaible to receive the conf
+ * @return 0 on success
+ */
 int (timer_get_conf)(uint8_t timer, uint8_t *st) {
     
     CHECK_TIMER_RANGE(timer);
@@ -151,6 +180,13 @@ int (timer_get_conf)(uint8_t timer, uint8_t *st) {
     return TIMER_OK;
 }
 
+/**
+ * @brief Displays the configuration
+ * @param timer The timer
+ * @param st the configuration
+ * @param field the type of display
+ * @return 0 on success
+ */
 int (timer_display_conf)(uint8_t timer, uint8_t st,
                         enum timer_status_field field) {
     	
@@ -195,8 +231,20 @@ int (timer_display_conf)(uint8_t timer, uint8_t st,
     return TIMER_OK;
 }
 
+/**
+ * @brief Resets the timer counter
+ */
 void timer_reset_int_counter() { timer_int_counter = 0; }
 
+/**
+ * @brief Gets the timer counter
+ * @return timer counter
+ */
 unsigned int get_timer_int_counter() { return timer_int_counter; }
 
+/**
+ * @brief set_internal_frequency_counter
+ * @param freq the timer frequency to be set
+ */
 void set_internal_frequency_counter(uint32_t freq){ internal_freq = freq; }
+/** @} */

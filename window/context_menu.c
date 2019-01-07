@@ -36,7 +36,7 @@ bool add_context_menu_entry(ContextMenu *menu, const char *text, bool is_callbac
 
     menu->entries[size] = alloc_struct(sizeof(ContextEntries));
     if(menu->entries[size] == NULL){
-        printf("Could not allocate memory for this menu, I'm done I'm gonna kms James\n");
+        printf("Could not allocate memory for this menu\n");
         return false;
     }
 
@@ -72,13 +72,13 @@ void draw_context_menu(ContextMenu *menu, uint32_t x, uint32_t y){
         return;
 
     if(menu->longer_entry == 0){
-        printf("Alguem se esqueceu de aumentar a longer entry\n");
+        printf("Forgot to increase longer entry\n");
         return;
     }
 
     /* TODO allow context menu rendering to the left */
     if((menu->longer_entry*FONT_WIDTH + CONTEXT_EXTRA_SPACE + x) > get_x_res()){
-        printf("NAO CONSIGO DESENHAR PARA A ESQUERDA OK?\n");
+        printf("Can not draw to the left\n");
         return;
     }
 
@@ -95,9 +95,9 @@ void draw_context_menu(ContextMenu *menu, uint32_t x, uint32_t y){
             pj_draw_rectangle(x, y+i*height/menu->size, width+CONTEXT_EXTRA_SPACE, height/menu->size, 0x00000080);
 
         uint32_t color = (mouse_over_option ? 0x00FFFFFF : 0);
-        printHorizontalWord(menu->entries[i]->text, x+3, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
+        print_horizontal_word(menu->entries[i]->text, x+3, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
         if(menu->entries[i]->menu){
-            printHorizontalWord(">", x+width, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
+            print_horizontal_word(">", x+width, y+i*(height/menu->size) + CONTEXT_OPTION_HEIGHT/2, color); 
 
         } 
         
@@ -143,6 +143,14 @@ ContextEntries *get_entry_by_name(ContextMenu *menu, const char *name){
     return NULL;
 }
 
+/** @addtogroup context_menu
+ *  @{
+ */
+/**
+ * @brief Gets a pointer of a menu by its id
+ * @param menu the menu containing
+ * @param ptr the ptr to be found
+ */
 uint32_t get_entry_id_by_ptr(ContextMenu *menu, ContextMenu *ptr){
     for(uint32_t i = 0; i < menu->size; i ++){
         if(menu->entries[i]->menu == ptr)
@@ -150,6 +158,7 @@ uint32_t get_entry_id_by_ptr(ContextMenu *menu, ContextMenu *ptr){
     }
     return -1;
 }
+/** @} */
 
 bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
     
@@ -159,7 +168,7 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
     /* Verifies if anything is being pressed */
     ContextMenu *cur_menu = menu;
     while(cur_menu->active_sub){
-        x += (menu->longer_entry + 5)*FONT_WIDTH + CONTEXT_EXTRA_SPACE;
+        x += (cur_menu->longer_entry + 5)*FONT_WIDTH + CONTEXT_EXTRA_SPACE;
         y += get_entry_id_by_ptr(cur_menu, cur_menu->active_sub)*(FONT_HEIGHT + CONTEXT_OPTION_HEIGHT);
         cur_menu = cur_menu->active_sub;
     }
@@ -179,6 +188,7 @@ bool call_entry_callback(ContextMenu *menu, uint32_t x, uint32_t y){
         if(mouse_over_coords(x, y+i*(height/cur_menu->size), x+width, y+(i+1)*(height/cur_menu->size))){
             if(cur_menu->entries[i]->callback != NULL){
                 cur_menu->entries[i]->callback();
+				move_to_front(wnd_list.last);
             }
             return true;
         }

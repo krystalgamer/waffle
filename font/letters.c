@@ -4,7 +4,7 @@
 static uint8_t * font_sprites = NULL;
 static uint8_t bytes_per_pixel;
 
-int initLetters() {
+int init_letters() {
 
     /* Check if already was initialized */
     static bool hasInit = false;
@@ -32,14 +32,12 @@ int initLetters() {
         }
     }
 
-    /*switcharoo que o mario se enganou*/
     char tmp[FONT_WIDTH*FONT_HEIGHT*4];
     memcpy(tmp, &font_sprites[('.'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
 
     memcpy(&font_sprites[('.'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], &font_sprites[('-'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
 
     memcpy(&font_sprites[('-'-STARTING_SYMBOL_OFFSET) * FONT_WIDTH * FONT_HEIGHT * bytes_per_pixel], tmp, FONT_HEIGHT*FONT_WIDTH*bytes_per_pixel);
-
 
     free(sprite);
 
@@ -49,7 +47,7 @@ int initLetters() {
 }
 
 
-int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
+int print_symbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
 
     /* Calculate offset of the symbol on the font_sprites array, based on ascii table order */
     int symbol_offset;
@@ -65,7 +63,7 @@ int printSymbol(char symbol, uint16_t x, uint16_t y, uint32_t color) {
     return OK;
 }
 
-int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
+int print_horizontal_word(char * word, uint16_t x, uint16_t y, uint32_t color) {
 
     if(word == NULL)
         return 1;
@@ -74,7 +72,7 @@ int printHorizontalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
     for(int i = 0; word[i]; i++){
         if(word[i] == 32)//skip spaces
             continue;
-        if (printSymbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
+        if (print_symbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
             printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
             return 1;
         }
@@ -91,8 +89,8 @@ int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, 
     for(int i = 0; len && word[i]; i++,len--){
         if(word[i] == 32)//skip spaces
             continue;
-        if (printSymbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
-            printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
+        if (print_symbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
+            printf("(%s) %d There was an error while printing %s symbol %c\n", __func__,i, word, word[i]);
             return 1;
         }
     }
@@ -100,16 +98,31 @@ int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, 
 
 }
 
-int printVerticalWord(char * word, uint16_t x, uint16_t y, uint32_t color) {
+int print_vertical_word(char * word, uint16_t x, uint16_t y, uint32_t color) {
     
     /* Print each symbol of the word in the correct position */
     for(int i = 0; word[i]; i++){
         if(word[i] == 32)//skip spaces
             continue;
-        if (printSymbol(word[i], x, y + i*FONT_HEIGHT, color) != OK){
+        if (print_symbol(word[i], x, y + i*FONT_HEIGHT, color) != OK){
             printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
             return 1;
         }
+    }
+    return OK;
+}
+
+int print_vertical_word_len(char * word, uint32_t len, uint16_t x, uint16_t y, uint32_t color) {
+    
+    /* Print each symbol of the word in the correct position */
+    for(int i = 0; word[i] && len; i++){
+        if(word[i] == 32)//skip spaces
+            continue;
+        if (print_symbol(word[i], x, y + i*FONT_HEIGHT, color) != OK){
+            printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
+            return 1;
+        }
+        len--;
     }
     return OK;
 }

@@ -1,32 +1,23 @@
 // IMPORTANT: you must include the following line in all your C files
 #include <lcom/lcf.h>
-#include <lib.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <time.h>
-#include <minix/sysinfo.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include "interrupts/mouse.h"
 #include "interrupts/keyboard.h"
 #include "interrupts/timer_user.h"
 #include "interrupts/rtc.h"
 #include "interrupts/serial_port.h"
+#include "interrupts/queue.h"
 #include "com_protocol.h"
 #include "screensaver/screensaver.h"
 #include "window/window.h"
-#include "vbe.h"
 #include "font/letters.h"
-#include "messages.h"
-#include "terminus/terminus.h"
 
-void escrever_coiso();
-void rtc_int_handle_asm();
-void window_scroll_handle(uint8_t scroll);
-
-bool set_scroll();
+/**
+ * @mainpage
+ * Bem vindos ao nosso window server/system, carreguem em "Modules" para aprender mais!
+ */
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
+extern queue *send_fifo; 
 
 int main(int argc, char *argv[]) {
     // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -57,20 +48,21 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
     sys_enable_iop(SELF);
     /* Suprimir warnings */
-    if(argc == 0 && argv != NULL)
-        printf("yee\n");
+    if(argc == 69 && argv != NULL)
+        printf("Started\n");
 
     /* Initialize graphics mode */
 
     srand(time(NULL));
 
+    /* Initialize video mode */
     if(vg_init(R1152x864_DIRECT) == NULL){
         printf("(%s) vg_init failed..quitting\n", __func__);
         return 1;
     }
 
     /* Initialize the font */
-    if(initLetters() != OK) {
+    if(init_letters() != OK) {
         printf("(%s) Error initializing the font\n", __func__);
         vg_exit();
         return 1;
@@ -100,7 +92,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
     uint32_t mouse_irq_set = BIT(bitNum);
 
 
-	/* Activates scroll wheel */
+    /* Enable data reporting on the mouse*/
+    mouse_enable_dr();
+
+	/* Activate the scroll wheel */
 	set_scroll();
 
     /* Subscribe Keyboard Interrupts */
@@ -140,13 +135,14 @@ int (proj_main_loop)(int argc, char *argv[]) {
     int maxFrames = 2;
     int curFrame = 1;
 
+    /* Initialize the internal status of the windows */
     if (init_internal_status() != OK) {
-        printf("(%s) error initializing internal status\n");
+        printf("(%s) error initializing internal status\n", __func__);
         vg_exit();
         return 1;
     }
 
-
+    /* Subscribe RTC Interrupts */
     uint32_t idle_time = 0; // time in interrupts
     if(rtc_subscribe_int(&bitNum) != OK){
         printf("Goddamit i could not enable interrupts for the rtc\n");
@@ -154,6 +150,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
     uint32_t rtc_irq_set = BIT(bitNum);
 
+    /* Enable RTC Update interrupts */
     rtc_enable_update_int();
     rtc_int_handle_asm();
 
@@ -172,8 +169,6 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     mouse_ih();
                     if ((r = assemble_mouse_packet(mouse_packet))) {
                         parse_mouse_packet(mouse_packet, &pp);
-                        if(pp.mb)
-                            pressed_the_secret_button = true;
                         window_mouse_handle(&pp);
 						if(r == 4)
 							window_scroll_handle((int8_t)mouse_packet[3]);
@@ -185,9 +180,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
                     if((++curFrame)%maxFrames == 0){
                         if (idle_time > SCREENSAVER_IDLE_TIME)
                             screensaver_draw();
-                        else
-                            window_draw();
-                        swap_buffers();
+                        else{
+							window_draw();
+						}
+						swap_buffers();
                     }
                     idle_time += 1;
                 }
@@ -202,11 +198,34 @@ int (proj_main_loop)(int argc, char *argv[]) {
 
                 if( msg.m_notify.interrupts & rtc_irq_set){
                     rtc_int_handle_asm();
-                    idle_time = 0;
                 }
 
                 if (msg.m_notify.interrupts & uart_irq_set) {
                     ser_ih();
+					idle_time = 0;
+                }
+                break;
+            default:
+                return 1;
+                break; /* no other notifications expected: do nothing */
+            }
+        }
+    }
+
+	/* deal with uart messages */
+    while(!is_queue_empty(send_fifo)) {
+        /* Get a request message.  */
+        if( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) {
+            printf("driver_receive failed with: %d", r);
+            continue;
+        }
+
+        if (is_ipc_notify(ipc_status)) { /* received notification */
+            switch (_ENDPOINT_P(msg.m_source)) {
+                case HARDWARE: /* hardware interrupt notification */
+                if (msg.m_notify.interrupts & uart_irq_set) {
+                    ser_ih();
+					idle_time = 0;
                 }
                 break;
             default:

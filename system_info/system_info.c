@@ -359,29 +359,31 @@ void create_system_info(){
 
     uint32_t wnd_width = 300, wnd_height = 310;
     uint32_t wnd_id = create_window(wnd_width, wnd_height, BACKGROUND_COLOR, "SysInfo", NULL);
+    if(!wnd_id)
+        return;
 
     struct utsname buffer;
     uname(&buffer);
 
     char system_name[50];
     sprintf(system_name, "System Name: %s", buffer.sysname);
-    struct _text_attr text = { system_name, 0xFFFFFFFF, true};
+    struct _text_attr text = { system_name, 0xFFFFFFFF, true, false};
 
     char node_name[50];
     sprintf(node_name, "Node Name: %s", buffer.nodename);
-    struct _text_attr text1 = { node_name, 0xFFFFFFFF, true};
+    struct _text_attr text1 = { node_name, 0xFFFFFFFF, true, false};
 
     char release[50];
     sprintf(release, "Release: %s", buffer.release);
-    struct _text_attr text2 = { release, 0xFFFFFFFF, true};
+    struct _text_attr text2 = { release, 0xFFFFFFFF, true, false};
 
     char version[50];
     sprintf(version, "Version: %s", buffer.version);
-    struct _text_attr text3 = { version, 0xFFFFFFFF, true};
+    struct _text_attr text3 = { version, 0xFFFFFFFF, true, false};
 
     char machine[50];
     sprintf(machine, "Machine: %s", buffer.machine);
-    struct _text_attr text4 = { machine, 0xFFFFFFFF, true};
+    struct _text_attr text4 = { machine, 0xFFFFFFFF, true, false};
 
     window_add_element(wnd_id, TEXT, 0, 0, 0, 0, (void*)&text, NULL);
     window_add_element(wnd_id, TEXT, 0, FONT_HEIGHT, 0, 0, (void*)&text1, NULL);

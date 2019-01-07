@@ -2,10 +2,11 @@
 #define BACON_XPM_H
 
 #define BACON_XPM_WIDTH 200
-#define BACON_XPM_HEIGHT 200
+#define BACON_XPM_HEIGHT 163
+#define BACON_N_FRAMES 1
 
 static const char * bacon_xpm[] = {
-"200 200 19 1",
+"200 163 19 1",
 " 	c None",
 ".	c #804040",
 "+	c #BF8040",
@@ -25,24 +26,6 @@ static const char * bacon_xpm[] = {
 "!	c #BFBF40",
 "~	c #FFBF80",
 "{	c #FF8080",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
 "                                                                                                                                                                                       .                ",
 "                                                                                                                                                                                +......@...             ",
 "                                                                                                                                                                               #....@@@@$@@@..          ",
@@ -205,25 +188,6 @@ static const char * bacon_xpm[] = {
 "     .@@@@@@@@;@@@@@@.#  ++++++                                                                                                                                                                         ",
 "      .;@*;;;;&......     )+++                                                                                                                                                                          ",
 "       ..&*&&.                                                                                                                                                                                          ",
-"         ..                                                                                                                                                                                             ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        ",
-"                                                                                                                                                                                                        "};
+"         ..                                                                                                                                                                                             "};
 
 #endif

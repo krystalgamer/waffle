@@ -5,12 +5,28 @@
 extern WindowList wnd_list;
 extern uint16_t window_frame_height;
 extern uint8_t keymap[];
+extern uint32_t keymap_size;
 
+/** @addtogroup notepad
+ *  @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+
+/** @} */
 
 /* Creates a new instance of terminus */
 unsigned create_terminus(){
     unsigned wnd_id = create_window(400, 300, 0, "Notepad", &terminus_input_handler);
+    if(!wnd_id)
+        return 0;
 
     uint32_t num_chars = get_x_res()/FONT_WIDTH * get_y_res()/FONT_HEIGHT;
     struct _text_box_attr attr = {NULL, num_chars+1, 0xFFFFFFFF, 0, true};
@@ -19,13 +35,6 @@ unsigned create_terminus(){
     return wnd_id;
 }
 
-/* The input handler */
-
-bool terminus_kbd_handler(Element* UNUSED(el), kbd_msg *UNUSED(msg)){
-    
-
-    return false;
-}
 
 bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 
@@ -51,6 +60,8 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
             if(msg->scancode[0] >> 7)
                 return true;
 
+            if(msg->scancode[0] >= keymap_size)
+                return true;
             uint8_t cur = keymap[msg->scancode[0]];
             uint32_t len = strlen(element->attr.text_box.text);
             /* Backspace was pressed */
@@ -72,6 +83,7 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
             uint32_t num = 0;
             uint32_t iter = 0;
             bool ignore_nl = true;
+            len = 0;
             for(unsigned i = 0; i<text_len;){ 
 
                 if((iter*FONT_HEIGHT >= wnd->height) || ((iter+1)*FONT_HEIGHT >= wnd->height))
@@ -91,6 +103,7 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
 
                 }
 
+                len += num;
                 text += num;
                 i += num;
                 iter++;

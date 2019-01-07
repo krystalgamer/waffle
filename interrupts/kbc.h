@@ -4,6 +4,11 @@
 #include <lcom/lcf.h>
 #include "i8042.h"
 
+/**
+ * @defgroup kbc kbc module
+ *
+ * @{
+ */
 /* Send a keyboard command without arguments */
 #define keyboard_send_command(x) send_command_internal(x, false, 0)
 
@@ -102,5 +107,13 @@ typedef enum _kbc_status {
 /* First byte of a two byte scancode */
 #define FIRST_B_OF_2B_CODE 0xE0 
 
+/**
+ * @brief Checks if there's an opcode available
+ * @param scancodes the scancode array
+ * @return number of available to be read
+ */
 uint32_t opcode_available(uint8_t *scancodes);
+
+/** @} */
+
 #endif

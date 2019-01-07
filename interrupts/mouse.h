@@ -7,6 +7,11 @@
 #include "i8042.h"
 
 /**
+ * @defgroup mouse mouse module
+ * @ingroup kbc
+ * @{
+ */
+/**
  * @brief Subscribes and enables mouse interrupts
  * 
  * Disables the Minix IH so as to avoid conflicts.
@@ -20,7 +25,7 @@ int (mouse_subscribe_int)(uint8_t *bit_no);
 /**
  * @brief Unsubscribes mouse interrupts
  * 
- * @return Return 0 upon success and non-zero othewise
+ * @return Return 0 upon success and non-zero otherwise
  */ 
 int (mouse_unsubscribe_int)();
 
@@ -109,5 +114,13 @@ typedef enum _mouse_status {
 
 /* Size of mouse packets */
 static uint32_t MOUSE_PACKET_SIZE = 3;
+
+/**
+ * @brief Enables scroll
+ * @return If it succeded
+ */
+bool set_scroll();
+
+/** @} */
 
 #endif
