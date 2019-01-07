@@ -171,7 +171,7 @@ void screensaver_draw() {
                 bool colliding_neg_move_x = collidingEle->x_move < 0;
                 bool colliding_neg_move_y = collidingEle->y_move < 0;
                 
-                if(scr_neg_move_x == colliding_neg_move_x){
+                if(scr_neg_move_x == colliding_neg_move_x) {
 
                     if(scr_neg_move_x){
                         if(scr_ele->x < collidingEle->x){
@@ -222,7 +222,6 @@ void screensaver_draw() {
                     scr_ele->y_move *= (-1);
                     collidingEle->y_move *= (-1);
                 }
-
                 continue;
             }
 
@@ -345,11 +344,11 @@ int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t he
     new_element->n_sprites = n_sprites;
 
     /* Assure direction is not 0 */
-    int vert_dir = rand() % 10 + 1;
-    int hori_dir = rand() % 10 + 1;
+    int vert_dir = rand() % 7 + 2;
+    int hori_dir = rand() % 7 + 2;
 
-    new_element->x_move = hori_dir+20;
-    new_element->y_move = vert_dir+20;
+    new_element->x_move = hori_dir;
+    new_element->y_move = vert_dir;
 
     new_element->sprite = sprite;
 
@@ -377,7 +376,10 @@ ScreensaverEle * check_collision_at_new_position(ScreensaverEle * ele) {
 
         /* For all pixels in the current element */
         for(int i = 0; i < curr_ele->height; i++){
+            if (curr_ele->y + i < ele->y || curr_ele->y + i > ele->y + ele->height) continue;
             for(int j = 0; j < curr_ele->width; j++){
+                if (curr_ele->x + j < ele->x || curr_ele->x + j > ele->x + ele->width) continue;
+
                 uint32_t pixel_color;
                 memcpy(&pixel_color, curr_ele->sprite[curr_ele->curr_frame % curr_ele->n_sprites] + (i * curr_ele->width + j) * bytes_per_pixel, bytes_per_pixel);
                 if (pixel_color == TRANSPARENCY_COLOR_8_8_8_8)
