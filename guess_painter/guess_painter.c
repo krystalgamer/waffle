@@ -58,7 +58,12 @@ static char *words[] ={
     "banana",
     "tree",
     "school",
-    "japan"
+    "japan",
+    "potato",
+    "pencil",
+    "book",
+    "hand",
+    "dragon"
 };
 static uint32_t num_words = sizeof(words)/sizeof(char*);
 static uint32_t cur_word = 0;

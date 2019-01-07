@@ -279,7 +279,9 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
         strcat(tmp, creator->attr.text_box.text);
 
         if( access( tmp, F_OK ) == -1 ) {
-            mkdir(tmp,S_IRWXU); 
+            if (mkdir(tmp,S_IRWXU)) {
+                return false;
+            }
             if(!strcmp(cwd, "/home/lcom/")){
                 if(num_files <= max_num_entries){
                     desktop_entries[num_entries].name = strdup(creator->attr.text_box.text);
@@ -409,7 +411,9 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
             strcat(tmp, creator->attr.text_box.text);
 
             if( access( tmp, F_OK ) == -1 ) {
-                mkdir(tmp,S_IRWXU); 
+                if(mkdir(tmp,S_IRWXU)) {
+                return false;
+            }
                 if(!strcmp(cwd, "/home/lcom/")){
                     if(num_files <= max_num_entries){
                         desktop_entries[num_entries].name = strdup(creator->attr.text_box.text);
