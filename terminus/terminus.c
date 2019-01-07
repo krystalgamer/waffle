@@ -80,6 +80,7 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
             uint32_t num = 0;
             uint32_t iter = 0;
             bool ignore_nl = true;
+            len = 0;
             for(unsigned i = 0; i<text_len;){ 
 
                 if((iter*FONT_HEIGHT >= wnd->height) || ((iter+1)*FONT_HEIGHT >= wnd->height))
@@ -99,6 +100,7 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
 
                 }
 
+                len += num;
                 text += num;
                 i += num;
                 iter++;
