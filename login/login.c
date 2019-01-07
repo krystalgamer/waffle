@@ -71,9 +71,29 @@ bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd){
     }
     else if(type == KEYBOARD){
 
-        if(!strcmp(el->identifier, "login"))
-            return false;
         kbd_msg *msg = data;
+        if(!strcmp(el->identifier, "login")){
+
+            if(msg->num != 1)
+                return true;
+            /* Ignore breakcodes */
+            if(msg->scancode[0] >> 7)
+                return true;
+            uint8_t cur = keymap[msg->scancode[0]];
+            if(cur == 254){
+                if(!strcmp(find_by_id(wnd, "login")->attr.text_box.text, "manel") && !strcmp(find_by_id(wnd, "real_password")->attr.data.space, "password")){
+                    find_by_id(wnd, "correct")->attr.text.active = true;
+                    find_by_id(wnd, "failed")->attr.text.active = false;
+                }
+                else{
+                    find_by_id(wnd, "correct")->attr.text.active = false;
+                    find_by_id(wnd, "failed")->attr.text.active = true;
+                }
+                return true;
+            }
+
+            return false;
+        }
         if(msg->num != 1)
             return true;
         /* Ignore breakcodes */
@@ -92,8 +112,18 @@ bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd){
             return true;
         }
         /* Enter was pressed*/
-        else if(cur == 254)
+        else if(cur == 254){
+
+            if(!strcmp(find_by_id(wnd, "login")->attr.text_box.text, "manel") && !strcmp(find_by_id(wnd, "real_password")->attr.data.space, "password")){
+                find_by_id(wnd, "correct")->attr.text.active = true;
+                find_by_id(wnd, "failed")->attr.text.active = false;
+            }
+            else{
+                find_by_id(wnd, "correct")->attr.text.active = false;
+                find_by_id(wnd, "failed")->attr.text.active = true;
+            }
             return true;
+        }
         
 
         /* Dont write more than necessary */
