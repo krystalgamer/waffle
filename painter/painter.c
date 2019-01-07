@@ -168,7 +168,7 @@ bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd){
 			pixels[i] = color;
     }
 	else if(type == MAXIMIZE_MSG){
-		wnd->maximized = true;
+		wnd->maximized = false;
 		return true;
 	}
     return false;

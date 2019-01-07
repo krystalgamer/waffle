@@ -71,7 +71,7 @@ static uint32_t cur_word = 0;
 void create_guess_painter(){
 
     uint32_t wnd_width = 500, wnd_height = 700;
-    uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x008A8A8A, "Paint", &g_painter_input_handler);
+    uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x008A8A8A, "Guess Paint", &g_painter_input_handler);
     if(!wnd_id)
         return;
 

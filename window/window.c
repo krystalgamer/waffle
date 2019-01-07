@@ -298,6 +298,8 @@ void window_scroll_handle(int8_t scroll){
 
 
 void mouse_element_interaction(Window *wnd, bool pressed, const struct packet *pp){
+    if (wnd->minimized) return;
+
     Element *cur_el = wnd->elements;
 
     /* Person is holding the mouse button */
