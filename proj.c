@@ -11,6 +11,10 @@
 #include "window/window.h"
 #include "font/letters.h"
 
+/**
+ * @mainpage
+ * Bem vindos ao nosso window server/system, carreguem em "Modules" para aprender mais!
+ */
 // Any header files included below this line should have been created by you
 bool pressed_the_secret_button = false;
 extern queue *send_fifo; 
