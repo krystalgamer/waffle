@@ -11,12 +11,7 @@ extern uint8_t keymap[];
  *  @{
  */
 /**
- * @brief Handle the input
- * @param el the input element
- * @param type type of message
- * @param data data of the message
- * @param wnd the current window
- * @return true/false depending if everything was sorted
+ * @brief Contains a message for the painter serial
  */
 typedef struct painter_serial{
     uint16_t x; /**< x position */
@@ -25,11 +20,17 @@ typedef struct painter_serial{
 	int16_t delta_y; /**< delat y */
 }painter_serial;
 
+/**
+ * @brief Contains a message for the slider serial
+ */
 typedef struct slider_serial{
     uint32_t new_pos; /**< new position on the slider */
     uint32_t id; /**< id of the slider */
 }slider_serial;
 
+/**
+ * @brief Contains an hello guess_painter message
+ */
 typedef struct guess_hello{
     uint32_t word; 
     uint32_t unused; /**< id of the slider */

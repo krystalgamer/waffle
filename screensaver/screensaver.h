@@ -12,8 +12,8 @@
  * @{
  */
 
-/* 
- * Struct representing an element in the screensaver
+/**
+ * @brief Struct representing an element in the screensaver
  * Holds information about its position, size and movement directions
 */
 typedef struct _screensaver_ele {
@@ -59,7 +59,7 @@ void screensaver_draw();
  * @param width Width of element in pixels
  * @param height Height of element in pixels
  * @param sprite Sprite array of element
- * @param n_frames number of frames of new element
+ * @param n_sprites number of frames of new element
  * @return Return 0 upon success and non-zero otherwise
  */
 int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_sprites);
@@ -77,11 +77,9 @@ ScreensaverEle * check_collision_at_new_position(ScreensaverEle * ele);
  * Assumes the coordinates at pixel_x, pixel_y are not transparent
  *
  * @param element Screensaver element to check pixel color
- * @param new_x New x coordinate of element to check collision
- * @param new_t New t coordinate of element to check collision
  * @param pixel_x Absolute x coordinate of pixel that was not transparent
  * @param pixel_y Absolute y coordinate of pixel that was not transparent
- * @return Return true if pixel collides, false otherwise
+ * @return true if pixel collides, false otherwise
  */
 bool pixel_collides(ScreensaverEle * element, int16_t pixel_x, int16_t pixel_y);
 

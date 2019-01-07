@@ -100,8 +100,6 @@ void draw_pixmap(const char * pixmap, uint16_t x, uint16_t y, int width, int hei
 
 /**
  * @brief Clears the specified buffer with the given color
- * 
- * @param buffer Buffer to clear
  * @param color Color to clear with
  */
 void (clear_buffer)(uint8_t color);

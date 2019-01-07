@@ -164,7 +164,7 @@ int init_internal_status(){
     wnd_list.taskbar.width = get_x_res();
     wnd_list.taskbar.height = get_y_res()/30;
     wnd_list.taskbar.color = 0x00C0C0C0;
-    wnd_list.taskbar.size_windows = 20;
+    wnd_list.taskbar.size_windows = 5;
     wnd_list.taskbar.num_created_windows = 0;
     wnd_list.taskbar.window_creation_list = malloc(sizeof(Window*) * wnd_list.taskbar.size_windows);
 
@@ -523,7 +523,6 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     add_window_to_list(new_window);
 
     if(wnd_list.taskbar.num_created_windows == wnd_list.taskbar.size_windows){
-        printf("Need to allocate more windows!\n");
         delete_window(new_window);
         return 0;
     }

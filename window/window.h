@@ -31,6 +31,9 @@ typedef enum {
 
 }ElementType;
 
+/**
+ * @brief The structure representing an element of a window
+ */
 typedef struct _element{
     
     uint32_t id; /**< Internal id of the window */
@@ -148,13 +151,23 @@ typedef struct _window{
  * @{
  */
 
+/**
+ * @brief The structure representing the context menu
+ */
 struct _context_menu;
+
+/**
+ * @brief Represents an entry in a context menu
+ */
 typedef struct{
     char *text; /**< text of the entry */
     void (*callback)(); /**< callback if there's any */
     struct _context_menu *menu; /**< sub-menu */
 }ContextEntries;
 
+/**
+ * @brief The structure representing the context menu
+ */
 typedef struct _context_menu{
     uint32_t longer_entry; /**< length of the longest entry */
     ContextEntries **entries; /**< list of the entries */
@@ -245,7 +258,7 @@ void window_mouse_handle(const struct packet *pp);
 /**
  * @brief Handles kbd input
  * @param scancode the scancodes
- * @param number of items
+ * @param num number of items
  *
  */
 void window_kbd_handle(const uint8_t *scancode, uint32_t num);
@@ -567,20 +580,32 @@ Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width,
  */
 void recalculate_list_view(Element *element);
 
+/**
+ * @brief Structure used by the user to pass list view information
+ */
 struct _list_view_attr{
     char **entries;
     uint32_t num_entries;
 };
 
+/**
+ * @brief Contains a keyboard message
+ */
 typedef struct _kbd_msg{
     uint32_t num;
     uint8_t scancode[3];
 }kbd_msg;
 
+/**
+ * @brief Contains a list view message
+ */
 typedef struct _list_view_msg{
     uint32_t index;
 }list_view_msg;
 
+/**
+ * @brief All types of messages
+ */
 enum MESSAGE_TYPE{
     KEYBOARD,
     MOUSE,
@@ -764,6 +789,9 @@ static const char *file[] = {
 "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
 };
 
+/**
+ * @brief Desktop entry
+ */
 struct desktop_ee{
     bool folder;
     char *name;
