@@ -24,6 +24,8 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
 /* Creates a new instance of terminus */
 unsigned create_terminus(){
     unsigned wnd_id = create_window(400, 300, 0, "Notepad", &terminus_input_handler);
+    if(!wnd_id)
+        return 0;
 
     uint32_t num_chars = get_x_res()/FONT_WIDTH * get_y_res()/FONT_HEIGHT;
     struct _text_box_attr attr = {NULL, num_chars+1, 0xFFFFFFFF, 0, true};

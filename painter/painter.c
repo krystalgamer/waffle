@@ -35,6 +35,8 @@ void create_painter(){
 
     uint32_t wnd_width = 500, wnd_height = 700;
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x008A8A8A, "Paint", &painter_input_handler);
+    if(!wnd_id)
+        return;
 
     void *image = malloc(500*500*4);
     memset(image, 0xFF, 500*500*4);

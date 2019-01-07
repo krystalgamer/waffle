@@ -27,6 +27,8 @@ void create_chatter(){
 
     uint32_t wnd_width = 500, wnd_height = 700;
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x008A8A8A, "Chat", &chatter_input_handle);
+    if(!wnd_id)
+        return;
 
     struct _text_box_attr attr = {NULL, wnd_width/FONT_WIDTH, 0xFFFFFFFF, 0, true};
     window_add_element(wnd_id, TEXT_BOX, 0, wnd_height-30, wnd_width, 30, &attr, "creator");

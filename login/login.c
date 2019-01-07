@@ -23,6 +23,8 @@ bool login_input_handler(Element *el, unsigned type, void *data, Window *wnd);
 /* Creates a new instance of terminus */
 unsigned create_login(){
     unsigned wnd_id = create_window(400, 400, 0x008A8A8A, "Login Form", &login_input_handler);
+    if(!wnd_id)
+        return 0;
 
     struct _button_attr button = {"Login", 0x007A7A7A, 0x005A5A5A};
     uint32_t button_width = 300;

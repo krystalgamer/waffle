@@ -28,6 +28,8 @@ void create_image_render(char *path){
         goto image_render_end;
 
     uint32_t wnd_id = create_window(width, height, 0, "Img", NULL);
+    if(!wnd_id)
+        goto image_render_end;
     window_add_element(wnd_id, IMAGE, 0, 0, width,height, (void*)&image, NULL);
     move_to_front(wnd_list.last);
 

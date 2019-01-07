@@ -19,6 +19,8 @@ void create_calculator(){
     uint32_t wnd_width = 300, wnd_height = 280;
 
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x008A8A8A, "Calculator", &calculator_input_handler);
+    if(!wnd_id)
+        return;
 
 	static struct _button_attr soma = { "+", 0x007A7A7A, 0x003A3A3A};
     window_add_element(wnd_id, BUTTON, 0, 0, 60, 60, (void*)&soma, "+");

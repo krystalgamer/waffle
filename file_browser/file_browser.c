@@ -37,6 +37,8 @@ uint32_t lst_width = 500, lst_height = 500;
 void create_file_browser(){
 
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x00B86B77, "File browser", &file_browser_input_handler);
+    if(!wnd_id)
+        return;
 
     char cwd[1024];
     char **counter = malloc(sizeof(void*) * 100);
@@ -112,6 +114,8 @@ void create_file_browser_special(char *cwd){
     }
 
     uint32_t wnd_id = create_window(wnd_width, wnd_height, 0x00B86B77, "File browser", &file_browser_input_handler);
+    if(!wnd_id)
+        return;
 
     char **counter = malloc(sizeof(void*) * 100);
 

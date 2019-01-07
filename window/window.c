@@ -523,7 +523,6 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
     add_window_to_list(new_window);
 
     if(wnd_list.taskbar.num_created_windows == wnd_list.taskbar.size_windows){
-        /* TODO :) */
         printf("Need to allocate more windows!\n");
         delete_window(new_window);
         return 0;

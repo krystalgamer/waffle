@@ -359,6 +359,8 @@ void create_system_info(){
 
     uint32_t wnd_width = 300, wnd_height = 310;
     uint32_t wnd_id = create_window(wnd_width, wnd_height, BACKGROUND_COLOR, "SysInfo", NULL);
+    if(!wnd_id)
+        return;
 
     struct utsname buffer;
     uname(&buffer);
