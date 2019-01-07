@@ -5,6 +5,7 @@
 
 
 extern WindowList wnd_list;
+extern uint32_t set_id;
 
 /** @addtogroup multi_painter
  *  @{
@@ -294,7 +295,8 @@ bool m_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
 			static uint8_t hello[8] = {0,0,0,0,0,0,0,0};
 			ser_write_msg_fifo((char*)hello, 8, SERIAL_GOODBYE);
 		}
-		ser_set_handler(NULL, NULL, NULL);
+		if(set_id == wnd->id)
+		    ser_set_handler(NULL, NULL, NULL);
 		connected = false;
 		expecting = false;
 	}

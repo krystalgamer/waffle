@@ -8,6 +8,7 @@ extern WindowList wnd_list;
 
 extern uint8_t keymap[];
 extern uint32_t keymap_size;
+extern uint32_t set_id;
 /** @addtogroup multi_painter
  *  @{
  */
@@ -329,7 +330,8 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
             static uint8_t hello[8] = {0,0,0,0,0,0,0,0};
             ser_write_msg_fifo((char*)hello, 8, SERIAL_GUESS_GOODBYE);
         }
-        ser_set_handler(NULL, NULL, NULL);
+        if(set_id == wnd->id)
+            ser_set_handler(NULL, NULL, NULL);
         connected = false;
         expecting = false;
         drawing = false;

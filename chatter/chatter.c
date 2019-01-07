@@ -21,6 +21,7 @@ bool chatter_input_handle(Element *el, unsigned type, void *data, Window *wnd);
 
 extern uint8_t keymap[];
 extern uint32_t keymap_size;
+extern uint32_t set_id;
 static char cur_message[255];
 static bool is_receiving = false;
 
@@ -147,7 +148,8 @@ bool chatter_input_handle(Element *el, unsigned type, void *data, Window *wnd){
     else if(type == CLOSE_MSG){
         is_receiving = false;
         memset(cur_message, 0, 255);
-        ser_set_handler(NULL, NULL, NULL);
+        if(set_id == wnd->id)
+            ser_set_handler(NULL, NULL, NULL);
     }
 
     return false;
