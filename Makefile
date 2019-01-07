@@ -47,7 +47,10 @@ SRCS += example.c
 .PATH: ${.CURDIR}/image_render
 SRCS += image_render.c
 
-CPPFLAGS += -pedantic -D __LCOM_OPTIMIZED__
+.PATH: ${.CURDIR}/chatter
+SRCS += chatter.c
+
+CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}
 LDADD += -llcf 

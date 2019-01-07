@@ -510,7 +510,7 @@ uint32_t create_window(uint16_t width, uint16_t height, uint32_t color, const ch
 
     new_window->color = color;
     new_window->minimized = false;
-    new_window->minimized = false;
+    new_window->maximized = false;
     new_window->handler = input_handler;
     new_window->attr.border = true; /* TODO allow the option in the future */
     new_window->attr.border_width = 2; /* TODO allow the option in the future */
@@ -1017,8 +1017,11 @@ void window_kbd_handle(const uint8_t *scancode, uint32_t num){
 
 		tab_pressed = !IS_BREAK(*scancode);
 		if(tab_pressed && alt_pressed){
-			if(wnd_list.first != NULL && wnd_list.first != wnd_list.last)
+			if(wnd_list.first != NULL && wnd_list.first != wnd_list.last){
 				move_to_front(wnd_list.last);
+                if(wnd_list.first)
+                    wnd_list.first->minimized = false;
+            }
 		}
 
 		return;

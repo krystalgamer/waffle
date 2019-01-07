@@ -544,13 +544,44 @@ void ser_write_msg_fifo(char * msg, uint32_t msg_size, uint32_t type) {
     uint8_t *msg_type = (uint8_t*)&type;
 	for (uint32_t i = 0; i < sizeof(type); i++)
 		queue_push(send_fifo, msg_type[i]);
-	/* Add elements to the queue */
-	for (uint32_t i = 0; i < msg_size; i++)
-		queue_push(send_fifo, msg[i]);
+
+    if(type == SERIAL_CHAT_HEADER){
+        uint32_t more_chars = SERIAL_CHAT_CHARS;
+        uint8_t *bytes = (uint8_t*)&more_chars;
+
+        /* Add elements to the queue */
+        for (uint32_t i = 0; i < msg_size; i++){
+            if(i%8 || !i){
+                queue_push(send_fifo, msg[i]);
+            }
+            else{
+                for (uint32_t j = 0; j < 4; j++)
+                    queue_push(send_fifo, bytes[j]);
+                queue_push(send_fifo, msg[i]);
+
+            }
+        }
+
+        if(msg_size % 8){
+            for(uint32_t i = 0; i<8-(msg_size%8); i++){
+                queue_push(send_fifo, 0);
+            }
+        }
+        uint32_t end = SERIAL_CHAT_END;
+        uint8_t *end_bytes = (uint8_t*)&end;
+        for (uint32_t j = 0; j < 4; j++)
+            queue_push(send_fifo, end_bytes[j]);
+        for (uint32_t j = 0; j < 8; j++)
+            queue_push(send_fifo, 0);
+    }
+    else{
+        /* Add elements to the queue */
+        for (uint32_t i = 0; i < msg_size; i++)
+            queue_push(send_fifo, msg[i]);
+    }
 
 	/* Fill the send fifo and check if could write whole msg */
 	ser_fill_send_fifo();
-
 }
 
 //void print_rcv_fifo() {

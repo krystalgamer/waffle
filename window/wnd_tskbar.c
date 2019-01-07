@@ -11,6 +11,7 @@
 #include "../font/letters.h"
 #include "../guess_painter/guess_painter.h"
 #include "../example/example.h"
+#include "../chatter/chatter.h"
 #include "interrupts/rtc.h"
 #include "vbe.h"
 #include "context_menu.h"
@@ -156,6 +157,7 @@ void init_taskbar_menu(){
     add_context_menu_entry(menu, "Calculator", true, (void*)create_calculator);
     add_context_menu_entry(menu, "Guess paint", true, (void*)create_guess_painter);
     add_context_menu_entry(menu, "Example app", true, (void*)create_example_application);
+    add_context_menu_entry(menu, "Chat", true, (void*)create_chatter);
     add_context_menu_entry(menu, "Leave", true, (void*)leave_graphic);
 
     ContextMenu *settings_sub = create_context_menu(5);

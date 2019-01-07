@@ -316,13 +316,13 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
 
     }
 	else if(type == CLOSE_MSG){
-		if(connected){
-			static uint8_t hello[8] = {0,0,0,0,0,0,0,0};
-			ser_write_msg_fifo((char*)hello, 8, SERIAL_GUESS_GOODBYE);
-		}
-		ser_set_handler(NULL, NULL, NULL);
-		connected = false;
-		expecting = false;
+        if(connected){
+            static uint8_t hello[8] = {0,0,0,0,0,0,0,0};
+            ser_write_msg_fifo((char*)hello, 8, SERIAL_GUESS_GOODBYE);
+        }
+        ser_set_handler(NULL, NULL, NULL);
+        connected = false;
+        expecting = false;
         drawing = false;
 	}
 	else if(type == CHECKBOX_MSG){

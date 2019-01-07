@@ -91,7 +91,7 @@ int print_horizontal_word_len(char *word, uint32_t len, uint16_t x, uint16_t y, 
         if(word[i] == 32)//skip spaces
             continue;
         if (print_symbol(word[i], x + i*FONT_WIDTH, y, color) != OK){
-            printf("(%s) There was an error while printing symbol %d\n", __func__, word[i]);
+            printf("(%s) %d There was an error while printing %s symbol %c\n", __func__,i, word, word[i]);
             return 1;
         }
     }

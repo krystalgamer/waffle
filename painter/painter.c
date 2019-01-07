@@ -14,7 +14,22 @@ typedef struct slider_serial{
 }slider_serial;
 
 extern WindowList wnd_list;
+
+/**
+ * @addtogroup painter
+ * @{
+ */
+/**
+ * @brief Handle the input
+ * @param el the input element
+ * @param type type of message
+ * @param data data of the message
+ * @param wnd the current window
+ * @return true/false depending if everything was sorted
+ */
 bool painter_input_handler(Element *el, unsigned type, void *data, Window *wnd);
+
+/** @} */
 
 void create_painter(){
 
