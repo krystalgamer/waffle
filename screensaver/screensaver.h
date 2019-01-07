@@ -1,8 +1,8 @@
 #ifndef SCREENSAVER_H
 #define SCREENSAVER_H
 
-#define SCREENSAVER_NUMBER_OF_ELEMENTS 2 /* Number of elements in the screensaver */
-#define SCREENSAVER_IDLE_TIME 300 /* Time to start screensaver in interrupts */
+#define SCREENSAVER_NUMBER_OF_ELEMENTS 4 /* Number of elements in the screensaver */
+#define SCREENSAVER_IDLE_TIME 60 /* Time to start screensaver in interrupts */
 #define SCREENSAVER_ELE_SPEED 12 /* Speed of the screensaver elements */
 
 
@@ -24,7 +24,7 @@ typedef struct _screensaver_ele {
     int16_t next_x, next_y; /**<  New position after update. Should only be used temporarily */
 
 	int x_move, y_move; /**<  movement in x and y directions */
-	bool collided; /**<  bool representing if this element collided recently */
+	//bool collided; /**<  bool representing if this element collided recently */
 	bool final_pos; /**<  bool representing if object already reached a new position */
 
 	uint8_t curr_frame; /**< current frame of this element */
@@ -63,15 +63,14 @@ void screensaver_draw();
  * @return Return 0 upon success and non-zero otherwise
  */
 int add_element_to_screensaver(int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t ** sprite, uint8_t n_sprites);
+
 /**
- * @brief Verifies if there is an element colliding at given coordinates
+ * @brief Verifies if a given element collides at its new position
  *
- * @param ele Screensaver element that is in position x y
- * @param new_x X position of ele top left corner
- * @param new_y Y position of ele top left corner
+ * @param ele Screensaver element that was moved
  * @return Return a pointer to an element colliding with ele, NULL if no collisions
  */
-ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x, int16_t new_y);
+ScreensaverEle * check_collision_at_new_position(ScreensaverEle * ele);
 
 /**
  * @brief Verifies if a given pixel of an element is transparent or not
@@ -84,7 +83,7 @@ ScreensaverEle * check_collision_at_position(ScreensaverEle * ele, int16_t new_x
  * @param pixel_y Absolute y coordinate of pixel that was not transparent
  * @return Return true if pixel collides, false otherwise
  */
-bool pixel_collides(ScreensaverEle * element, int16_t new_x, int16_t new_y, int16_t pixel_x, int16_t pixel_y);
+bool pixel_collides(ScreensaverEle * element, int16_t pixel_x, int16_t pixel_y);
 
 /**
  * @brief Updates an object position until it no longer collides with anything
