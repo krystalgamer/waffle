@@ -7,6 +7,7 @@
 extern WindowList wnd_list;
 
 extern uint8_t keymap[];
+extern uint32_t keymap_size;
 /** @addtogroup multi_painter
  *  @{
  */
@@ -403,6 +404,8 @@ bool g_painter_input_handler(Element *el, unsigned type, void *data, Window *wnd
             return true;
         /* Ignore breakcodes */
         if(msg->scancode[0] >> 7)
+            return true;
+        if(msg->scancode[0] >= keymap_size)
             return true;
 
         uint8_t cur = keymap[msg->scancode[0]];

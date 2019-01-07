@@ -5,6 +5,7 @@
 extern WindowList wnd_list;
 extern uint16_t window_frame_height;
 extern uint8_t keymap[];
+extern uint32_t keymap_size;
 
 /** @addtogroup notepad
  *  @{
@@ -59,6 +60,8 @@ bool terminus_input_handler(Element *el, unsigned type, void *data, Window *wnd)
             if(msg->scancode[0] >> 7)
                 return true;
 
+            if(msg->scancode[0] >= keymap_size)
+                return true;
             uint8_t cur = keymap[msg->scancode[0]];
             uint32_t len = strlen(element->attr.text_box.text);
             /* Backspace was pressed */

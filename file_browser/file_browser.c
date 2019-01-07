@@ -15,6 +15,8 @@ extern struct desktop_ee desktop_entries[];
 extern uint32_t num_entries;
 extern uint32_t max_num_entries;
 extern uint32_t drawable_entries;
+extern uint8_t keymap[];
+extern uint32_t keymap_size;
 
 /** @addtogroup file_browser
  *  @{
@@ -378,6 +380,99 @@ bool file_browser_input_handler(Element *el, unsigned type, void *data, Window *
 		}
 		recalculate_list_view(lista);
 	}
+    else if(type == KEYBOARD){
+
+        kbd_msg *msg = data;
+        if(msg->num != 1)
+            return true;
+        /* Ignore breakcodes */
+        if(msg->scancode[0] >> 7)
+            return true;
+        if(msg->scancode[0] >= keymap_size)
+            return true;
+
+        uint8_t cur = keymap[msg->scancode[0]];
+        uint32_t len = strlen(el->attr.text_box.text);
+        /* Backspace was pressed */
+        if(cur == 255){
+            if(!len) return true;
+
+            el->attr.text_box.text[--len] = 0;
+            return true;
+        }
+        /* Enter was pressed*/
+        else if(cur == 254){
+
+            char tmp[255];
+            strcpy(tmp, cwd);
+            Element *creator = find_by_id(wnd, "creator");
+            strcat(tmp, creator->attr.text_box.text);
+
+            if( access( tmp, F_OK ) == -1 ) {
+                mkdir(tmp,S_IRWXU); 
+                if(!strcmp(cwd, "/home/lcom/")){
+                    if(num_files <= max_num_entries){
+                        desktop_entries[num_entries].name = strdup(creator->attr.text_box.text);
+                        desktop_entries[num_entries++].folder = true;
+                        drawable_entries = (num_entries > max_num_entries) ? max_num_entries : num_entries;
+                    }
+                }
+                memset(creator->attr.text_box.text, 0, creator->attr.text_box.text_size); 
+                DIR *dirp;
+                struct dirent *dp;
+                dirp = opendir(cwd);
+                if(!dirp){
+                    /* Prevents crashes */
+                    set_list_view_elements(find_by_id(wnd, "pastas"), counter, 0);
+                    return false;
+                }
+
+                while (dirp) {
+                    errno = 0;
+                    if ((dp = readdir(dirp)) != NULL) {
+                        /* Ignore cur dir */
+                        if(!strcmp(dp->d_name, "."))
+                            continue;
+
+                        /* Ignore .. if we're at the most top level */
+                        if(!strcmp(cwd, "/") && !strcmp(dp->d_name, ".."))
+                            continue;
+                        counter[num_files++] = strdup(dp->d_name);
+                        if(num_files >= el->height)
+                            break;
+                    }
+                    else {
+                        if(errno != 0){
+                            closedir(dirp);
+                            return true;
+                        }
+                        break;
+                    }
+                }
+             
+                closedir(dirp);
+
+                set_list_view_elements(find_by_id(wnd, "pastas"), counter, num_files);
+
+                Element *text_el = find_by_id(wnd, "manolo");
+                set_text(text_el, cwd);
+                text_el->x = wnd->width/2 - strlen(text_el->attr.text.text)/2 * FONT_WIDTH;
+
+                for(unsigned i = 0; i<num_files; i++)
+                    free(counter[i]);
+            }//ENDS
+            return true;
+        }
+
+        /* Dont write more than necessary */
+        if(len >= el->attr.text_box.text_size-1)
+            return true;
+
+        el->attr.text_box.text[len++] = cur;
+        return true;
+
+    }
+
 
     return false;
 }

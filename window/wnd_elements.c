@@ -20,6 +20,8 @@ uint8_t keymap[] = {
     
 };
 
+uint32_t keymap_size = sizeof(keymap);
+
 extern WindowList wnd_list;
 
 Element *build_element(ElementType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height, void *attr, char *identifier){
@@ -271,6 +273,9 @@ void modify_text_box(Element *element, const uint8_t *scancode, uint32_t num, Wi
     if(num == 1){
         /* Ignore breakcodes */
         if(scancode[0] >> 7)
+            return;
+
+        if(scancode[0] >= keymap_size)
             return;
 
         uint8_t cur = keymap[scancode[0]];

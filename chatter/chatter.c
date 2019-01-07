@@ -20,6 +20,7 @@ bool chatter_input_handle(Element *el, unsigned type, void *data, Window *wnd);
 /** @} */
 
 extern uint8_t keymap[];
+extern uint32_t keymap_size;
 static char cur_message[255];
 static bool is_receiving = false;
 
@@ -51,6 +52,8 @@ bool chatter_input_handle(Element *el, unsigned type, void *data, Window *wnd){
             return true;
         /* Ignore breakcodes */
         if(msg->scancode[0] >> 7)
+            return true;
+        if(msg->scancode[0] >= keymap_size)
             return true;
 
         uint8_t cur = keymap[msg->scancode[0]];
