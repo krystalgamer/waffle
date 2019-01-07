@@ -269,7 +269,10 @@ void screensaver_draw() {
         ScreensaverEle * scr_ele = screensaver_elements[i];
         scr_ele->final_pos = false;
         draw_pixmap_direct_mode(scr_ele->sprite[scr_ele->curr_frame % scr_ele->n_sprites], scr_ele->x, scr_ele->y, scr_ele->width, scr_ele->height, 0, false);
-        scr_ele->curr_frame++;
+        if(scr_ele->x_move > 0)
+            scr_ele->curr_frame++;
+        else
+            scr_ele->curr_frame--;
     }
 }
 

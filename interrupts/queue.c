@@ -73,6 +73,7 @@ char queue_top(queue *q){
 
 int del_queue(queue *q){
 
+    if(q == NULL) return 1;
 	/* Empty the queue */
 	empty_queue(q);
 
