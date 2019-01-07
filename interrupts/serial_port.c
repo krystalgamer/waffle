@@ -722,7 +722,6 @@ void ser_ih() {
 bool ser_set_handler(void *hand, void *el, void *wnd){
 	/* All unset, time to set */
 	if(handler == NULL && element == NULL && window == NULL){
-        printf("estou a setar\n");
         set_id = *(uint32_t*)wnd;
 		handler = (call_handler)hand;
 		window = wnd;
@@ -732,10 +731,8 @@ bool ser_set_handler(void *hand, void *el, void *wnd){
 		return true;
 	}
 
-    printf("%p %p %p\n", hand, el, wnd);
 	/* Someone is unsetting */
 	if(hand == NULL && el== NULL && wnd == NULL){
-        printf("Estou a dessetar\n");
 		handler = NULL;
 		window = NULL;
 		element = NULL;

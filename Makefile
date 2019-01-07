@@ -50,7 +50,7 @@ SRCS += image_render.c
 .PATH: ${.CURDIR}/chatter
 SRCS += chatter.c
 
-CPPFLAGS += -pedantic #-D __LCOM_OPTIMIZED__
+CPPFLAGS += -pedantic -D __LCOM_OPTIMIZED__
 
 DPADD += ${LIBLCF}
 LDADD += -llcf 
