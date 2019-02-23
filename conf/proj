@@ -1,4 +1,4 @@
-service lab5
+service proj
 {
         system
                 DEVIO
